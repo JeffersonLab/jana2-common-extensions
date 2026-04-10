@@ -15,7 +15,9 @@ public:
     std::vector<MPDHit*> mpd;
 
     void insertIntoEvent(JEvent& event) override {
-        event.Insert(mpd);
+        for (auto& item : mpd) {
+            event.Insert(item);
+        }
     }
 };
 

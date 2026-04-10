@@ -15,7 +15,9 @@ public:
     std::vector<VFTDCHit*> vftdc_hits;
 
     void insertIntoEvent(JEvent& event) override {
-        event.Insert(vftdc_hits);
+        for (auto& vftdc_hit : vftdc_hits) {
+            event.Insert(vftdc_hit);
+        }
     }
 };
 
