@@ -17,7 +17,9 @@ public:
     std::vector<FADCScalerHit*> scalers;
 
     void insertIntoEvent(JEvent& event) override {
-        event.Insert(scalers);
+        for (auto& scaler : scalers) {
+            event.Insert(scaler);
+        }
     }
 };
 

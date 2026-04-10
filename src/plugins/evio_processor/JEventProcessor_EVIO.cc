@@ -230,7 +230,8 @@ void JEventProcessor_EVIO::ProcessSequential(const JEvent &event) {
                 m_txt_output_file << "  Waveform hits: " << waveform_hits.size() << "\n";
                 for (const auto& hit : waveform_hits) {
                     m_txt_output_file
-                        << "    WF slot=" << hit->slot
+                        << "    WF rocid=" << hit->rocid
+                        << " slot=" << hit->slot
                         << " chan=" << hit->chan
                         << " nsamples=" << hit->waveform.size()
                         << "\n";
@@ -244,7 +245,8 @@ void JEventProcessor_EVIO::ProcessSequential(const JEvent &event) {
                 m_txt_output_file << "  Pulse hits: " << pulse_hits.size() << "\n";
                 for (const auto& hit : pulse_hits) {
                     m_txt_output_file
-                        << "    PULSE slot=" << hit->slot
+                        << "    PULSE rocid=" << hit->rocid
+                        << " slot=" << hit->slot
                         << " chan=" << hit->chan
                         << " integral_sum=" << hit->integral_sum
                         << "\n";

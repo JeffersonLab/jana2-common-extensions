@@ -17,7 +17,9 @@ public:
     std::vector<HelicityDecoderData*> helicity;
 
     void insertIntoEvent(JEvent& event) override {
-        event.Insert(helicity);
+        for (auto& item : helicity) {
+            event.Insert(item);
+        }
     }
 };
 

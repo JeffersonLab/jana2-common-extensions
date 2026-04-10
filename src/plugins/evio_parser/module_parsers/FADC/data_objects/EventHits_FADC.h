@@ -26,11 +26,21 @@ public:
     std::vector<FADC250HallBPulsePeakHit*> pulse_peaks;
 
     void insertIntoEvent(JEvent& event) override {
-        event.Insert(waveforms);
-        event.Insert(pulses);
-        event.Insert(pulse_integrals);
-        event.Insert(pulse_times);
-        event.Insert(pulse_peaks);
+        for (auto& waveform : waveforms) {
+            event.Insert(waveform);
+        }
+        for (auto& pulse : pulses) {
+            event.Insert(pulse);
+        }
+        for (auto& pulse_integral : pulse_integrals) {
+            event.Insert(pulse_integral);
+        }
+        for (auto& pulse_time : pulse_times) {
+            event.Insert(pulse_time);
+        }
+        for (auto& pulse_peak : pulse_peaks) {
+            event.Insert(pulse_peak);
+        }
     }
 };
 
