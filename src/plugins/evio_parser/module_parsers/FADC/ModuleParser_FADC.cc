@@ -145,6 +145,8 @@ void ModuleParser_FADC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                 for (auto& hit : hits) {
                     event_hits_map[event_number]->pulses.push_back(new FADC250PulseHit(hit));
                 }
+                LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 9 CHAN = " << chan  << "; Pedestal quality = " << pedestal_quality<<"; Pedestal sum = "<<pedestal_sum<<LOG_END;
+
             } else if (data_type == 10) { // Pulse Peak data
                 if (block_nevents < 0) {
                     throw JException(
@@ -276,6 +278,9 @@ std::vector<FADC250PulseHit> ModuleParser_FADC::parsePulseData(
         pulse_hit.time_quality = getBitsInRange(w3, 2, 0);
         
         pulse_hits.push_back(pulse_hit);
+
+        LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - parsePulseData integral_sum = " << pulse_hit.integral_sum  << "; integral_quality = " << pulse_hit.integral_quality <<"; nsamples_above_th = "<< pulse_hit.nsamples_above_th <<LOG_END;
+        LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - parsePulseData coarse_time = " << pulse_hit.coarse_time  << "; fine_time = " << pulse_hit.fine_time <<"; pulse_peak = "<< pulse_hit.pulse_peak << "; time_quality = " <<  pulse_hit.time_quality << LOG_END;
     }
     
     return pulse_hits;
