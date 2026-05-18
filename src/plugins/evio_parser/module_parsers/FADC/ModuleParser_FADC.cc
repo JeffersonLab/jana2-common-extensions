@@ -98,6 +98,8 @@ void ModuleParser_FADC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                 }
                 uint32_t chan = getBitsInRange(d, 26, 23);
                 uint32_t waveform_len = getBitsInRange(d, 11, 0);
+
+                LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 4 CHAN = " << chan  << "; waveform length = " << waveform_len<<LOG_END;
                 
                 // Parse waveform data and add to event hits
                 FADC250WaveformHit hit = parseWaveformData(
@@ -207,12 +209,14 @@ FADC250WaveformHit ModuleParser_FADC::parseWaveformData(
         auto x_notvalid = getBitsInRange(ww, 29, 29);
         if (!x_notvalid) {
             hit.addSample(getBitsInRange(ww, 28, 16));
+            LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 4 Waveform sample " << getBitsInRange(ww, 28, 16) <<LOG_END;
         }
         
         // Extract second sample (bits 12-0)
         auto x_plus_notvalid = getBitsInRange(ww, 13, 13);
         if (!x_plus_notvalid) {
             hit.addSample(getBitsInRange(ww, 12, 0));
+            LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 4 Waveform sample " << getBitsInRange(ww, 12, 0) <<LOG_END;
         }
     }
     
