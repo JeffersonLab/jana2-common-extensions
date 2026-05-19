@@ -26,6 +26,7 @@
  */
 JEventSource_EVIO::JEventSource_EVIO() : JEventSource() {
     SetTypeName(NAME_OF_THIS);                    // Provide JANA with class name
+    SetPrefix("EVIO_PARSER");
     SetCallbackStyle(CallbackStyle::ExpertMode);
     SetLevel(JEventLevel::Block);
     EnableProcessParallel(true);

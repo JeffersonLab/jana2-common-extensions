@@ -11,6 +11,7 @@ This repository is designed to be **modular and extensible**, and can be adapted
 * [Build Instructions](#build-instructions)
 * [Installation Layout](#installation-layout)
 * [Basic Usage](#basic-usage)
+* [Logging](#logging)
 * [Configuration Files](#configuration-files)
 * [Default Plugins](#default-plugins)
 
@@ -193,6 +194,95 @@ jana -Pplugins=evio_parser,evio_processor -Pjana:plugin_path=/path/to/plugins da
 * `evio_parser` must always be included and listed **first**, as it provides the event source for EVIO files
 * At least one event source is required by JANA; without it, no events will be processed
 * You are responsible for setting plugin paths and loading all required plugins manually
+
+## Logging
+
+### Adding log statements
+
+Include the logger header if it is not already available transitively:
+
+```cpp
+#include <JANA/JLogger.h>
+```
+
+Add the log:
+
+```cpp
+LOG_WARN(GetLogger()) << "ModuleParser_MyHW::parse: unexpected word count " << nwords << LOG_END;
+```
+
+Available macros (in increasing severity):
+
+```cpp
+LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL
+```
+
+All log statements must end with `LOG_END`.
+
+---
+
+### Log levels
+
+Messages are shown only if their severity is **at or above** the configured level:
+
+| Level          | Visible messages                       |
+| -------------- | -------------------------------------- |
+| TRACE          | TRACE, DEBUG, INFO, WARN, ERROR, FATAL |
+| DEBUG          | DEBUG, INFO, WARN, ERROR, FATAL        |
+| INFO (default) | INFO, WARN, ERROR, FATAL               |
+| WARN           | WARN, ERROR, FATAL                     |
+| ERROR          | ERROR, FATAL                           |
+| FATAL          | FATAL                                  |
+| OFF            | none                                   |
+
+For example, `LOG_DEBUG` only appears when the level is `DEBUG` or `TRACE`.
+
+---
+
+### Global log level
+
+Set logging level for all JANA2 components:
+
+```bash
+"${JCE_HOME}/scripts/jce.sh" -Pjana:global_loglevel=WARN -Pplugins=evio_parser,evio_processor data.evio
+```
+
+This give logs on the given level for both the internal jana components and plugin components. Default is `INFO`.
+
+---
+
+### evio_parser log level
+
+To get only evio_parser logs at a certain level use `-PEVIO_PARSER:loglevel`:
+
+```bash
+"${JCE_HOME}/scripts/jce.sh" -PEVIO_PARSER:loglevel=DEBUG -Pplugins=evio_parser,evio_processor data.evio
+```
+
+Use `TRACE` for maximum detail.
+
+---
+
+### Custom components log level
+
+A component can define its own logging namespace via `SetPrefix`:
+
+```cpp
+MyProcessor::MyProcessor() : JEventProcessor() {
+    SetPrefix("MY_PROCESSOR");
+}
+
+void MyProcessor::Process(const JEvent& event) {
+    LOG_INFO(GetLogger()) << "Processing event " << event.GetEventNumber() << LOG_END;
+}
+```
+
+Then configure it:
+
+```bash
+jana -PMY_PROCESSOR:loglevel=DEBUG -Pplugins=my_plugin data.evio
+```
+
 
 ## Configuration Files
 
