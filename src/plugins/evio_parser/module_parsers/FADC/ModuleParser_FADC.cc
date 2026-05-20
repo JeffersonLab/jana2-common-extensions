@@ -138,6 +138,8 @@ void ModuleParser_FADC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                 uint32_t chan = getBitsInRange(d, 18, 15);
                 uint32_t pedestal_quality = getBitsInRange(d, 14, 14);
                 uint32_t pedestal_sum = getBitsInRange(d, 13, 0);
+
+                LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 9 CHAN = " << chan  << "; Pedestal quality = " << pedestal_quality<<"; Pedestal sum = "<<pedestal_sum<<LOG_END;
                 
                 // Parse pulse data and add to event hits
                 auto hits = parsePulseData(
@@ -147,7 +149,6 @@ void ModuleParser_FADC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                 for (auto& hit : hits) {
                     event_hits_map[event_number]->pulses.push_back(new FADC250PulseHit(hit));
                 }
-                LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 9 CHAN = " << chan  << "; Pedestal quality = " << pedestal_quality<<"; Pedestal sum = "<<pedestal_sum<<LOG_END;
 
             } else if (data_type == 10) { // Pulse Peak data
                 if (block_nevents < 0) {
