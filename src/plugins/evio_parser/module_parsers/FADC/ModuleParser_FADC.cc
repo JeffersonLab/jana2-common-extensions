@@ -32,6 +32,8 @@ void ModuleParser_FADC::parse(std::shared_ptr<evio::BaseStructure> data_block,
     uint64_t event_number = 0;
     int block_number = -1;
     int block_nevents = -1;  // -1 indicates no block header processed yet
+    uint32_t type2_triggertime = 0;
+    uint32_t type9_eventnumber = 0;
     uint64_t event_index = 0;
 
     // Map from event_number to EventHits_FADC, used to merge hits from
@@ -76,7 +78,9 @@ void ModuleParser_FADC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                         eh_slot, block_slot
                     );
                 }
+                type2_triggertime = getBitsInRange(d, 21, 12);
                 trigger_num = getBitsInRange(d, 11, 0);
+                LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 2 Type2 trigger time = " << type2_triggertime << "; Trigger number = " << trigger_num << LOG_END;
 
                 // Compute event number and get or create the hits container
                 event_number = trigger_data.first_event_number + event_index;
@@ -141,11 +145,12 @@ void ModuleParser_FADC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                         "ModuleParser_FADC::parse: Invalid data format — pulse data word before block & event header"
                     );
                 }
+                type9_eventnumber = getBitsInRange(d, 26, 19);
                 uint32_t chan = getBitsInRange(d, 18, 15);
                 uint32_t pedestal_quality = getBitsInRange(d, 14, 14);
                 uint32_t pedestal_sum = getBitsInRange(d, 13, 0);
 
-                LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 9 CHAN = " << chan  << "; Pedestal quality = " << pedestal_quality<<"; Pedestal sum = "<<pedestal_sum<<LOG_END;
+                LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 9 Type 9 Event Number = " << type9_eventnumber << ";  CHAN = " << chan  << "; Pedestal quality = " << pedestal_quality<<"; Pedestal sum = "<<pedestal_sum<<LOG_END;
                 
                 // Parse pulse data and add to event hits
                 auto hits = parsePulseData(
