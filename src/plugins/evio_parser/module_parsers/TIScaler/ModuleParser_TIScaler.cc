@@ -27,6 +27,8 @@ void ModuleParser_TIScaler::parse(std::shared_ptr<evio::BaseStructure> data_bloc
     // Get all data words from the block
     std::vector<uint32_t> data_words = data_block->getUIntData();
 
+    uint32_t event_number = 0;
+
     auto* hit = new TIScalerHit();
     hit->rocid = rocid;
     // Sanity check: need at least 1 header word + 12 scaler words
@@ -51,13 +53,24 @@ void ModuleParser_TIScaler::parse(std::shared_ptr<evio::BaseStructure> data_bloc
     hit->ts_input_6               = data_words[8];
     hit->all_triggers_before_busy = data_words[9];
     hit->ts_inputs_before_busy    = data_words[12];
+    hit->ti_event_number          = (static_cast<uint64_t>(data_words[10]) << 16) | static_cast<uint64_t>(data_words[11]);
 
     event_hits->scalers.push_back(hit);
 
     // Event number is encoded as a 48-bit value: high 16 bits then low 32 bits
-    uint64_t event_number = (static_cast<uint64_t>(data_words[10]) << 16)
+/*    uint64_t event_number = (static_cast<uint64_t>(data_words[10]) << 16)
                           | static_cast<uint64_t>(data_words[11]);
-    event->SetEventNumber(static_cast<int>(event_number));
+*/
+
+    event_number = trigger_data.last_event_number;
+
+    event->SetEventNumber(event_number);
+
+//    event->SetEventNumber(static_cast<int>(event_number));
+
+
+    LOG_DEBUG(GetLogger()) << "ModuleParser_TIScaler::DEBUG - ROCID = " << rocid<< "; Get Event Number = " << event->GetEventNumber() << "; TI Event Number = " << trigger_data.last_event_number << LOG_END;
+
     event->addHits(event_hits);
     physics_events.push_back(event);
 }

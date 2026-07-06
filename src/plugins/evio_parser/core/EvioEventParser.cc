@@ -74,10 +74,15 @@ std::vector<std::shared_ptr<evio::BaseStructure>> EvioEventParser::parseTriggerB
     int trigger_bank_rocs_count = static_cast<int>(trigger_bank->getHeader()->getNumber());
     auto trigger_bank_children = trigger_bank->getChildren();
     
-    // Extract event number from the first segment (EB1)
+    // Extract first and last event number from the first segment (EB1)
     auto eb1_segment = trigger_bank_children.at(0);
     std::vector<uint64_t> eb1_data = eb1_segment->getULongData();
     trigger_data.first_event_number = static_cast<uint64_t>(eb1_data[0]);
+
+    size_t total_nevents = eb1_data.size() -1;
+    trigger_data.last_event_number = static_cast<uint32_t>(trigger_data.first_event_number + total_nevents -1);
+
+    LOG_DEBUG(m_logger) << "EvioEventParser::DEBUG - First Event Number = " << trigger_data.first_event_number  << "; Event Length = " << total_nevents << "; Last Event Number = " << trigger_data.last_event_number << LOG_END;
     
     // Collect all ROC segments (UINT32 data type)
     std::vector<std::shared_ptr<evio::BaseStructure>> trigger_bank_rocs_data;

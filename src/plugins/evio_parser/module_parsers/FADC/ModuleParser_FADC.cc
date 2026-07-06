@@ -80,7 +80,7 @@ void ModuleParser_FADC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                 }
                 type2_triggertime = getBitsInRange(d, 21, 12);
                 trigger_num = getBitsInRange(d, 11, 0);
-                LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 2 Type2 trigger time = " << type2_triggertime << "; Trigger number = " << trigger_num << LOG_END;
+                LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 2 Eh Slot = " << eh_slot << "; Type2 trigger time = " << type2_triggertime << "; Trigger number = " << trigger_num << LOG_END;
 
                 // Compute event number and get or create the hits container
                 event_number = trigger_data.first_event_number + event_index;

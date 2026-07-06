@@ -27,7 +27,7 @@ public:
     uint32_t ts_input_6;                // 7 TS input #6
     uint32_t all_triggers_before_busy;  // 8 All trigger sources, before busy
     uint32_t ts_inputs_before_busy;     // 11 Only TS inputs, before busy
-
+    uint32_t ti_event_number;           // Event number obtained from TI
 
     /// Default constructor: initializes all members to zero.
     TIScalerHit()
@@ -44,7 +44,8 @@ public:
           ts_input_5(0),
           ts_input_6(0),
           all_triggers_before_busy(0),
-          ts_inputs_before_busy(0) {}
+          ts_inputs_before_busy(0),
+          ti_event_number(0)  {}
 };
 
 #endif // TISCALERHIT_H

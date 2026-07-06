@@ -48,6 +48,9 @@ void ModuleParser_VFTDC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                 block_slot = getBitsInRange(d, 26, 22);
                 block_board_id = getBitsInRange(d, 21, 18);
                 block_nevents = getBitsInRange(d, 7, 0);
+
+                LOG_DEBUG(GetLogger()) << "ModuleParser_VFTDC::DEBUG - data type 0 Block Slot = " << block_slot  <<  "; Block Board ID = " << block_board_id << "; Block NEvents = " << block_nevents << LOG_END;
+
             } else if (data_type == 1) { // Block trailer              
                 if (block_nevents != 0) {
                     throw JException(
@@ -75,6 +78,9 @@ void ModuleParser_VFTDC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                 if (event_hits_map.find(event_number) == event_hits_map.end()) {
                     event_hits_map[event_number] = std::make_shared<EventHits_VFTDC>();
                 }
+
+                LOG_DEBUG(GetLogger()) << "ModuleParser_VFTDC::DEBUG - data type 2 Event Slot = " << event_slot << LOG_END;
+
             } else if (data_type == 3) { // Trigger time
                 if (block_nevents < 0) {
                     throw JException(
@@ -85,6 +91,9 @@ void ModuleParser_VFTDC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                 auto d2 = data_words[++j];
                 auto timestamp_high = getBitsInRange(d2, 23, 0);
                 event_timestamp = (timestamp_high << 24) | timestamp_low;
+
+                LOG_DEBUG(GetLogger()) << "ModuleParser_VFTDC::DEBUG - data type 3 Timestamp Low = " << timestamp_low << "; Timestamp High = " << timestamp_high << LOG_END;
+
             } else if (data_type == 7) { // Data word
                 if (block_nevents < 0) {
                     throw JException(

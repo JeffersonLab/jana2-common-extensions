@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <JANA/JEventProcessor.h>
+#include "CAEN1190Hit.h"
 #include "EventHits_FADC.h"
 #include "FADCScalerHit.h"
 #include "TIScalerHit.h"
@@ -33,6 +34,7 @@
 struct WaveformTreeRow {
     uint32_t slot;
     uint32_t chan;
+    uint32_t rocid;
     std::vector<uint32_t> waveform;
 };
 
@@ -74,6 +76,7 @@ class JEventProcessor_EVIO : public JEventProcessor {
 
 private:
     // Declare Inputs
+    Input<CAEN1190Hit>                 m_caen1190_hits_in {this};
     Input<FADC250WaveformHit>          m_waveform_hits_in {this}; 
     Input<FADC250PulseHit>             m_pulse_hits_in {this};
     Input<FADCScalerHit>               m_fadc_scaler_hits_in {this};
@@ -108,9 +111,13 @@ private:
     Parameter<std::string> m_txt_output_filename {this, "TXT_OUT_FILENAME", "evio_processor_hits.txt", "Output text file name for event hit summaries", true};
 
     // ROOT Tree variables 
+    //Waveform Tree Variables
     std::vector<uint32_t> ev_slot;
     std::vector<uint32_t> ev_chan;
     std::vector<uint32_t> ev_waveform;
+    std::vector<uint32_t> ev_rocid;
+
+    //Pulse Tree Variables
     uint32_t integral_sum;
     uint32_t coarse_time;
     uint32_t fine_time;
@@ -124,6 +131,20 @@ private:
     std::vector<uint32_t> ev_pulse_peak;
     std::vector<uint32_t> ev_pulse_slot;
     std::vector<uint32_t> ev_pulse_chan;
+    std::vector<uint32_t> ev_pulse_rocid;
+
+    //CAEN Tree Variables
+    std::vector<uint32_t> ev_caen_rocid;
+    std::vector<uint32_t> ev_caen_slot;
+    std::vector<uint32_t> ev_caen_chan;
+    std::vector<uint32_t> ev_caen_measurement;
+    std::vector<uint32_t> ev_caen_opt;
+    std::vector<uint32_t> ev_caen_flags;
+    std::vector<uint32_t> ev_caen_trig_time;
+    std::vector<uint32_t> ev_caen_hdr_chip_id;
+    std::vector<uint32_t> ev_caen_hdr_event_id;
+    std::vector<uint32_t> ev_caen_hdr_bunch_id;
+    std::vector<uint32_t> ev_caen_trl_status;
 
     // helicity decoder tree variables
     HelDec_t heldec{};
@@ -135,6 +156,7 @@ private:
     TTree *m_tree;                            ///< ROOT tree for physics event
     TH1I *m_pulse_integral_hist;              ///< Histogram of pulse integral sums
     TTree *m_pulse_tree;                      ///< ROOT tree for pulse hit
+    TTree *m_caen1190_tree;                     ///< Root tree for CAEN1190 data
     
     // Text output for human-readable dump of hits per event
     std::ofstream m_txt_output_file;

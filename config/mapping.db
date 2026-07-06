@@ -3,6 +3,7 @@
 # At runtime, evio_parser matches the raw EVIO bank id (bank column)
 # and assigns it to the corresponding module id (module column).
 # module  bank
+  1190   1190
   250    250
   250    3
   9250   9250
