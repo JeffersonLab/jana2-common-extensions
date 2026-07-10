@@ -28,7 +28,7 @@ void ModuleParser_FADCScaler::parse(std::shared_ptr<evio::BaseStructure> data_bl
     std::vector<uint32_t> data_words = data_block->getUIntData();
 
     uint32_t event_index = 0;
-    uint32_t event_number = 0;
+    uint64_t event_number = 0;
 
     // One bank can have multiple hits, each with different slot number
     for (size_t i = 0; i < data_words.size(); i++) {

@@ -24,7 +24,7 @@ void EvioEventParser::parse(const JEvent& event, std::vector<PhysicsEvent*>& phy
     auto& children = evio_data_block->getChildren();
 
     // Parse the trigger bank to extract ROC segments and event number
-    TriggerData trigger_data(0);
+    TriggerData trigger_data(0, 0);
     auto trigger_bank_roc_segments = parseTriggerBank(children.at(0), trigger_data);
     
     // Parse the data banks while using the trigger bank ROC segments for validation
@@ -80,7 +80,7 @@ std::vector<std::shared_ptr<evio::BaseStructure>> EvioEventParser::parseTriggerB
     trigger_data.first_event_number = static_cast<uint64_t>(eb1_data[0]);
 
     size_t total_nevents = eb1_data.size() -1;
-    trigger_data.last_event_number = static_cast<uint32_t>(trigger_data.first_event_number + total_nevents -1);
+    trigger_data.last_event_number = static_cast<uint64_t>(trigger_data.first_event_number + total_nevents -1);
 
     LOG_DEBUG(m_logger) << "EvioEventParser::DEBUG - First Event Number = " << trigger_data.first_event_number  << "; Event Length = " << total_nevents << "; Last Event Number = " << trigger_data.last_event_number << LOG_END;
     
