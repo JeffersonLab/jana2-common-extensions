@@ -60,6 +60,15 @@ void ModuleParser_CAEN1190::parse(std::shared_ptr<evio::BaseStructure> data_bloc
                 glb_hdr_event = getBitsInRange(d, 26, 5);
                 glb_hdr_slot = getBitsInRange(d, 4, 0);
 
+                event_number = trigger_data.first_event_number + event_index;
+                event_index++;
+
+                if (event_hits_map.find(event_number) == event_hits_map.end()) {
+                    event_hits_map[event_number] = std::make_shared<EventHits_CAEN1190>();
+                }
+
+
+
                 LOG_DEBUG(GetLogger()) << "ModuleParser_CAEN1190::DEBUG - data type 8 GLB HDR Event = " << glb_hdr_event  <<  "; GLB HDR Slot = " << glb_hdr_slot << LOG_END;
                     
             } else if (data_type == 16) { // Global trailer              
@@ -78,13 +87,6 @@ void ModuleParser_CAEN1190::parse(std::shared_ptr<evio::BaseStructure> data_bloc
 
                 LOG_DEBUG(GetLogger()) << "ModuleParser_CAEN1190::DEBUG - data type 1 HDR Chip ID = " << hdr_chip_id  <<  "; HDR Event ID = " << hdr_event_id << "; HDR Bunch ID = " << hdr_bunch_id << LOG_END;
 
-                // Compute event number and get or create the hits container
-                event_number = trigger_data.first_event_number + event_index;
-                event_index++;
-
-                if (event_hits_map.find(event_number) == event_hits_map.end()) {
-                    event_hits_map[event_number] = std::make_shared<EventHits_CAEN1190>();
-                }
 
             } else if (data_type == 0) { // TDC Measurement
                 opt = getBitsInRange (d, 26, 26);

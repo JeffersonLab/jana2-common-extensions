@@ -165,6 +165,7 @@ void JEventProcessor_EVIO::ProcessSequential(const JEvent &event) {
         ev_caen_hdr_event_id.push_back(caen_hit->hdr_event_id);
         ev_caen_hdr_bunch_id.push_back(caen_hit->hdr_bunch_id);
         ev_caen_trl_status.push_back(caen_hit->glb_trl_status);
+
     }
     m_caen1190_tree->Fill();
 
