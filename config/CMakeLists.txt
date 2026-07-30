@@ -11,3 +11,9 @@ install(FILES ${CONFIGS}
                 GROUP_READ GROUP_EXECUTE
                 WORLD_READ WORLD_EXECUTE
 )
+
+install(
+    DIRECTORY evio_parser/detector_mappings/
+    DESTINATION config/${INSTALL_NAMESPACE}/evio_parser/detector_mappings
+    FILES_MATCHING PATTERN "*.json"
+)
