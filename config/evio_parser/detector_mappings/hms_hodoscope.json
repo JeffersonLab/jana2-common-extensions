@@ -1,10 +1,11 @@
 {
+  "description": "Synthetic mapping for EVIO translation pipeline development",
   "detector": "HMS_HODOSCOPE",
   "channels": [
     {
       "daq": {
         "rocid": 1,
-        "slot": 8,
+        "slot": 3,
         "channel": 0
       },
       "detector_channel": {
