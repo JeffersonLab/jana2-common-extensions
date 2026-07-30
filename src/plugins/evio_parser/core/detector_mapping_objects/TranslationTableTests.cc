@@ -1,8 +1,11 @@
 #include <cassert>
+#include <string>
 
 #include "TranslationTable.h"
 
-int main() {
+int main(int argc, char* argv[]) {
+    assert(argc == 2);
+
     TranslationTable table;
     const DetectorAddress hms_address {
         "HMS_HODOSCOPE",
@@ -17,4 +20,12 @@ int main() {
     assert(*mapped == hms_address);
 
     assert(table.Lookup({1, 8, 1}) == nullptr);
+
+    TranslationTable loaded;
+    loaded.LoadJsonFile(argv[1]);
+
+    const auto* loaded_address = loaded.Lookup({1, 3, 0});
+    assert(loaded_address != nullptr);
+    assert(*loaded_address == hms_address);
+    assert(loaded.Lookup({1, 3, 1}) == nullptr);
 }

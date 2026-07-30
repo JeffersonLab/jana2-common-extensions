@@ -16,6 +16,7 @@ set(INSTALL_NAMESPACE "" CACHE STRING
 find_package(JANA REQUIRED)
 find_package(evio REQUIRED)
 find_package(ROOT REQUIRED COMPONENTS Core RIO Tree Hist)
+find_package(cJSON REQUIRED)
 
 # Add subdirectories
 add_subdirectory(config)

@@ -144,6 +144,14 @@ A `JObject` that wraps a `std::shared_ptr<evio::EvioEvent>` so that JANA2's owne
 
 All parameters can be set on the JANA2 command line with `-P<NAME>=<value>`.
 
+### Detector mappings
+
+Physicist-editable detector mappings live under
+`config/evio_parser/detector_mappings/`. `TranslationTable::LoadJsonFile()`
+loads one file and maps `(rocid, slot, channel)` to a detector name plus
+detector-specific integer fields. Translation remains separate from hardware
+decoding, calibration, and geometry.
+
 ### Bank-to-module mapping
 
 | Parameter | Default | Description |
