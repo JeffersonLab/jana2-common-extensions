@@ -12,7 +12,6 @@ target_link_libraries(core
         services          # Service utilities
         evio::eviocc      # EVIO C++ library for data I/O
         ${JANA_LIBRARY}   # JANA2 framework library
-        cjson
 )
 
 target_include_directories(core
@@ -40,6 +39,6 @@ if(BUILD_TESTING)
     add_test(
         NAME translation_table_tests
         COMMAND translation_table_tests
-            ${CMAKE_SOURCE_DIR}/config/evio_parser/detector_mappings/hms_hodoscope.json
+            ${CMAKE_SOURCE_DIR}/config/evio_parser/detector_mappings/hms_hodoscope.map
     )
 endif()

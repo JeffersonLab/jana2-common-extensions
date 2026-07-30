@@ -15,5 +15,5 @@ install(FILES ${CONFIGS}
 install(
     DIRECTORY evio_parser/detector_mappings/
     DESTINATION config/${INSTALL_NAMESPACE}/evio_parser/detector_mappings
-    FILES_MATCHING PATTERN "*.json"
+    FILES_MATCHING PATTERN "*.map"
 )

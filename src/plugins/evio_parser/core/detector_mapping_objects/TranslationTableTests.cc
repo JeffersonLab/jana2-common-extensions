@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     assert(table.Lookup({1, 8, 1}) == nullptr);
 
     TranslationTable loaded;
-    loaded.LoadJsonFile(argv[1]);
+    loaded.LoadMappingFile(argv[1]);
 
     const auto* loaded_address = loaded.Lookup({1, 3, 0});
     assert(loaded_address != nullptr);
