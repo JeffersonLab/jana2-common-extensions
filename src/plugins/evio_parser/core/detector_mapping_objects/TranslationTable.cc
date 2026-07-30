@@ -1,48 +1,53 @@
 #include "TranslationTable.h"
 
-#include <cjson/cJSON.h>
-
-#include <cmath>
+#include <charconv>
 #include <cstdint>
 #include <fstream>
-#include <limits>
-#include <memory>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace {
 
-using JsonDocument = std::unique_ptr<cJSON, decltype(&cJSON_Delete)>;
-
-const cJSON* RequireObjectItem(const cJSON* object, const char* name, const std::string& path) {
-    const auto* item = cJSON_GetObjectItemCaseSensitive(object, name);
-    if (item == nullptr) {
-        throw std::runtime_error("Missing '" + std::string(name) + "' in detector mapping: " + path);
-    }
-    return item;
+std::runtime_error MappingError(
+    const std::string& path,
+    std::size_t line_number,
+    const std::string& message) {
+    return std::runtime_error(
+        "Invalid detector mapping " + path + ":" + std::to_string(line_number) + ": " + message);
 }
 
-std::string RequireString(const cJSON* object, const char* name, const std::string& path) {
-    const auto* item = RequireObjectItem(object, name, path);
-    if (!cJSON_IsString(item) || item->valuestring == nullptr) {
-        throw std::runtime_error("'" + std::string(name) + "' must be a string in detector mapping: " + path);
+std::vector<std::string> Tokenize(std::string line) {
+    const auto comment = line.find('#');
+    if (comment != std::string::npos) {
+        line.erase(comment);
     }
-    return item->valuestring;
+
+    std::istringstream input(line);
+    std::vector<std::string> tokens;
+    for (std::string token; input >> token;) {
+        tokens.push_back(std::move(token));
+    }
+    return tokens;
 }
 
 template <typename Integer>
-Integer RequireInteger(const cJSON* object, const char* name, const std::string& path) {
-    const auto* item = RequireObjectItem(object, name, path);
-    if (!cJSON_IsNumber(item)
-        || !std::isfinite(item->valuedouble)
-        || std::trunc(item->valuedouble) != item->valuedouble
-        || item->valuedouble < static_cast<double>(std::numeric_limits<Integer>::min())
-        || item->valuedouble > static_cast<double>(std::numeric_limits<Integer>::max())) {
-        throw std::runtime_error("'" + std::string(name) + "' must be an in-range integer in detector mapping: " + path);
+Integer ParseInteger(
+    const std::string& token,
+    const std::string& path,
+    std::size_t line_number) {
+    Integer value {};
+    const auto [end, error] = std::from_chars(
+        token.data(),
+        token.data() + token.size(),
+        value);
+    if (error != std::errc {} || end != token.data() + token.size()) {
+        throw MappingError(path, line_number, "'" + token + "' is not an in-range integer");
     }
-    return static_cast<Integer>(item->valuedouble);
+    return value;
 }
 
 } // namespace
@@ -56,66 +61,83 @@ const DetectorAddress* TranslationTable::Lookup(const DAQAddress& daq) const {
     return entry == m_entries.end() ? nullptr : &entry->second;
 }
 
-void TranslationTable::LoadJsonFile(const std::string& path) {
+void TranslationTable::LoadMappingFile(const std::string& path) {
     std::ifstream input(path);
     if (!input) {
         throw std::runtime_error("Unable to open detector mapping: " + path);
     }
 
-    std::ostringstream buffer;
-    buffer << input.rdbuf();
-    if (!input.good() && !input.eof()) {
-        throw std::runtime_error("Unable to read detector mapping: " + path);
-    }
-
-    const std::string contents = buffer.str();
-    JsonDocument root(
-        cJSON_ParseWithLengthOpts(contents.c_str(), contents.size() + 1, nullptr, true),
-        &cJSON_Delete);
-    if (!root || !cJSON_IsObject(root.get())) {
-        throw std::runtime_error("Invalid detector mapping JSON: " + path);
-    }
-
-    const std::string detector = RequireString(root.get(), "detector", path);
-    const auto* channels = RequireObjectItem(root.get(), "channels", path);
-    if (!cJSON_IsArray(channels)) {
-        throw std::runtime_error("'channels' must be an array in detector mapping: " + path);
-    }
-
+    std::string detector;
+    std::vector<std::string> fields;
     TranslationTable loaded;
-    const cJSON* channel = nullptr;
-    cJSON_ArrayForEach(channel, channels) {
-        if (!cJSON_IsObject(channel)) {
-            throw std::runtime_error("Each channel must be an object in detector mapping: " + path);
+    std::size_t line_number = 0;
+    std::string line;
+
+    while (std::getline(input, line)) {
+        ++line_number;
+        const auto tokens = Tokenize(std::move(line));
+        if (tokens.empty()) {
+            continue;
         }
 
-        const auto* daq = RequireObjectItem(channel, "daq", path);
-        const auto* detector_channel = RequireObjectItem(channel, "detector_channel", path);
-        if (!cJSON_IsObject(daq) || !cJSON_IsObject(detector_channel)) {
-            throw std::runtime_error(
-                "'daq' and 'detector_channel' must be objects in detector mapping: " + path);
+        if (tokens.front() == "detector") {
+            if (tokens.size() != 2 || !detector.empty() || !fields.empty()) {
+                throw MappingError(path, line_number, "expected one 'detector NAME' declaration");
+            }
+            detector = tokens[1];
+            continue;
         }
 
-        DAQAddress daq_address {
-            RequireInteger<std::uint32_t>(daq, "rocid", path),
-            RequireInteger<std::uint32_t>(daq, "slot", path),
-            RequireInteger<std::uint32_t>(daq, "channel", path)
+        if (tokens.front() == "fields") {
+            if (detector.empty() || !fields.empty() || tokens.size() < 2) {
+                throw MappingError(
+                    path,
+                    line_number,
+                    "expected one 'fields NAME [NAME ...]' declaration after detector");
+            }
+
+            std::set<std::string> unique_fields(tokens.begin() + 1, tokens.end());
+            if (unique_fields.size() != tokens.size() - 1) {
+                throw MappingError(path, line_number, "detector field names must be unique");
+            }
+            fields.assign(tokens.begin() + 1, tokens.end());
+            continue;
+        }
+
+        if (detector.empty() || fields.empty()) {
+            throw MappingError(path, line_number, "channel row appears before declarations");
+        }
+        if (tokens.size() != fields.size() + 3) {
+            throw MappingError(
+                path,
+                line_number,
+                "channel row must contain rocid, slot, channel, and one value per detector field");
+        }
+
+        DAQAddress daq {
+            ParseInteger<std::uint32_t>(tokens[0], path, line_number),
+            ParseInteger<std::uint32_t>(tokens[1], path, line_number),
+            ParseInteger<std::uint32_t>(tokens[2], path, line_number)
         };
 
-        DetectorAddress detector_address {detector, {}};
-        const cJSON* field = nullptr;
-        cJSON_ArrayForEach(field, detector_channel) {
-            if (field->string == nullptr) {
-                throw std::runtime_error("Detector channel field has no name in detector mapping: " + path);
-            }
-            detector_address.fields.emplace_back(
-                field->string,
-                RequireInteger<std::int32_t>(detector_channel, field->string, path));
+        DetectorAddress address {detector, {}};
+        address.fields.reserve(fields.size());
+        for (std::size_t index = 0; index < fields.size(); ++index) {
+            address.fields.emplace_back(
+                fields[index],
+                ParseInteger<std::int32_t>(tokens[index + 3], path, line_number));
         }
 
-        if (!loaded.Insert(std::move(daq_address), std::move(detector_address))) {
-            throw std::runtime_error("Duplicate DAQ address in detector mapping: " + path);
+        if (!loaded.Insert(std::move(daq), std::move(address))) {
+            throw MappingError(path, line_number, "duplicate DAQ address");
         }
+    }
+
+    if (!input.eof()) {
+        throw std::runtime_error("Unable to read detector mapping: " + path);
+    }
+    if (detector.empty() || fields.empty()) {
+        throw MappingError(path, line_number, "missing detector or fields declaration");
     }
 
     TranslationTable combined = *this;

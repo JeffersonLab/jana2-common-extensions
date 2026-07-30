@@ -1,0 +1,6 @@
+# Synthetic mapping for EVIO translation pipeline development
+detector HMS_HODOSCOPE
+fields plane bar signal
+
+# rocid slot channel plane bar signal
+1 3 0 1 1 0

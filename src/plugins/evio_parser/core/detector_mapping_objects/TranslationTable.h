@@ -12,7 +12,7 @@ public:
 
     const DetectorAddress* Lookup(const DAQAddress& daq) const;
 
-    void LoadJsonFile(const std::string& path);
+    void LoadMappingFile(const std::string& path);
 
 private:
     std::map<DAQAddress, DetectorAddress> m_entries;

@@ -147,7 +147,7 @@ All parameters can be set on the JANA2 command line with `-P<NAME>=<value>`.
 ### Detector mappings
 
 Physicist-editable detector mappings live under
-`config/evio_parser/detector_mappings/`. `TranslationTable::LoadJsonFile()`
+`config/evio_parser/detector_mappings/`. `TranslationTable::LoadMappingFile()`
 loads one file and maps `(rocid, slot, channel)` to a detector name plus
 detector-specific integer fields. Translation remains separate from hardware
 decoding, calibration, and geometry.
