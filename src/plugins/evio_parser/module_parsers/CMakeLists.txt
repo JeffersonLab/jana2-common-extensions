@@ -8,6 +8,7 @@ add_subdirectory(FADC)
 add_subdirectory(FADCScaler)
 add_subdirectory(TIScaler)
 add_subdirectory(helicity_decoder)
+add_subdirectory(HelicityScaler)
 add_subdirectory(MPD)
 add_subdirectory(VFTDC)
 
@@ -21,6 +22,7 @@ set(MODULE_PARSERS_LIBS
     tiscaler_parser
     mpd_parser
     helicity_decoder_parsers
+    helicity_scaler_parser
     vftdc_parser
     PARENT_SCOPE
 )
@@ -34,6 +36,7 @@ set(MODULE_PARSERS_INCLUDE_DIRS
     ${TISCALER_INCLUDE_DIR}
     ${MPD_INCLUDE_DIR}
     ${HELDEC_INCLUDE_DIR}
+    ${HELICITY_SCALER_INCLUDE_DIR}
     ${VFTDC_INCLUDE_DIR}
     PARENT_SCOPE
 )
@@ -47,6 +50,7 @@ set(MODULE_PARSERS_HEADERS
     ${TISCALER_PUBLIC_HEADERS}
     ${MPD_PUBLIC_HEADERS}
     ${HELDEC_PUBLIC_HEADERS}
+    ${HELICITY_SCALER_PUBLIC_HEADERS}
     ${VFTDC_PUBLIC_HEADERS}
     PARENT_SCOPE
 )

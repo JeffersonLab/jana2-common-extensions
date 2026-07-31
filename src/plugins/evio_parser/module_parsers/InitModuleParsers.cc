@@ -10,6 +10,7 @@
 #include "ModuleParser_FADCScaler.h"
 #include "ModuleParser_TIScaler.h"
 #include "ModuleParser_HelicityDecoder.h"
+#include "ModuleParser_HelicityScaler.h"
 #include "ModuleParser_MPD.h"
 #include "ModuleParser_VFTDC.h"
 
@@ -24,6 +25,7 @@ void InitModuleParsers(JApplication* app) {
     module_parsers_svc->addParser(9250,  new ModuleParser_FADCScaler());
     module_parsers_svc->addParser(9001,  new ModuleParser_TIScaler());
     module_parsers_svc->addParser(0xdec, new ModuleParser_HelicityDecoder());
+    module_parsers_svc->addParser(3820,  new ModuleParser_HelicityScaler());
     module_parsers_svc->addParser(3561,  new ModuleParser_MPD());
     module_parsers_svc->addParser(9,     new ModuleParser_VFTDC());
 }
