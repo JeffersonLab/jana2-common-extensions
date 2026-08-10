@@ -13,6 +13,8 @@ calibrate measurements, or provide detector geometry.
 2. The service publishes it as `shared_ptr<const TranslationTable>`.
 3. Factories acquire the table for a run and perform immutable DAQ-address
    lookups while processing events.
+4. One central detector DigiHit factory scans each raw-hit collection once,
+   translates each hit once, and routes it to a typed detector output.
 
 ## Expected Behavior
 
@@ -26,6 +28,12 @@ calibrate measurements, or provide detector geometry.
 - Until run-range selection is added, every run receives the same table
   instance.
 - Mapping changes are expected only between runs.
+- The translation factory uses the lightweight-data-model `JFactory` syntax.
+- Unmapped channels and channels belonging to other detectors are skipped.
+- DigiHits contain copied digitized FADC values; consumers do not need to
+  traverse back to raw hits for normal use.
+- The current single detector output reserves capacity from the FADC pulse
+  count before routing to avoid repeated vector reallocations.
 
 ## Failure Behavior
 
@@ -38,6 +46,7 @@ out of range, or a DAQ address is duplicated within or across files.
 - `config/evio_parser/detector_mappings/`
 - `src/plugins/evio_parser/core/detector_mapping_objects/`
 - `src/plugins/evio_parser/services/TranslationTableService.*`
+- `src/plugins/evio_parser/factories/detector_digi_hits/`
 
 ## Verification
 
@@ -48,3 +57,6 @@ unknown-address lookup.
 The `translation_table_service_tests` CTest verifies that the service loads
 multiple detector files into one immutable table and currently reuses it for
 different run numbers.
+
+The `detector_digi_hit_tests` CTest verifies conversion of detector
+coordinates and uncalibrated FADC pulse values into a typed DigiHit.

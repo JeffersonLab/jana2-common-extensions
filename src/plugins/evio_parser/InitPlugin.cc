@@ -1,6 +1,7 @@
 
 #include <JANA/JApplication.h>           // Core JANA2 application framework
 #include <JANA/JEventSourceGeneratorT.h>     // Event source generator template
+#include <JANA/JFactoryGenerator.h>          // Lightweight-data-model factory generator
 #include <JANA/JEventProcessor.h>            // Event processor
 
 // Experiment specific components
@@ -10,6 +11,7 @@
 #include "JEventService_BankToModuleMap.h"   // Service for mapping bank IDs to module IDs
 #include "JEventService_ModuleParsersMap.h"   // Service for mapping module IDs to parser implementations
 #include "TranslationTableService.h"          // Run-specific detector translation tables
+#include "DetectorDigiHit_factory.h"           // Central detector DigiHit routing
 
 // Module parsers registration function
 void InitModuleParsers(JApplication* app);
@@ -32,6 +34,7 @@ extern "C" {
         app->Add(new JEventSourceGeneratorT<JEventSource_EVIO>());
         app->Add(new JEventUnfolder_EVIO());
         app->Add(new JEventProcessor_Passthrough());
+        app->Add(new JFactoryGeneratorT<DetectorDigiHit_factory>());
 
         // Register services
         auto filter_svc       = std::make_shared<JEventService_FilterDB>();
