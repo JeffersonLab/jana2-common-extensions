@@ -59,6 +59,7 @@ Downstream JEventProcessors  (e.g. evio_processor)
 | `JEventService_FilterDB` | `services/JEventService_FilterDB.cc/.h` | Optional allow-list; gates which ROC IDs and bank tags are decoded |
 | `TranslationTableService` | `services/TranslationTableService.cc/.h` | Publishes the configured DAQ-to-detector table as immutable run-specific data |
 | `DetectorDigiHit_factory` | `factories/detector_digi_hits/` | Scans raw hits once and routes translations into typed, uncalibrated detector DigiHits |
+| Detector translators | `detector_translators/` | Own detector-specific DigiHit types and raw-hit conversion logic |
 
 ## Directory Structure
 
@@ -82,6 +83,9 @@ src/plugins/evio_parser/
 │   ├── JEventService_FilterDB.cc/.h
 │   ├── JEventService_ModuleParsersMap.h
 │   └── TranslationTableService.cc/.h
+│
+├── detector_translators/          # Detector-owned DigiHit types and conversion logic
+│   └── HMSHodoscope/
 │
 ├── factories/                     # Detector-specific DigiHit reconstruction
 │   └── detector_digi_hits/

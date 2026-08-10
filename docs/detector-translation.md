@@ -46,6 +46,7 @@ out of range, or a DAQ address is duplicated within or across files.
 - `config/evio_parser/detector_mappings/`
 - `src/plugins/evio_parser/core/detector_mapping_objects/`
 - `src/plugins/evio_parser/services/TranslationTableService.*`
+- `src/plugins/evio_parser/detector_translators/`
 - `src/plugins/evio_parser/factories/detector_digi_hits/`
 
 ## Verification
@@ -58,5 +59,5 @@ The `translation_table_service_tests` CTest verifies that the service loads
 multiple detector files into one immutable table and currently reuses it for
 different run numbers.
 
-The `detector_digi_hit_tests` CTest verifies conversion of detector
-coordinates and uncalibrated FADC pulse values into a typed DigiHit.
+The `hms_hodoscope_translator_tests` CTest verifies conversion of detector
+coordinates and uncalibrated FADC pulse values into the typed HMS DigiHit.
