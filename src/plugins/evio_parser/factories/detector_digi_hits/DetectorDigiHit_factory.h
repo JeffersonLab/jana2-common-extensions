@@ -8,10 +8,6 @@
 #include "HMSHodoscopeDigiHit.h"
 #include "TranslationTableService.h"
 
-HMSHodoscopeDigiHit MakeHMSHodoscopeDigiHit(
-    const FADC250PulseHit& pulse,
-    const DetectorAddress& address);
-
 class DetectorDigiHit_factory : public JFactory {
 public:
     DetectorDigiHit_factory();

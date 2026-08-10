@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include "DetectorDigiHit_factory.h"
+#include "HMSHodoscopeTranslator.h"
 
 int main() {
     FADC250PulseHit pulse(12, 34, 56, 1, 3, 250, 0, 7, 80);
