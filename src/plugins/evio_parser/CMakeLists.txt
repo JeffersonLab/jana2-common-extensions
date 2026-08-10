@@ -3,7 +3,9 @@
 #
 
 # Build sub-libraries first (sets CORE_INCLUDE_DIR, CORE_PUBLIC_HEADERS,
-# MODULE_PARSERS_INCLUDE_DIRS, MODULE_PARSERS_HEADERS, MODULE_PARSERS_LIBS in this scope)
+# SERVICES_INCLUDE_DIR, SERVICES_PUBLIC_HEADERS, MODULE_PARSERS_INCLUDE_DIRS,
+# MODULE_PARSERS_HEADERS, MODULE_PARSERS_LIBS in this scope)
+add_subdirectory(core/detector_mapping_objects)
 add_subdirectory(services)
 add_subdirectory(core)
 add_subdirectory(module_parsers)
@@ -16,6 +18,7 @@ add_jana_plugin(evio_parser
         module_parsers/InitModuleParsers.cc
     PUBLIC_HEADER
         ${CORE_PUBLIC_HEADERS}
+        ${SERVICES_PUBLIC_HEADERS}
         ${MODULE_PARSERS_HEADERS}
 )
 
@@ -39,7 +42,7 @@ target_link_libraries(evio_parser
 
 add_library(evio_parser_data_types INTERFACE)
 
-foreach(_dir IN LISTS CORE_INCLUDE_DIR MODULE_PARSERS_INCLUDE_DIRS)
+foreach(_dir IN LISTS CORE_INCLUDE_DIR SERVICES_INCLUDE_DIR MODULE_PARSERS_INCLUDE_DIRS)
     target_include_directories(evio_parser_data_types INTERFACE
         $<BUILD_INTERFACE:${_dir}>
     )

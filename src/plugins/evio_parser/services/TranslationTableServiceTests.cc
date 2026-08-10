@@ -1,0 +1,33 @@
+#include <cassert>
+#include <cstdint>
+
+#include "TranslationTableService.h"
+
+int main(int argc, char* argv[]) {
+    assert(argc == 2);
+
+    TranslationTableService service(argv[1]);
+    service.Init();
+
+    const auto first_run = service.GetTable(100);
+    const auto second_run = service.GetTable(200);
+
+    assert(first_run != nullptr);
+    assert(first_run == second_run);
+
+    const DetectorAddress expected_hms {
+        "HMS_HODOSCOPE",
+        {{"plane", 1}, {"bar", 1}, {"signal", 0}}
+    };
+    const auto* hms_address = first_run->Lookup({1, 3, 0});
+    assert(hms_address != nullptr);
+    assert(*hms_address == expected_hms);
+
+    const DetectorAddress expected_bcal {
+        "BCAL",
+        {{"module", 2}, {"layer", 3}, {"sector", 4}, {"end", 0}}
+    };
+    const auto* bcal_address = first_run->Lookup({2, 4, 1});
+    assert(bcal_address != nullptr);
+    assert(*bcal_address == expected_bcal);
+}

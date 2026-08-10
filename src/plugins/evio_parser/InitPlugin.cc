@@ -9,6 +9,7 @@
 #include "JEventService_FilterDB.h"         // Service for ROC/bank filtering
 #include "JEventService_BankToModuleMap.h"   // Service for mapping bank IDs to module IDs
 #include "JEventService_ModuleParsersMap.h"   // Service for mapping module IDs to parser implementations
+#include "TranslationTableService.h"          // Run-specific detector translation tables
 
 // Module parsers registration function
 void InitModuleParsers(JApplication* app);
@@ -36,10 +37,12 @@ extern "C" {
         auto filter_svc       = std::make_shared<JEventService_FilterDB>();
         auto bank_to_module_svc = std::make_shared<JEventService_BankToModuleMap>();
         auto module_parsers_svc = std::make_shared<JEventService_ModuleParsersMap>();
+        auto translation_table_svc = std::make_shared<TranslationTableService>();
 
         app->ProvideService(filter_svc);
         app->ProvideService(bank_to_module_svc);
         app->ProvideService(module_parsers_svc);
+        app->ProvideService(translation_table_svc);
 
         // Initialize module parsers
         InitModuleParsers(app);
