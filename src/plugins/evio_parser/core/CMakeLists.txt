@@ -4,11 +4,11 @@
 
 add_library(core STATIC
     EvioEventParser.cc
-    detector_mapping_objects/TranslationTable.cc
 )
 
 target_link_libraries(core
     PUBLIC
+        detector_mapping  # Immutable DAQ-to-detector translation table
         services          # Service utilities
         evio::eviocc      # EVIO C++ library for data I/O
         ${JANA_LIBRARY}   # JANA2 framework library

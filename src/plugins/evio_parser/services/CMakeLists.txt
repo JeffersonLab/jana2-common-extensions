@@ -4,18 +4,40 @@
 
 add_library(services STATIC
     JEventService_FilterDB.cc
+    TranslationTableService.cc
 )
 
 target_include_directories(services
-    INTERFACE
+    PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}    # Expose services/ headers
-    PRIVATE
         ${JANA_INCLUDE_DIRS}           # JANA2 headers
 )
 
 target_link_libraries(services
-    PRIVATE
-        ${JANA_LIBRARY}                # JANA2 framework library
     PUBLIC
+        ${JANA_LIBRARY}                # JANA2 framework library
+        detector_mapping                 # TranslationTable
         jce_config                     # Provides jce_config_paths.h to services and their consumers
 )
+
+set(SERVICES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+
+file(GLOB SERVICES_PUBLIC_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+)
+
+set(SERVICES_PUBLIC_HEADERS ${SERVICES_PUBLIC_HEADERS} PARENT_SCOPE)
+
+if(BUILD_TESTING)
+    add_executable(translation_table_service_tests
+        TranslationTableServiceTests.cc
+    )
+    target_link_libraries(translation_table_service_tests
+        PRIVATE services
+    )
+    add_test(
+        NAME translation_table_service_tests
+        COMMAND translation_table_service_tests
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/detector_mappings
+    )
+endif()

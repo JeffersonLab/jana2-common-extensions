@@ -55,6 +55,7 @@ Downstream JEventProcessors  (e.g. evio_processor)
 | `JEventService_BankToModuleMap` | `services/JEventService_BankToModuleMap.h` | Loads `mapping.db`; resolves EVIO bank tag → module ID |
 | `JEventService_ModuleParsersMap` | `services/JEventService_ModuleParsersMap.h` | Registry of `ModuleParser*` instances keyed by module ID |
 | `JEventService_FilterDB` | `services/JEventService_FilterDB.cc/.h` | Optional allow-list; gates which ROC IDs and bank tags are decoded |
+| `TranslationTableService` | `services/TranslationTableService.cc/.h` | Publishes the configured DAQ-to-detector table as immutable run-specific data |
 
 ## Directory Structure
 
@@ -76,7 +77,8 @@ src/plugins/evio_parser/
 ├── services/                      # JANA2 services (singletons shared across threads)
 │   ├── JEventService_BankToModuleMap.h
 │   ├── JEventService_FilterDB.cc/.h
-│   └── JEventService_ModuleParsersMap.h
+│   ├── JEventService_ModuleParsersMap.h
+│   └── TranslationTableService.cc/.h
 │
 └── module_parsers/                  # Hardware-specific parsers (extend here)
     ├── CMakeLists.txt             # Aggregates MODULE_PARSERS_LIBS for the main build
@@ -151,6 +153,15 @@ Physicist-editable detector mappings live under
 loads one file and maps `(rocid, slot, channel)` to a detector name plus
 detector-specific integer fields. Translation remains separate from hardware
 decoding, calibration, and geometry.
+
+`TranslationTableService` publishes the loaded mapping as an immutable table.
+Factories request it by run number; until run-range selection is implemented,
+all runs receive the table built from every `*.map` file in
+`TRANSLATION:DIRECTORY`.
+
+| Parameter | Default | Description |
+|---|---|---|
+| `TRANSLATION:DIRECTORY` | `<install_prefix>/config/evio_parser/detector_mappings` | Directory of detector mappings loaded for all runs |
 
 ### Bank-to-module mapping
 
