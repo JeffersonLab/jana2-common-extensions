@@ -6,7 +6,9 @@ The `evio_parser` plugin is the **data-ingestion layer** of the jana2-common-ext
 2. Decoding hardware-specific banks (FADC250, MPD, VFTDC, scalers, helicity decoder, …) into strongly-typed C++ hit objects.
 3. Splitting EVIO block-level events into individual physics-level child events that downstream processors can consume.
 
-It is **hardware-agnostic at its core** — all detector-specific logic lives in `module_parsers/` and is registered at plugin initialisation time, so adding support for a new module requires no changes to the framework code.
+It is **hardware-agnostic at its core**. Hardware decoding lives in
+`module_parsers/`, while detector-specific DigiHit creation lives in
+`factories/`; both remain outside the generic parser core.
 
 ---
 
@@ -56,6 +58,7 @@ Downstream JEventProcessors  (e.g. evio_processor)
 | `JEventService_ModuleParsersMap` | `services/JEventService_ModuleParsersMap.h` | Registry of `ModuleParser*` instances keyed by module ID |
 | `JEventService_FilterDB` | `services/JEventService_FilterDB.cc/.h` | Optional allow-list; gates which ROC IDs and bank tags are decoded |
 | `TranslationTableService` | `services/TranslationTableService.cc/.h` | Publishes the configured DAQ-to-detector table as immutable run-specific data |
+| `DetectorDigiHit_factory` | `factories/detector_digi_hits/` | Scans raw hits once and routes translations into typed, uncalibrated detector DigiHits |
 
 ## Directory Structure
 
@@ -80,7 +83,10 @@ src/plugins/evio_parser/
 │   ├── JEventService_ModuleParsersMap.h
 │   └── TranslationTableService.cc/.h
 │
-└── module_parsers/                  # Hardware-specific parsers (extend here)
+├── factories/                     # Detector-specific DigiHit reconstruction
+│   └── detector_digi_hits/
+│
+└── module_parsers/                # Hardware-specific parsers (extend here)
     ├── CMakeLists.txt             # Aggregates MODULE_PARSERS_LIBS for the main build
     ├── InitModuleParsers.cc       # Central module parser registration function
     ├── FADC/                      # FADC250 waveform + pulse parser
@@ -162,6 +168,12 @@ all runs receive the table built from every `*.map` file in
 | Parameter | Default | Description |
 |---|---|---|
 | `TRANSLATION:DIRECTORY` | `<install_prefix>/config/evio_parser/detector_mappings` | Directory of detector mappings loaded for all runs |
+
+`DetectorDigiHit_factory` follows JANA's lightweight-data-model `JFactory`
+syntax. It acquires the immutable table in `ChangeRun()`, scans each raw-hit
+collection once during parallel event processing, and routes hits directly to
+typed, uncalibrated detector outputs. The first supported route is from FADC
+pulse hits to `HMSHodoscopeDigiHit`; unmapped and non-HMS channels are ignored.
 
 ### Bank-to-module mapping
 

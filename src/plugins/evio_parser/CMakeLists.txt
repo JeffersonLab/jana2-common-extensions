@@ -4,11 +4,13 @@
 
 # Build sub-libraries first (sets CORE_INCLUDE_DIR, CORE_PUBLIC_HEADERS,
 # SERVICES_INCLUDE_DIR, SERVICES_PUBLIC_HEADERS, MODULE_PARSERS_INCLUDE_DIRS,
-# MODULE_PARSERS_HEADERS, MODULE_PARSERS_LIBS in this scope)
+# MODULE_PARSERS_HEADERS, MODULE_PARSERS_LIBS, FACTORIES_INCLUDE_DIRS,
+# FACTORIES_HEADERS, FACTORIES_LIBS in this scope)
 add_subdirectory(core/detector_mapping_objects)
 add_subdirectory(services)
 add_subdirectory(core)
 add_subdirectory(module_parsers)
+add_subdirectory(factories)
 
 # Build the JANA2 plugin (shared library loaded at runtime via -Pplugins=evio_parser)
 add_jana_plugin(evio_parser
@@ -20,6 +22,7 @@ add_jana_plugin(evio_parser
         ${CORE_PUBLIC_HEADERS}
         ${SERVICES_PUBLIC_HEADERS}
         ${MODULE_PARSERS_HEADERS}
+        ${FACTORIES_HEADERS}
 )
 
 target_link_libraries(evio_parser
@@ -29,6 +32,7 @@ target_link_libraries(evio_parser
         core                # EvioEventParser + core data objects
         services            # JEventService_FilterDB, BankToModuleMap, ModuleParsersMap
         ${MODULE_PARSERS_LIBS} # fadc_parser, fadc_scaler_parser, tiscaler_parser, ...
+        ${FACTORIES_LIBS}    # Detector-specific DigiHit factories
 )
 
 # ── Exportable INTERFACE target ────────────────────────────────────────────────
@@ -42,7 +46,7 @@ target_link_libraries(evio_parser
 
 add_library(evio_parser_data_types INTERFACE)
 
-foreach(_dir IN LISTS CORE_INCLUDE_DIR SERVICES_INCLUDE_DIR MODULE_PARSERS_INCLUDE_DIRS)
+foreach(_dir IN LISTS CORE_INCLUDE_DIR SERVICES_INCLUDE_DIR MODULE_PARSERS_INCLUDE_DIRS FACTORIES_INCLUDE_DIRS)
     target_include_directories(evio_parser_data_types INTERFACE
         $<BUILD_INTERFACE:${_dir}>
     )
