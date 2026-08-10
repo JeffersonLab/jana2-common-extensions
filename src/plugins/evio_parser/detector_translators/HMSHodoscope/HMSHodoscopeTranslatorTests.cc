@@ -1,5 +1,7 @@
 #include <cassert>
 
+#include <JANA/JEvent.h>
+
 #include "HMSHodoscopeTranslator.h"
 
 int main() {
@@ -17,7 +19,7 @@ int main() {
         {{"plane", 1}, {"bar", 2}, {"signal", 0}}
     };
 
-    const auto hit = MakeHMSHodoscopeDigiHit(pulse, address);
+    const auto hit = makeHMSHodoscopeDigiHit(pulse, address);
     assert(hit.plane == 1);
     assert(hit.bar == 2);
     assert(hit.signal == 0);
@@ -37,4 +39,10 @@ int main() {
     assert(hit.fine_time == 11);
     assert(hit.pulse_peak == 120);
     assert(hit.time_quality == 2);
+
+    JEvent event;
+    translateHMSHodoscopeFADCHit(pulse, address, event);
+    const auto inserted_hits = event.Get<HMSHodoscopeDigiHit>();
+    assert(inserted_hits.size() == 1);
+    assert(inserted_hits.front()->integral_sum == 10430);
 }

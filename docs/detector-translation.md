@@ -11,10 +11,11 @@ calibrate measurements, or provide detector geometry.
 1. `TranslationTableService` loads every `*.map` file from the configured
    detector mapping directory.
 2. The service publishes it as `shared_ptr<const TranslationTable>`.
-3. Factories acquire the table for a run and perform immutable DAQ-address
-   lookups while processing events.
-4. One central detector DigiHit factory scans each raw-hit collection once,
-   translates each hit once, and routes it to a typed detector output.
+3. One central event processor acquires the table for each event, scans each
+   raw-hit collection once, and performs one immutable lookup per hit.
+4. `JEventService_DetectorTranslatorsMap` selects a translator by raw-hit C++
+   type and detector name.
+5. The translator inserts its concrete typed DigiHit into the current event.
 
 ## Expected Behavior
 
@@ -28,12 +29,17 @@ calibrate measurements, or provide detector geometry.
 - Until run-range selection is added, every run receives the same table
   instance.
 - Mapping changes are expected only between runs.
-- The translation factory uses the lightweight-data-model `JFactory` syntax.
+- Translation runs in the processor's parallel event callback.
+- The processor is registered by `evio_parser` and inserts DigiHits before
+  downstream processors consume the physics event.
 - Unmapped channels and channels belonging to other detectors are skipped.
+- Routes are keyed by raw-hit C++ type and detector name.
+- Duplicate route keys fail during plugin initialization; the registry is
+  immutable during event processing.
+- A mapped detector without a registered route for that raw-hit type is
+  skipped.
 - DigiHits contain copied digitized FADC values; consumers do not need to
   traverse back to raw hits for normal use.
-- The current single detector output reserves capacity from the FADC pulse
-  count before routing to avoid repeated vector reallocations.
 
 ## Failure Behavior
 
@@ -46,8 +52,9 @@ out of range, or a DAQ address is duplicated within or across files.
 - `config/evio_parser/detector_mappings/`
 - `src/plugins/evio_parser/core/detector_mapping_objects/`
 - `src/plugins/evio_parser/services/TranslationTableService.*`
+- `src/plugins/evio_parser/services/JEventService_DetectorTranslatorsMap.h`
 - `src/plugins/evio_parser/detector_translators/`
-- `src/plugins/evio_parser/factories/detector_digi_hits/`
+- `src/plugins/evio_parser/processors/detector_digi_hits/`
 
 ## Verification
 
@@ -60,4 +67,8 @@ multiple detector files into one immutable table and currently reuses it for
 different run numbers.
 
 The `hms_hodoscope_translator_tests` CTest verifies conversion of detector
-coordinates and uncalibrated FADC pulse values into the typed HMS DigiHit.
+coordinates and uncalibrated FADC pulse values and typed insertion into a
+`JEvent`.
+
+The `detector_translators_map_tests` CTest verifies duplicate-route rejection
+and registry immutability after initialization.
