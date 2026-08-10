@@ -29,6 +29,15 @@ file(GLOB SERVICES_PUBLIC_HEADERS
 set(SERVICES_PUBLIC_HEADERS ${SERVICES_PUBLIC_HEADERS} PARENT_SCOPE)
 
 if(BUILD_TESTING)
+    add_executable(detector_translators_map_tests
+        JEventService_DetectorTranslatorsMapTests.cc
+    )
+    target_link_libraries(detector_translators_map_tests PRIVATE services)
+    add_test(
+        NAME detector_translators_map_tests
+        COMMAND detector_translators_map_tests
+    )
+
     add_executable(translation_table_service_tests
         TranslationTableServiceTests.cc
     )

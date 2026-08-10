@@ -8,7 +8,8 @@ The `evio_parser` plugin is the **data-ingestion layer** of the jana2-common-ext
 
 It is **hardware-agnostic at its core**. Hardware decoding lives in
 `module_parsers/`, while detector-specific DigiHit creation lives in
-`factories/`; both remain outside the generic parser core.
+`detector_translators/` and `processors/`; all remain outside the generic
+parser core.
 
 ---
 
@@ -58,7 +59,8 @@ Downstream JEventProcessors  (e.g. evio_processor)
 | `JEventService_ModuleParsersMap` | `services/JEventService_ModuleParsersMap.h` | Registry of `ModuleParser*` instances keyed by module ID |
 | `JEventService_FilterDB` | `services/JEventService_FilterDB.cc/.h` | Optional allow-list; gates which ROC IDs and bank tags are decoded |
 | `TranslationTableService` | `services/TranslationTableService.cc/.h` | Publishes the configured DAQ-to-detector table as immutable run-specific data |
-| `DetectorDigiHit_factory` | `factories/detector_digi_hits/` | Scans raw hits once and routes translations into typed, uncalibrated detector DigiHits |
+| `JEventService_DetectorTranslatorsMap` | `services/JEventService_DetectorTranslatorsMap.h` | Publishes immutable detector-name-to-function maps by raw-hit type |
+| `JEventProcessor_DetectorDigiHits` | `processors/detector_digi_hits/` | Scans raw hits once and dispatches typed, uncalibrated detector DigiHits |
 | Detector translators | `detector_translators/` | Own detector-specific DigiHit types and raw-hit conversion logic |
 
 ## Directory Structure
@@ -87,7 +89,7 @@ src/plugins/evio_parser/
 ├── detector_translators/          # Detector-owned DigiHit types and conversion logic
 │   └── HMSHodoscope/
 │
-├── factories/                     # Detector-specific DigiHit reconstruction
+├── processors/                    # Parallel detector DigiHit translation
 │   └── detector_digi_hits/
 │
 └── module_parsers/                # Hardware-specific parsers (extend here)
@@ -173,11 +175,14 @@ all runs receive the table built from every `*.map` file in
 |---|---|---|
 | `TRANSLATION:DIRECTORY` | `<install_prefix>/config/evio_parser/detector_mappings` | Directory of detector mappings loaded for all runs |
 
-`DetectorDigiHit_factory` follows JANA's lightweight-data-model `JFactory`
-syntax. It acquires the immutable table in `ChangeRun()`, scans each raw-hit
-collection once during parallel event processing, and routes hits directly to
-typed, uncalibrated detector outputs. The first supported route is from FADC
-pulse hits to `HMSHodoscopeDigiHit`; unmapped and non-HMS channels are ignored.
+`JEventProcessor_DetectorDigiHits` scans each raw-hit collection once in
+`ProcessParallel()` and routes hits directly to typed, uncalibrated detector
+outputs. The first supported route is from FADC pulse hits to
+`HMSHodoscopeDigiHit`; unmapped and non-HMS channels are ignored.
+Detector routes are registered through `InitDetectorTranslators()` and
+`JEventService_DetectorTranslatorsMap`, so the central event loop does not call
+detector-specific conversion functions directly. Each translator inserts its
+concrete DigiHit type into the current event using the default empty tag.
 
 ### Bank-to-module mapping
 

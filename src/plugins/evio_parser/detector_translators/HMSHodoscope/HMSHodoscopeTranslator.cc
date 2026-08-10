@@ -1,5 +1,6 @@
 #include "HMSHodoscopeTranslator.h"
 
+#include <JANA/JEvent.h>
 #include <JANA/JException.h>
 
 #include <cstdint>
@@ -7,7 +8,7 @@
 
 namespace {
 
-std::int32_t RequireField(const DetectorAddress& address, const std::string& name) {
+std::int32_t requireField(const DetectorAddress& address, const std::string& name) {
     for (const auto& [field_name, value] : address.fields) {
         if (field_name == name) {
             return value;
@@ -20,7 +21,7 @@ std::int32_t RequireField(const DetectorAddress& address, const std::string& nam
 
 } // namespace
 
-HMSHodoscopeDigiHit MakeHMSHodoscopeDigiHit(
+HMSHodoscopeDigiHit makeHMSHodoscopeDigiHit(
     const FADC250PulseHit& pulse,
     const DetectorAddress& address) {
     if (address.detector != "HMS_HODOSCOPE") {
@@ -30,9 +31,9 @@ HMSHodoscopeDigiHit MakeHMSHodoscopeDigiHit(
     }
 
     return {
-        RequireField(address, "plane"),
-        RequireField(address, "bar"),
-        RequireField(address, "signal"),
+        requireField(address, "plane"),
+        requireField(address, "bar"),
+        requireField(address, "signal"),
         pulse.trigger_num,
         pulse.timestamp1,
         pulse.timestamp2,
@@ -50,4 +51,12 @@ HMSHodoscopeDigiHit MakeHMSHodoscopeDigiHit(
         pulse.pulse_peak,
         pulse.time_quality
     };
+}
+
+void translateHMSHodoscopeFADCHit(
+    const FADC250PulseHit& pulse,
+    const DetectorAddress& address,
+    const JEvent& event) {
+    event.Insert(new HMSHodoscopeDigiHit(
+        makeHMSHodoscopeDigiHit(pulse, address)));
 }
