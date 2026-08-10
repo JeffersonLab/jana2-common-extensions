@@ -9,6 +9,7 @@ JEventProcessor_DetectorTranslationTest::
 JEventProcessor_DetectorTranslationTest() {
     SetTypeName("JEventProcessor_DetectorTranslationTest");
     SetPrefix("detector_translation_test");
+    SetCallbackStyle(CallbackStyle::ExpertMode);
 }
 
 void JEventProcessor_DetectorTranslationTest::Init() {

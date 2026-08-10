@@ -5,6 +5,7 @@
 JEventProcessor_DetectorDigiHits::JEventProcessor_DetectorDigiHits() {
     SetTypeName("JEventProcessor_DetectorDigiHits");
     SetPrefix("detector_digi_hits");
+    SetCallbackStyle(CallbackStyle::ExpertMode);
 }
 
 void JEventProcessor_DetectorDigiHits::ProcessParallel(const JEvent& event) {
