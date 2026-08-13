@@ -11,11 +11,15 @@ calibrate measurements, or provide detector geometry.
 1. `JEventService_TranslationTable` loads every `*.map` file from the configured
    detector mapping directory.
 2. The service publishes it as `shared_ptr<const TranslationTable>`.
-3. One central event processor acquires the table for each event, scans each
-   raw-hit collection once, and performs one immutable lookup per hit.
-4. `JEventService_DetectorTranslatorsMap` selects a translator by raw-hit C++
+3. A module-parser hit type opts into translation by providing
+   `DAQAddress getDAQAddress(const HitType&)`, which normalizes its hardware
+   address field names.
+4. One central event processor acquires the table for each event, scans each
+   addressable raw-hit collection once, and performs one immutable lookup per
+   hit using only `getDAQAddress()`.
+5. `JEventService_DetectorTranslatorsMap` selects a translator by raw-hit C++
    type and detector name.
-5. The translator inserts its concrete typed DigiHit into the current event.
+6. The translator inserts its concrete typed DigiHit into the current event.
 
 ## Expected Behavior
 
@@ -34,6 +38,13 @@ calibrate measurements, or provide detector geometry.
   downstream processors consume the physics event.
 - Unmapped channels and channels belonging to other detectors are skipped.
 - Routes are keyed by raw-hit C++ type and detector name.
+- Addressable raw-hit types satisfy the `DAQAddressable` C++20 concept.
+- Each addressable module-parser hit family provides a `getDAQAddress()`
+  overload beside its hit type; mapping lookup code must not access raw address
+  members such as `chan` or `channel_num` directly. Translators may still copy
+  raw fields into their typed DigiHits.
+- Hit types without one meaningful `(rocid, slot, channel)` identity do not
+  provide a placeholder address overload.
 - Duplicate route keys fail during plugin initialization; the registry is
   immutable during event processing.
 - A mapped detector without a registered route for that raw-hit type is
@@ -51,6 +62,8 @@ out of range, or a DAQ address is duplicated within or across files.
 
 - `config/evio_parser/detector_mappings/`
 - `src/plugins/evio_parser/core/detector_mapping_objects/`
+- Address overloads beside participating hit types under
+  `src/plugins/evio_parser/module_parsers/`
 - `src/plugins/evio_parser/services/JEventService_TranslationTable.*`
 - `src/plugins/evio_parser/services/JEventService_DetectorTranslatorsMap.h`
 - `src/plugins/evio_parser/detector_translators/`
@@ -72,6 +85,10 @@ coordinates and uncalibrated FADC pulse values and typed insertion into a
 
 The `detector_translators_map_tests` CTest verifies duplicate-route rejection
 and registry immutability after initialization.
+
+The `fadc250_daq_address_tests` CTest verifies that the FADC hit family
+satisfies `DAQAddressable` and normalizes its `chan` member to
+`DAQAddress::channel`.
 
 For EVIO integration checks, load `detector_translation_dump` after
 `evio_parser`. It writes translated HMS hodoscope DigiHits to CSV; the current
