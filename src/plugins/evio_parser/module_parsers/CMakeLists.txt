@@ -64,9 +64,7 @@ if(BUILD_TESTING)
             caen1190_parser
             fadc_parser
             fadc_scaler_parser
-            tiscaler_parser
             mpd_parser
-            helicity_decoder_parsers
             vftdc_parser
     )
     add_test(
@@ -74,4 +72,3 @@ if(BUILD_TESTING)
         COMMAND daq_address_tests
     )
 endif()
-
