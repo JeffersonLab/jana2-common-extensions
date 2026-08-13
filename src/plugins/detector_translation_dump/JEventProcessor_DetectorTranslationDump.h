@@ -5,7 +5,7 @@
 #include <fstream>
 #include <string>
 
-#include "FADCDigiHit.h"
+#include "FADCPulseDigiHit.h"
 
 class JEventProcessor_DetectorTranslationDump : public JEventProcessor {
 public:
@@ -16,7 +16,7 @@ public:
     void Finish() override;
 
 private:
-    Input<HMSHodoscopeFADCDigiHit> m_hits {this};
+    Input<HMSHodoscopeFADCPulseDigiHit> m_hits {this};
 
     Parameter<std::string> m_outputFilename {
         this,

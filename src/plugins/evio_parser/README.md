@@ -177,8 +177,8 @@ all runs receive the table built from every `*.map` file in
 
 `JEventProcessor_DetectorDigiHits` scans each raw-hit collection once in
 `ProcessParallel()` and routes hits directly to typed, uncalibrated detector
-outputs. Supported HMS routes currently translate FADC pulse hits to
-`HMSHodoscopeFADCDigiHit` and board-level FADC scaler records to
+outputs. Supported HMS routes currently translate every emitted FADC format to
+its corresponding typed DigiHit and board-level FADC scaler records to
 `HMSHodoscopeFADCScalerDigiHit`; unmapped and non-HMS addresses are ignored.
 Detector routes are registered through `InitDetectorTranslators()` and
 `JEventService_DetectorTranslatorsMap`, so the central event loop does not call

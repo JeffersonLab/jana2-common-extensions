@@ -22,7 +22,11 @@ set(HMS_HODOSCOPE_FADC_TRANSLATOR_INCLUDE_DIRS
 )
 
 set(HMS_HODOSCOPE_FADC_TRANSLATOR_PUBLIC_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/data_objects/FADCDigiHit.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/data_objects/FADCPulseDigiHit.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/data_objects/FADCWaveformDigiHit.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/data_objects/FADCPulseIntegralDigiHit.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/data_objects/FADCPulseTimeDigiHit.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/data_objects/FADCPulsePeakDigiHit.h
     PARENT_SCOPE
 )
 
