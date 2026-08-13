@@ -2,7 +2,7 @@
 
 #include <JANA/JEvent.h>
 
-#include "HMSHodoscopeTranslator.h"
+#include "FADCTranslator.h"
 
 int main() {
     FADC250PulseHit pulse(12, 34, 56, 1, 3, 250, 0, 7, 80);
@@ -19,7 +19,7 @@ int main() {
         {{"plane", 1}, {"bar", 2}, {"signal", 0}}
     };
 
-    const auto hit = makeHMSHodoscopeDigiHit(pulse, address);
+    const auto hit = makeHMSHodoscopeFADCDigiHit(pulse, address);
     assert(hit.plane == 1);
     assert(hit.bar == 2);
     assert(hit.signal == 0);
@@ -42,7 +42,7 @@ int main() {
 
     JEvent event;
     translateHMSHodoscopeFADCHit(pulse, address, event);
-    const auto inserted_hits = event.Get<HMSHodoscopeDigiHit>();
+    const auto inserted_hits = event.Get<HMSHodoscopeFADCDigiHit>();
     assert(inserted_hits.size() == 1);
     assert(inserted_hits.front()->integral_sum == 10430);
 }

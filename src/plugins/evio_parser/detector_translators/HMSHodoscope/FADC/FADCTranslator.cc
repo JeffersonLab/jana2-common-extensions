@@ -1,4 +1,4 @@
-#include "HMSHodoscopeTranslator.h"
+#include "FADCTranslator.h"
 
 #include <JANA/JEvent.h>
 #include <JANA/JException.h>
@@ -21,12 +21,12 @@ std::int32_t requireField(const DetectorAddress& address, const std::string& nam
 
 } // namespace
 
-HMSHodoscopeDigiHit makeHMSHodoscopeDigiHit(
+HMSHodoscopeFADCDigiHit makeHMSHodoscopeFADCDigiHit(
     const FADC250PulseHit& pulse,
     const DetectorAddress& address) {
     if (address.detector != "HMS_HODOSCOPE") {
         throw JException(
-            "Cannot create HMSHodoscopeDigiHit from detector '%s'",
+            "Cannot create HMSHodoscopeFADCDigiHit from detector '%s'",
             address.detector.c_str());
     }
 
@@ -57,6 +57,6 @@ void translateHMSHodoscopeFADCHit(
     const FADC250PulseHit& pulse,
     const DetectorAddress& address,
     const JEvent& event) {
-    event.Insert(new HMSHodoscopeDigiHit(
-        makeHMSHodoscopeDigiHit(pulse, address)));
+    event.Insert(new HMSHodoscopeFADCDigiHit(
+        makeHMSHodoscopeFADCDigiHit(pulse, address)));
 }

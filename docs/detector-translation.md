@@ -85,7 +85,7 @@ The `translation_table_service_tests` CTest verifies that the service loads
 multiple detector files into one immutable table and currently reuses it for
 different run numbers.
 
-The `hms_hodoscope_translator_tests` CTest verifies conversion of detector
+The `hms_hodoscope_fadc_translator_tests` CTest verifies conversion of detector
 coordinates and uncalibrated FADC pulse values and typed insertion into a
 `JEvent`.
 
