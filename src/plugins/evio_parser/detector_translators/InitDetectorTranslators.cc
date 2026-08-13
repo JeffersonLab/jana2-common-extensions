@@ -12,7 +12,19 @@ void InitDetectorTranslators(JApplication* app) {
 
     translators->addTranslator<FADC250PulseHit>(
         "HMS_HODOSCOPE",
-        translateHMSHodoscopeFADCHit);
+        translateHMSHodoscopeFADCPulseHit);
+    translators->addTranslator<FADC250WaveformHit>(
+        "HMS_HODOSCOPE",
+        translateHMSHodoscopeFADCWaveformHit);
+    translators->addTranslator<FADC250HallBPulseIntegralHit>(
+        "HMS_HODOSCOPE",
+        translateHMSHodoscopeFADCPulseIntegralHit);
+    translators->addTranslator<FADC250HallBPulseTimeHit>(
+        "HMS_HODOSCOPE",
+        translateHMSHodoscopeFADCPulseTimeHit);
+    translators->addTranslator<FADC250HallBPulsePeakHit>(
+        "HMS_HODOSCOPE",
+        translateHMSHodoscopeFADCPulsePeakHit);
     translators->addTranslator<FADCScalerHit>(
         "HMS_HODOSCOPE",
         translateHMSHodoscopeFADCScalerHit);

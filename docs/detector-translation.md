@@ -58,10 +58,13 @@ calibrate measurements, or provide detector geometry.
   back to raw hits for normal use. The HMS FADC scaler route copies one
   complete 16-counter board-level record into one
   `HMSHodoscopeFADCScalerDigiHit`.
-- `DetectorAddress` is authoritative for HMS detector identity. The HMS FADC
-  and FADC scaler routes validate the detector name and require `plane`, `bar`,
-  and `signal`, then copy those values into flat fields on their typed DigiHits.
-  The generic address is not retained by either DigiHit.
+- `DetectorAddress` is authoritative for HMS detector identity. Every HMS FADC
+  format and the FADC scaler route validate the detector name and require
+  `plane`, `bar`, and `signal`, then copy those values into flat fields on their
+  typed DigiHits. The generic address is not retained by any DigiHit.
+- Waveform, pulse, pulse-integral, pulse-time, and pulse-peak FADC records
+  produce distinct DigiHit types. Translation preserves each hardware payload
+  and does not combine Hall-B pulse fragments into reconstructed pulses.
 - TI scaler and helicity decoder records do not participate in detector
   translation and intentionally do not satisfy `DAQAddressable`.
 
@@ -93,9 +96,9 @@ The `translation_table_service_tests` CTest verifies that the service loads
 multiple detector files into one immutable table and currently reuses it for
 different run numbers.
 
-The `hms_hodoscope_fadc_translator_tests` CTest verifies conversion of detector
-identity and uncalibrated FADC pulse values, rejection of invalid detector
-metadata, and typed insertion into a `JEvent`.
+The `hms_hodoscope_fadc_translator_tests` CTest verifies detector identity and
+hardware measurements for every emitted FADC format, rejection of invalid
+detector metadata, and typed insertion into a `JEvent`.
 
 The `hms_hodoscope_fadc_scaler_translator_tests` CTest verifies that all 16
 FADC scaler counters and the mapped detector identity are copied into a typed

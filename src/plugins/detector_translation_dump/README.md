@@ -1,6 +1,6 @@
 # Detector Translation Dump Plugin
 
-This diagnostic plugin writes translated `HMSHodoscopeFADCDigiHit` objects to
+This diagnostic plugin writes translated `HMSHodoscopeFADCPulseDigiHit` objects to
 CSV.
 Load it after `evio_parser` so detector translation runs before the diagnostic
 processor:

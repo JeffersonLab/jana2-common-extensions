@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-struct HMSHodoscopeFADCDigiHit {
+struct HMSHodoscopeFADCPulseDigiHit {
     std::int32_t plane;
     std::int32_t bar;
     std::int32_t signal;
