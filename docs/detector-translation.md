@@ -38,6 +38,8 @@ calibrate measurements, or provide detector geometry.
   downstream processors consume the physics event.
 - Unmapped channels and channels belonging to other detectors are skipped.
 - Routes are keyed by raw-hit C++ type and detector name.
+- Each detector directory owns its route registrations. The central
+  initializer composes detector initializers and freezes the completed registry.
 - Addressable raw-hit types satisfy the `DAQAddressable` C++20 concept.
 - Each addressable module-parser hit family provides a `getDAQAddress()`
   overload beside its hit type; mapping lookup code must not access raw address

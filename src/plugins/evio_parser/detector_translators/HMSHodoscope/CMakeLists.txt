@@ -11,9 +11,20 @@ target_link_libraries(hms_hodoscope_identity
 add_subdirectory(FADC)
 add_subdirectory(FADCScaler)
 
+add_library(hms_hodoscope_translators_init STATIC
+    InitHMSHodoscopeTranslators.cc
+)
+target_include_directories(hms_hodoscope_translators_init
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_link_libraries(hms_hodoscope_translators_init
+    PUBLIC
+        hms_hodoscope_fadc_translator
+        hms_hodoscope_fadc_scaler_translator
+)
+
 set(HMS_TRANSLATOR_LIBS
-    hms_hodoscope_fadc_translator
-    hms_hodoscope_fadc_scaler_translator
+    hms_hodoscope_translators_init
     PARENT_SCOPE
 )
 
