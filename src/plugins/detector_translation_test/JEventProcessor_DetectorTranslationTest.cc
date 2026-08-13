@@ -3,13 +3,12 @@
 #include <JANA/JEvent.h>
 #include <JANA/JException.h>
 
-#include <vector>
-
 JEventProcessor_DetectorTranslationTest::
 JEventProcessor_DetectorTranslationTest() {
     SetTypeName("JEventProcessor_DetectorTranslationTest");
     SetPrefix("detector_translation_test");
     SetCallbackStyle(CallbackStyle::ExpertMode);
+    m_hits.SetOptional(true);
 }
 
 void JEventProcessor_DetectorTranslationTest::Init() {
@@ -27,10 +26,7 @@ void JEventProcessor_DetectorTranslationTest::Init() {
 
 void JEventProcessor_DetectorTranslationTest::ProcessSequential(
     const JEvent& event) {
-    std::vector<const HMSHodoscopeDigiHit*> hits;
-    event.Get(hits, "", false);
-
-    for (const auto* hit : hits) {
+    for (const auto* hit : m_hits()) {
         m_output
             << event.GetEventNumber() << ','
             << hit->rocid << ','
