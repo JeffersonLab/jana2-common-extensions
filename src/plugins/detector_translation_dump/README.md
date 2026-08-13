@@ -1,4 +1,4 @@
-# Detector Translation Test Plugin
+# Detector Translation Dump Plugin
 
 This diagnostic plugin writes translated `HMSHodoscopeDigiHit` objects to CSV.
 Load it after `evio_parser` so detector translation runs before the diagnostic
@@ -6,9 +6,9 @@ processor:
 
 ```bash
 jana \
-  -Pplugins=evio_parser,detector_translation_test \
+  -Pplugins=evio_parser,detector_translation_dump \
   -PTRANSLATION:DIRECTORY=/path/to/config/evio_parser/detector_mappings \
-  -Pdetector_translation_test:OUTPUT=detector_translation_test.csv \
+  -Pdetector_translation_dump:OUTPUT=detector_translation_dump.csv \
   /path/to/input.evio
 ```
 

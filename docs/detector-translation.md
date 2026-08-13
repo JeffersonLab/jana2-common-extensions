@@ -73,6 +73,6 @@ coordinates and uncalibrated FADC pulse values and typed insertion into a
 The `detector_translators_map_tests` CTest verifies duplicate-route rejection
 and registry immutability after initialization.
 
-For EVIO integration checks, load `detector_translation_test` after
+For EVIO integration checks, load `detector_translation_dump` after
 `evio_parser`. It writes translated HMS hodoscope DigiHits to CSV; the current
 demo mapping expects DAQ address `(rocid=1, slot=3, channel=0)`.
