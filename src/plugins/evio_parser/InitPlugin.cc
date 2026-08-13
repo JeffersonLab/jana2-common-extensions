@@ -9,7 +9,7 @@
 #include "JEventService_BankToModuleMap.h"   // Service for mapping bank IDs to module IDs
 #include "JEventService_ModuleParsersMap.h"   // Service for mapping module IDs to parser implementations
 #include "JEventService_DetectorTranslatorsMap.h" // Detector translator registry
-#include "TranslationTableService.h"          // Run-specific detector translation tables
+#include "JEventService_TranslationTable.h"   // Run-specific detector translation tables
 #include "JEventProcessor_DetectorDigiHits.h"  // Central detector DigiHit routing
 
 // Module parsers registration function
@@ -32,7 +32,8 @@ extern "C" {
         auto module_parsers_svc = std::make_shared<JEventService_ModuleParsersMap>();
         auto detector_translators_svc =
             std::make_shared<JEventService_DetectorTranslatorsMap>();
-        auto translation_table_svc = std::make_shared<TranslationTableService>();
+        auto translation_table_svc =
+            std::make_shared<JEventService_TranslationTable>();
 
         app->ProvideService(filter_svc);
         app->ProvideService(bank_to_module_svc);

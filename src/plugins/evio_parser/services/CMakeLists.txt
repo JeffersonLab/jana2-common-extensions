@@ -4,7 +4,7 @@
 
 add_library(services STATIC
     JEventService_FilterDB.cc
-    TranslationTableService.cc
+    JEventService_TranslationTable.cc
 )
 
 target_include_directories(services
@@ -39,7 +39,7 @@ if(BUILD_TESTING)
     )
 
     add_executable(translation_table_service_tests
-        TranslationTableServiceTests.cc
+        JEventService_TranslationTableTests.cc
     )
     target_link_libraries(translation_table_service_tests
         PRIVATE services

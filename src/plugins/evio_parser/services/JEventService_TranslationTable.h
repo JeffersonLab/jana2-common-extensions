@@ -9,9 +9,9 @@
 #include "TranslationTable.h"
 #include "jce_config_paths.h"
 
-class TranslationTableService : public JService {
+class JEventService_TranslationTable : public JService {
 public:
-    explicit TranslationTableService(
+    explicit JEventService_TranslationTable(
         std::string default_mapping_directory = jce_config_path(
             "evio_parser/detector_mappings",
             "TRANSLATION:DIRECTORY"));

@@ -8,7 +8,7 @@ calibrate measurements, or provide detector geometry.
 
 ## Main Flow
 
-1. `TranslationTableService` loads every `*.map` file from the configured
+1. `JEventService_TranslationTable` loads every `*.map` file from the configured
    detector mapping directory.
 2. The service publishes it as `shared_ptr<const TranslationTable>`.
 3. One central event processor acquires the table for each event, scans each
@@ -51,7 +51,7 @@ out of range, or a DAQ address is duplicated within or across files.
 
 - `config/evio_parser/detector_mappings/`
 - `src/plugins/evio_parser/core/detector_mapping_objects/`
-- `src/plugins/evio_parser/services/TranslationTableService.*`
+- `src/plugins/evio_parser/services/JEventService_TranslationTable.*`
 - `src/plugins/evio_parser/services/JEventService_DetectorTranslatorsMap.h`
 - `src/plugins/evio_parser/detector_translators/`
 - `src/plugins/evio_parser/processors/detector_digi_hits/`
