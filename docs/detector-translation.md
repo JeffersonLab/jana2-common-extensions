@@ -54,8 +54,12 @@ calibrate measurements, or provide detector geometry.
   immutable during event processing.
 - A mapped detector without a registered route for that raw-hit type is
   skipped.
-- DigiHits contain copied digitized FADC values; consumers do not need to
-  traverse back to raw hits for normal use.
+- DigiHits contain copied digitized values; consumers do not need to traverse
+  back to raw hits for normal use. The HMS FADC scaler route copies one
+  complete 16-counter board-level record into one
+  `HMSHodoscopeFADCScalerDigiHit`.
+- TI scaler and helicity decoder records do not participate in detector
+  translation and intentionally do not satisfy `DAQAddressable`.
 
 ## Failure Behavior
 
@@ -89,12 +93,17 @@ The `hms_hodoscope_fadc_translator_tests` CTest verifies conversion of detector
 coordinates and uncalibrated FADC pulse values and typed insertion into a
 `JEvent`.
 
+The `hms_hodoscope_fadc_scaler_translator_tests` CTest verifies that all 16
+FADC scaler counters are copied into a typed HMS board-level DigiHit and
+inserted into the event.
+
 The `detector_translators_map_tests` CTest verifies duplicate-route rejection
 and registry immutability after initialization.
 
-The `daq_address_tests` CTest verifies that every current module-parser hit
-family satisfies `DAQAddressable`, including normal channel names, VFTDC's
-`channel_num`, MPD's `apv_channel`, and the board-level sentinel.
+The `daq_address_tests` CTest verifies the participating module-parser hit
+families, including normal channel names, VFTDC's `channel_num`, MPD's
+`apv_channel`, and the FADC scaler board-level sentinel. It also verifies that
+TI scaler and helicity decoder records are not `DAQAddressable`.
 
 The `translation_table_tests` CTest also verifies that `none` maps to
 `DAQAddress::UnspecifiedChannel`.
@@ -102,3 +111,7 @@ The `translation_table_tests` CTest also verifies that `none` maps to
 For EVIO integration checks, load `detector_translation_dump` after
 `evio_parser`. It writes translated HMS hodoscope DigiHits to CSV; the current
 demo mapping expects DAQ address `(rocid=1, slot=3, channel=0)`.
+
+Production FADC scaler translation additionally requires an HMS mapping row
+for the real board address in the form `rocid slot none ...`; no hardware
+address is guessed by the source configuration.
