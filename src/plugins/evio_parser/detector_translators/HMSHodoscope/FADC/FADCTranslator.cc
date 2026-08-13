@@ -1,39 +1,18 @@
 #include "FADCTranslator.h"
 
 #include <JANA/JEvent.h>
-#include <JANA/JException.h>
 
-#include <cstdint>
-#include <string>
-
-namespace {
-
-std::int32_t requireField(const DetectorAddress& address, const std::string& name) {
-    for (const auto& [field_name, value] : address.fields) {
-        if (field_name == name) {
-            return value;
-        }
-    }
-    throw JException(
-        "HMS_HODOSCOPE detector address is missing required field '%s'",
-        name.c_str());
-}
-
-} // namespace
+#include "HMSHodoscopeIdentity.h"
 
 HMSHodoscopeFADCDigiHit makeHMSHodoscopeFADCDigiHit(
     const FADC250PulseHit& pulse,
     const DetectorAddress& address) {
-    if (address.detector != "HMS_HODOSCOPE") {
-        throw JException(
-            "Cannot create HMSHodoscopeFADCDigiHit from detector '%s'",
-            address.detector.c_str());
-    }
+    const auto detector = getHMSHodoscopeIdentity(address);
 
     return {
-        requireField(address, "plane"),
-        requireField(address, "bar"),
-        requireField(address, "signal"),
+        detector.plane,
+        detector.bar,
+        detector.signal,
         pulse.trigger_num,
         pulse.timestamp1,
         pulse.timestamp2,

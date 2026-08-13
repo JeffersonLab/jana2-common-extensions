@@ -11,9 +11,15 @@ int main() {
         scaler.counts[index] = 100 + index;
     }
 
-    const DetectorAddress address {"HMS_HODOSCOPE", {}};
+    const DetectorAddress address {
+        "HMS_HODOSCOPE",
+        {{"plane", 2}, {"bar", 3}, {"signal", 1}}
+    };
     const auto hit = makeHMSHodoscopeFADCScalerDigiHit(scaler, address);
 
+    assert(hit.plane == 2);
+    assert(hit.bar == 3);
+    assert(hit.signal == 1);
     assert(hit.rocid == 7);
     assert(hit.slot == 9);
     assert(hit.words_index == 8);
@@ -26,5 +32,6 @@ int main() {
     translateHMSHodoscopeFADCScalerHit(scaler, address, event);
     const auto inserted_hits = event.Get<HMSHodoscopeFADCScalerDigiHit>();
     assert(inserted_hits.size() == 1);
+    assert(inserted_hits.front()->plane == 2);
     assert(inserted_hits.front()->counts[15] == 115);
 }

@@ -1,21 +1,21 @@
 #include "FADCScalerTranslator.h"
 
 #include <JANA/JEvent.h>
-#include <JANA/JException.h>
 
 #include <algorithm>
 #include <iterator>
 
+#include "HMSHodoscopeIdentity.h"
+
 HMSHodoscopeFADCScalerDigiHit makeHMSHodoscopeFADCScalerDigiHit(
     const FADCScalerHit& scaler,
     const DetectorAddress& address) {
-    if (address.detector != "HMS_HODOSCOPE") {
-        throw JException(
-            "Cannot create HMSHodoscopeFADCScalerDigiHit from detector '%s'",
-            address.detector.c_str());
-    }
+    const auto detector = getHMSHodoscopeIdentity(address);
 
     HMSHodoscopeFADCScalerDigiHit hit {
+        detector.plane,
+        detector.bar,
+        detector.signal,
         scaler.rocid,
         scaler.slot,
         scaler.words_idx,

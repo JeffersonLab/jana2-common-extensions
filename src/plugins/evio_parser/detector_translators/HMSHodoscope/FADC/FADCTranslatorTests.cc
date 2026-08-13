@@ -1,6 +1,7 @@
 #include <cassert>
 
 #include <JANA/JEvent.h>
+#include <JANA/JException.h>
 
 #include "FADCTranslator.h"
 
@@ -45,4 +46,22 @@ int main() {
     const auto inserted_hits = event.Get<HMSHodoscopeFADCDigiHit>();
     assert(inserted_hits.size() == 1);
     assert(inserted_hits.front()->integral_sum == 10430);
+
+    try {
+        makeHMSHodoscopeFADCDigiHit(
+            pulse,
+            {"OTHER_DETECTOR", {{"plane", 1}, {"bar", 2}, {"signal", 0}}});
+        assert(false);
+    }
+    catch (const JException&) {
+    }
+
+    try {
+        makeHMSHodoscopeFADCDigiHit(
+            pulse,
+            {"HMS_HODOSCOPE", {{"plane", 1}, {"bar", 2}}});
+        assert(false);
+    }
+    catch (const JException&) {
+    }
 }
