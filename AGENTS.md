@@ -61,6 +61,10 @@
   detector-level variables and never names individual route targets.
 - Export public hit/data headers through the existing
   `evio_parser_data_types` mechanism when downstream plugins need them.
+- Whenever a detector translator publishes a new DigiHit type, add a matching
+  optional input and type-specific CSV output to `detector_translation_dump`
+  in the same change so every translated data product remains observable
+  through the diagnostic plugin.
 - Resolve installed configuration through `jce_config_path()` and preserve the
   `JCE_CONFIG_DIR` override behavior.
 - Use JANA logging macros and terminate each log statement with `LOG_END`.

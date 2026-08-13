@@ -118,8 +118,9 @@ The `translation_table_tests` CTest also verifies that `none` maps to
 `DAQAddress::UnspecifiedChannel`.
 
 For EVIO integration checks, load `detector_translation_dump` after
-`evio_parser`. It writes translated HMS hodoscope DigiHits to CSV; the current
-demo mapping expects DAQ address `(rocid=1, slot=3, channel=0)`.
+`evio_parser`. It writes each published translated DigiHit type to a dedicated
+CSV in one output directory; the current demo mapping expects DAQ address
+`(rocid=1, slot=3, channel=0)`.
 
 Production FADC scaler translation additionally requires an HMS mapping row
 for the real board address in the form `rocid slot none ...`; no hardware
