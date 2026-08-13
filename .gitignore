@@ -20,6 +20,7 @@ Makefile
 *.root
 *.evio
 *.csv
+/detector_translation_dump/
 evio_processor_hits.txt
 
 # misc directories
