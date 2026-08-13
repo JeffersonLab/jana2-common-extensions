@@ -1,7 +1,7 @@
 #include <JANA/JApplication.h>
 
 #include "FADC250PulseHit.h"
-#include "HMSHodoscopeTranslator.h"
+#include "FADCTranslator.h"
 #include "JEventService_DetectorTranslatorsMap.h"
 
 void InitDetectorTranslators(JApplication* app) {

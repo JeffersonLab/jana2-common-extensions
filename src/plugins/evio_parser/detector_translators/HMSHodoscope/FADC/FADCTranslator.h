@@ -2,11 +2,11 @@
 
 #include "DetectorAddress.h"
 #include "FADC250PulseHit.h"
-#include "HMSHodoscopeDigiHit.h"
+#include "FADCDigiHit.h"
 
 class JEvent;
 
-HMSHodoscopeDigiHit makeHMSHodoscopeDigiHit(
+HMSHodoscopeFADCDigiHit makeHMSHodoscopeFADCDigiHit(
     const FADC250PulseHit& pulse,
     const DetectorAddress& address);
 
