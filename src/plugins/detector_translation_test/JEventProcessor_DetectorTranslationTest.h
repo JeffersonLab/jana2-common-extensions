@@ -16,6 +16,8 @@ public:
     void Finish() override;
 
 private:
+    Input<HMSHodoscopeDigiHit> m_hits {this};
+
     Parameter<std::string> m_outputFilename {
         this,
         "OUTPUT",

@@ -19,6 +19,7 @@ Makefile
 # Input/Output files
 *.root
 *.evio
+*.csv
 evio_processor_hits.txt
 
 # misc directories
