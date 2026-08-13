@@ -42,16 +42,17 @@ JEventProcessor_DetectorDigiHits::JEventProcessor_DetectorDigiHits() {
 
 void JEventProcessor_DetectorDigiHits::ProcessParallel(const JEvent& event) {
     const auto table = m_translationTables->GetTable(event.GetRunNumber());
+    const auto& translator_map = m_detectorTranslators();
     routeHits<FADC250PulseHit>(
-        m_fadcPulses(), *table, *m_detectorTranslators, event);
+        m_fadcPulses(), *table, translator_map, event);
     routeHits<FADC250WaveformHit>(
-        m_fadcWaveforms(), *table, *m_detectorTranslators, event);
+        m_fadcWaveforms(), *table, translator_map, event);
     routeHits<FADC250HallBPulseIntegralHit>(
-        m_fadcPulseIntegrals(), *table, *m_detectorTranslators, event);
+        m_fadcPulseIntegrals(), *table, translator_map, event);
     routeHits<FADC250HallBPulseTimeHit>(
-        m_fadcPulseTimes(), *table, *m_detectorTranslators, event);
+        m_fadcPulseTimes(), *table, translator_map, event);
     routeHits<FADC250HallBPulsePeakHit>(
-        m_fadcPulsePeaks(), *table, *m_detectorTranslators, event);
+        m_fadcPulsePeaks(), *table, translator_map, event);
     routeHits<FADCScalerHit>(
-        m_fadcScalers(), *table, *m_detectorTranslators, event);
+        m_fadcScalers(), *table, translator_map, event);
 }
