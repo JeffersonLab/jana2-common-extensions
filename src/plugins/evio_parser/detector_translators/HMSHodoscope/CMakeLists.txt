@@ -3,9 +3,11 @@ add_library(hms_hodoscope_identity STATIC
 )
 target_include_directories(hms_hodoscope_identity
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE ${JANA_INCLUDE_DIRS}
 )
 target_link_libraries(hms_hodoscope_identity
     PUBLIC detector_mapping
+    PRIVATE ${JANA_LIBRARY}
 )
 
 add_subdirectory(FADC)
