@@ -4,7 +4,7 @@
 #include "TranslationTable.h"
 
 int main(int argc, char* argv[]) {
-    assert(argc == 2);
+    assert(argc == 3);
 
     TranslationTable table;
     const DetectorAddress hms_address {
@@ -28,4 +28,14 @@ int main(int argc, char* argv[]) {
     assert(loaded_address != nullptr);
     assert(*loaded_address == hms_address);
     assert(loaded.Lookup({1, 3, 1}) == nullptr);
+
+    TranslationTable board_level;
+    board_level.LoadMappingFile(argv[2]);
+    const auto* board_address = board_level.Lookup({
+        9,
+        10,
+        DAQAddress::UnspecifiedChannel
+    });
+    assert(board_address != nullptr);
+    assert(board_address->detector == "BOARD_LEVEL_DETECTOR");
 }

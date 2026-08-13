@@ -1,6 +1,8 @@
 #ifndef FADCSCALERHIT_H
 #define FADCSCALERHIT_H
 
+#include "DAQAddress.h"
+
 /**
  * @class FADCScalerHit
  * @brief Hit class for FADC scaler data
@@ -30,5 +32,9 @@ public:
      */
     virtual ~FADCScalerHit() = default;
 };
+
+inline DAQAddress getDAQAddress(const FADCScalerHit& hit) {
+    return {hit.rocid, hit.slot, DAQAddress::UnspecifiedChannel};
+}
 
 #endif // FADCSCALERHIT_H

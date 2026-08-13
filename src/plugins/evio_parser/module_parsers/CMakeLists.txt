@@ -55,4 +55,23 @@ set(MODULE_PARSERS_HEADERS
     PARENT_SCOPE
 )
 
+if(BUILD_TESTING)
+    add_executable(daq_address_tests
+        DAQAddressTests.cc
+    )
+    target_link_libraries(daq_address_tests
+        PRIVATE
+            caen1190_parser
+            fadc_parser
+            fadc_scaler_parser
+            tiscaler_parser
+            mpd_parser
+            helicity_decoder_parsers
+            vftdc_parser
+    )
+    add_test(
+        NAME daq_address_tests
+        COMMAND daq_address_tests
+    )
+endif()
 

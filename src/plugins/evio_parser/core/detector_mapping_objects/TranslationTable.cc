@@ -50,6 +50,16 @@ Integer ParseInteger(
     return value;
 }
 
+std::uint32_t ParseChannel(
+    const std::string& token,
+    const std::string& path,
+    std::size_t line_number) {
+    if (token == "none") {
+        return DAQAddress::UnspecifiedChannel;
+    }
+    return ParseInteger<std::uint32_t>(token, path, line_number);
+}
+
 } // namespace
 
 bool TranslationTable::Insert(DAQAddress daq, DetectorAddress detector) {
@@ -117,7 +127,7 @@ void TranslationTable::LoadMappingFile(const std::string& path) {
         DAQAddress daq {
             ParseInteger<std::uint32_t>(tokens[0], path, line_number),
             ParseInteger<std::uint32_t>(tokens[1], path, line_number),
-            ParseInteger<std::uint32_t>(tokens[2], path, line_number)
+            ParseChannel(tokens[2], path, line_number)
         };
 
         DetectorAddress address {detector, {}};
