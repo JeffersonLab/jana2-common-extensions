@@ -26,15 +26,3 @@ file(GLOB FADC_PUBLIC_HEADERS
 )
 
 set(FADC_PUBLIC_HEADERS ${FADC_PUBLIC_HEADERS} PARENT_SCOPE)
-
-if(BUILD_TESTING)
-    add_executable(fadc250_daq_address_tests
-        FADC250DAQAddressTests.cc
-    )
-    target_link_libraries(fadc250_daq_address_tests PRIVATE fadc_parser)
-    add_test(
-        NAME fadc250_daq_address_tests
-        COMMAND fadc250_daq_address_tests
-    )
-endif()
-

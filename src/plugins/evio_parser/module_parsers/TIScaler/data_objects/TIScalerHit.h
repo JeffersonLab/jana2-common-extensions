@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "DAQAddress.h"
+
 /**
  * @class TIScalerHit
  * @brief Hit class for TI scaler data
@@ -48,5 +50,8 @@ public:
           ti_event_number(0)  {}
 };
 
-#endif // TISCALERHIT_H
+inline DAQAddress getDAQAddress(const TIScalerHit& hit) {
+    return {hit.rocid, hit.slot, DAQAddress::UnspecifiedChannel};
+}
 
+#endif // TISCALERHIT_H

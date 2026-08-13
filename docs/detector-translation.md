@@ -43,8 +43,13 @@ calibrate measurements, or provide detector geometry.
   overload beside its hit type; mapping lookup code must not access raw address
   members such as `chan` or `channel_num` directly. Translators may still copy
   raw fields into their typed DigiHits.
-- Hit types without one meaningful `(rocid, slot, channel)` identity do not
-  provide a placeholder address overload.
+- Channel-addressed hit families normalize their native member (`chan`,
+  `channel_num`, or `apv_channel`) to `DAQAddress::channel`.
+- Board-level hit families without a channel use
+  `DAQAddress::UnspecifiedChannel`; mapping files represent that exact sentinel
+  with the keyword `none` in the channel column.
+- `none` means “this record has no channel.” It is not a wildcard and does not
+  match ordinary numbered channels.
 - Duplicate route keys fail during plugin initialization; the registry is
   immutable during event processing.
 - A mapped detector without a registered route for that raw-hit type is
@@ -55,8 +60,9 @@ calibrate measurements, or provide detector geometry.
 ## Failure Behavior
 
 Loading throws when the directory cannot be read, contains no `*.map` files, a
-file cannot be read, declarations or channel rows are invalid, an integer is
-out of range, or a DAQ address is duplicated within or across files.
+file cannot be read, declarations or channel rows are invalid, a numeric field
+is out of range, or a DAQ address is duplicated within or across files. The
+keyword `none` is accepted only in the DAQ channel column.
 
 ## Key Components
 
@@ -86,9 +92,12 @@ coordinates and uncalibrated FADC pulse values and typed insertion into a
 The `detector_translators_map_tests` CTest verifies duplicate-route rejection
 and registry immutability after initialization.
 
-The `fadc250_daq_address_tests` CTest verifies that the FADC hit family
-satisfies `DAQAddressable` and normalizes its `chan` member to
-`DAQAddress::channel`.
+The `daq_address_tests` CTest verifies that every current module-parser hit
+family satisfies `DAQAddressable`, including normal channel names, VFTDC's
+`channel_num`, MPD's `apv_channel`, and the board-level sentinel.
+
+The `translation_table_tests` CTest also verifies that `none` maps to
+`DAQAddress::UnspecifiedChannel`.
 
 For EVIO integration checks, load `detector_translation_dump` after
 `evio_parser`. It writes translated HMS hodoscope DigiHits to CSV; the current

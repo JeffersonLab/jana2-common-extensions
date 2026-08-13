@@ -1,6 +1,8 @@
 #ifndef MPDHIT_H
 #define MPDHIT_H
 
+#include "DAQAddress.h"
+
 /**
  * @class MPDHit
  * @brief Class for MPD hits
@@ -44,5 +46,9 @@ public:
         for (int i = 0; i < 6; i++) apv_samples[i] = apv_samples_in[i];
     }
 };
+
+inline DAQAddress getDAQAddress(const MPDHit& hit) {
+    return {hit.rocid, hit.slot, hit.apv_channel};
+}
 
 #endif // MPDHIT_H
