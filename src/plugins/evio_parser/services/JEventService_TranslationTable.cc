@@ -1,4 +1,4 @@
-#include "TranslationTableService.h"
+#include "JEventService_TranslationTable.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -6,7 +6,8 @@
 #include <utility>
 #include <vector>
 
-TranslationTableService::TranslationTableService(std::string default_mapping_directory)
+JEventService_TranslationTable::JEventService_TranslationTable(
+    std::string default_mapping_directory)
     : m_mapping_directory(
         this,
         "TRANSLATION:DIRECTORY",
@@ -15,7 +16,7 @@ TranslationTableService::TranslationTableService(std::string default_mapping_dir
         true) {
 }
 
-void TranslationTableService::Init() {
+void JEventService_TranslationTable::Init() {
     namespace fs = std::filesystem;
 
     std::vector<fs::path> mapping_files;
@@ -38,9 +39,10 @@ void TranslationTableService::Init() {
 }
 
 std::shared_ptr<const TranslationTable>
-TranslationTableService::GetTable(std::uint64_t) const {
+JEventService_TranslationTable::GetTable(std::uint64_t) const {
     if (m_table == nullptr) {
-        throw std::logic_error("TranslationTableService has not been initialized");
+        throw std::logic_error(
+            "JEventService_TranslationTable has not been initialized");
     }
     return m_table;
 }

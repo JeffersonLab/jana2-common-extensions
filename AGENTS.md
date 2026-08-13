@@ -42,6 +42,11 @@
   of recompiling their production source files in consumers or tests.
 - Follow the existing plugin layout: local `CMakeLists.txt`, `InitPlugin.cc`,
   and registration through the nearest parent `CMakeLists.txt`.
+- Name concrete JANA components and their primary `.h`/`.cc` files with the
+  established base-role prefix: `JEventService_<Role>`,
+  `JEventProcessor_<Role>`, `JEventSource_<Role>`, and
+  `JEventUnfolder_<Role>`. Keep non-component data and utility types, such as
+  `TranslationTable`, free of JANA component prefixes.
 - Export public hit/data headers through the existing
   `evio_parser_data_types` mechanism when downstream plugins need them.
 - Resolve installed configuration through `jce_config_path()` and preserve the

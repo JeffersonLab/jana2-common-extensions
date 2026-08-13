@@ -1,12 +1,12 @@
 #include <cassert>
 #include <cstdint>
 
-#include "TranslationTableService.h"
+#include "JEventService_TranslationTable.h"
 
 int main(int argc, char* argv[]) {
     assert(argc == 2);
 
-    TranslationTableService service(argv[1]);
+    JEventService_TranslationTable service(argv[1]);
     service.Init();
 
     const auto first_run = service.GetTable(100);
