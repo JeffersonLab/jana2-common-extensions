@@ -2,6 +2,19 @@
 
 #include <JANA/JEvent.h>
 
+#include "DAQAddressable.h"
+
+namespace {
+
+template <DAQAddressable HitT>
+const DetectorAddress* lookupDetectorAddress(
+    const TranslationTable& table,
+    const HitT& hit) {
+    return table.Lookup(getDAQAddress(hit));
+}
+
+} // namespace
+
 JEventProcessor_DetectorDigiHits::JEventProcessor_DetectorDigiHits() {
     SetTypeName("JEventProcessor_DetectorDigiHits");
     SetPrefix("detector_digi_hits");
@@ -14,11 +27,7 @@ void JEventProcessor_DetectorDigiHits::ProcessParallel(const JEvent& event) {
         m_detectorTranslators->getTranslators<FADC250PulseHit>();
 
     for (const auto* pulse : m_fadcPulses()) {
-        const auto* address = table->Lookup({
-            pulse->rocid,
-            pulse->slot,
-            pulse->chan
-        });
+        const auto* address = lookupDetectorAddress(*table, *pulse);
         if (address == nullptr) {
             continue;
         }
