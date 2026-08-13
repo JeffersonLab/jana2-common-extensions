@@ -1,3 +1,3 @@
 add_subdirectory(evio_parser)
 add_subdirectory(evio_processor)
-add_subdirectory(detector_translation_test)
+add_subdirectory(detector_translation_dump)

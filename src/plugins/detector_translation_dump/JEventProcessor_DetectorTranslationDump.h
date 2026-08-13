@@ -7,9 +7,9 @@
 
 #include "HMSHodoscopeDigiHit.h"
 
-class JEventProcessor_DetectorTranslationTest : public JEventProcessor {
+class JEventProcessor_DetectorTranslationDump : public JEventProcessor {
 public:
-    JEventProcessor_DetectorTranslationTest();
+    JEventProcessor_DetectorTranslationDump();
 
     void Init() override;
     void ProcessSequential(const JEvent& event) override;
@@ -21,7 +21,7 @@ private:
     Parameter<std::string> m_outputFilename {
         this,
         "OUTPUT",
-        "detector_translation_test.csv",
+        "detector_translation_dump.csv",
         "CSV output file for translated HMS hodoscope DigiHits"
     };
 

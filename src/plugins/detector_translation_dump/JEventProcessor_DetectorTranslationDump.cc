@@ -1,21 +1,21 @@
-#include "JEventProcessor_DetectorTranslationTest.h"
+#include "JEventProcessor_DetectorTranslationDump.h"
 
 #include <JANA/JEvent.h>
 #include <JANA/JException.h>
 
-JEventProcessor_DetectorTranslationTest::
-JEventProcessor_DetectorTranslationTest() {
-    SetTypeName("JEventProcessor_DetectorTranslationTest");
-    SetPrefix("detector_translation_test");
+JEventProcessor_DetectorTranslationDump::
+JEventProcessor_DetectorTranslationDump() {
+    SetTypeName("JEventProcessor_DetectorTranslationDump");
+    SetPrefix("detector_translation_dump");
     SetCallbackStyle(CallbackStyle::ExpertMode);
     m_hits.SetOptional(true);
 }
 
-void JEventProcessor_DetectorTranslationTest::Init() {
+void JEventProcessor_DetectorTranslationDump::Init() {
     m_output.open(m_outputFilename());
     if (!m_output.is_open()) {
         throw JException(
-            "Failed to open detector translation test output: %s",
+            "Failed to open detector translation dump output: %s",
             m_outputFilename().c_str());
     }
 
@@ -24,7 +24,7 @@ void JEventProcessor_DetectorTranslationTest::Init() {
            "pedestal_sum,coarse_time,fine_time,pulse_peak\n";
 }
 
-void JEventProcessor_DetectorTranslationTest::ProcessSequential(
+void JEventProcessor_DetectorTranslationDump::ProcessSequential(
     const JEvent& event) {
     for (const auto* hit : m_hits()) {
         m_output
@@ -43,6 +43,6 @@ void JEventProcessor_DetectorTranslationTest::ProcessSequential(
     }
 }
 
-void JEventProcessor_DetectorTranslationTest::Finish() {
+void JEventProcessor_DetectorTranslationDump::Finish() {
     m_output.close();
 }
