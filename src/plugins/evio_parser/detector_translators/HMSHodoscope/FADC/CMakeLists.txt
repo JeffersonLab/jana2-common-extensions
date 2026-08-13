@@ -12,6 +12,7 @@ target_link_libraries(hms_hodoscope_fadc_translator
     PUBLIC
         detector_mapping
         fadc_parser
+        hms_hodoscope_identity
 )
 
 set(HMS_HODOSCOPE_FADC_TRANSLATOR_INCLUDE_DIRS

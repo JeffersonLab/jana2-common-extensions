@@ -58,6 +58,10 @@ calibrate measurements, or provide detector geometry.
   back to raw hits for normal use. The HMS FADC scaler route copies one
   complete 16-counter board-level record into one
   `HMSHodoscopeFADCScalerDigiHit`.
+- `DetectorAddress` is authoritative for HMS detector identity. The HMS FADC
+  and FADC scaler routes validate the detector name and require `plane`, `bar`,
+  and `signal`, then copy those values into flat fields on their typed DigiHits.
+  The generic address is not retained by either DigiHit.
 - TI scaler and helicity decoder records do not participate in detector
   translation and intentionally do not satisfy `DAQAddressable`.
 
@@ -90,12 +94,12 @@ multiple detector files into one immutable table and currently reuses it for
 different run numbers.
 
 The `hms_hodoscope_fadc_translator_tests` CTest verifies conversion of detector
-coordinates and uncalibrated FADC pulse values and typed insertion into a
-`JEvent`.
+identity and uncalibrated FADC pulse values, rejection of invalid detector
+metadata, and typed insertion into a `JEvent`.
 
 The `hms_hodoscope_fadc_scaler_translator_tests` CTest verifies that all 16
-FADC scaler counters are copied into a typed HMS board-level DigiHit and
-inserted into the event.
+FADC scaler counters and the mapped detector identity are copied into a typed
+HMS board-level DigiHit and inserted into the event.
 
 The `detector_translators_map_tests` CTest verifies duplicate-route rejection
 and registry immutability after initialization.
