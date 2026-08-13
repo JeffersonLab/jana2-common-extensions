@@ -18,9 +18,9 @@ static_assert(DAQAddressable<FADC250PulseHit>);
 static_assert(DAQAddressable<CAEN1190Hit>);
 static_assert(DAQAddressable<FADCScalerHit>);
 static_assert(DAQAddressable<MPDHit>);
-static_assert(DAQAddressable<TIScalerHit>);
 static_assert(DAQAddressable<VFTDCHit>);
-static_assert(DAQAddressable<HelicityDecoderData>);
+static_assert(!DAQAddressable<TIScalerHit>);
+static_assert(!DAQAddressable<HelicityDecoderData>);
 static_assert(!DAQAddressable<NonAddressableHit>);
 
 } // namespace
@@ -60,15 +60,4 @@ int main() {
         DAQAddress::UnspecifiedChannel
     }));
 
-    TIScalerHit ti_scaler;
-    ti_scaler.rocid = 15;
-    ti_scaler.slot = 16;
-    assert(getDAQAddress(ti_scaler).channel ==
-        DAQAddress::UnspecifiedChannel);
-
-    HelicityDecoderData helicity;
-    helicity.rocid = 17;
-    helicity.slot = 18;
-    assert(getDAQAddress(helicity).channel ==
-        DAQAddress::UnspecifiedChannel);
 }

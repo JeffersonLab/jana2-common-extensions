@@ -1,8 +1,6 @@
 #ifndef HelicityDecoderDATA_H
 #define HelicityDecoderDATA_H
 
-#include "DAQAddress.h"
-
 /**
  * @class HelicityDecoderData
  * @brief Base class for all HelicityDecoder data
@@ -40,9 +38,5 @@ public:
 
     virtual ~HelicityDecoderData() = default;
 };
-
-inline DAQAddress getDAQAddress(const HelicityDecoderData& data) {
-    return {data.rocid, data.slot, DAQAddress::UnspecifiedChannel};
-}
 
 #endif // HelicityDecoderDATA_H
