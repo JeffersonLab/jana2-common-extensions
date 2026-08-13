@@ -1,6 +1,8 @@
 #include <JANA/JApplication.h>
 
 #include "FADC250PulseHit.h"
+#include "FADCScalerHit.h"
+#include "FADCScalerTranslator.h"
 #include "FADCTranslator.h"
 #include "JEventService_DetectorTranslatorsMap.h"
 
@@ -11,6 +13,9 @@ void InitDetectorTranslators(JApplication* app) {
     translators->addTranslator<FADC250PulseHit>(
         "HMS_HODOSCOPE",
         translateHMSHodoscopeFADCHit);
+    translators->addTranslator<FADCScalerHit>(
+        "HMS_HODOSCOPE",
+        translateHMSHodoscopeFADCScalerHit);
 
     translators->freeze();
 }
