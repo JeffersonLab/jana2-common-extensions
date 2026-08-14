@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "TranslationTable.h"
 #include "jce_config_paths.h"
@@ -21,6 +22,12 @@ public:
     std::shared_ptr<const TranslationTable> GetTable(std::uint64_t run_number) const;
 
 private:
+    struct RunRangeTable {
+        std::uint64_t run_min;
+        std::uint64_t run_max;
+        std::shared_ptr<const TranslationTable> table;
+    };
+
     Parameter<std::string> m_mapping_directory;
-    std::shared_ptr<const TranslationTable> m_table;
+    std::vector<RunRangeTable> m_run_tables;
 };

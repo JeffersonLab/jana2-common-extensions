@@ -161,15 +161,17 @@ All parameters can be set on the JANA2 command line with `-P<NAME>=<value>`.
 ### Detector mappings
 
 Physicist-editable detector mappings live under
-`config/evio_parser/detector_mappings/`. `TranslationTable::LoadMappingFile()`
-loads one file and maps `(rocid, slot, channel)` to a detector name plus
-detector-specific integer fields. Translation remains separate from hardware
-decoding, calibration, and geometry.
+`config/evio_parser/detector_mappings/`. The root `manifest.map` lists each
+detector and its manifest. Each detector manifest maps inclusive run ranges to
+mapping files in that detector's directory; `max` is an open-ended upper bound.
+`TranslationTable::LoadMappingFile()` loads one referenced file and maps
+`(rocid, slot, channel)` to a detector name plus detector-specific integer
+fields. Translation remains separate from hardware decoding, calibration, and
+geometry.
 
-`JEventService_TranslationTable` publishes the loaded mapping as an immutable table.
-Factories request it by run number; until run-range selection is implemented,
-all runs receive the table built from every `*.map` file in
-`TRANSLATION:DIRECTORY`.
+`JEventService_TranslationTable` prebuilds immutable combined tables during
+initialization and selects one by run number without performing file I/O or
+table construction on the event-processing path.
 
 | Parameter | Default | Description |
 |---|---|---|
