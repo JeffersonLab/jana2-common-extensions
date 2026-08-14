@@ -3,6 +3,7 @@
 #
 
 add_library(services STATIC
+    translation_table/DetectorMappingManifest.cc
     JEventService_FilterDB.cc
     JEventService_TranslationTable.cc
 )
@@ -48,5 +49,17 @@ if(BUILD_TESTING)
         NAME translation_table_service_tests
         COMMAND translation_table_service_tests
             ${CMAKE_CURRENT_SOURCE_DIR}/testdata/detector_mappings
+    )
+
+    add_executable(detector_mapping_manifest_tests
+        translation_table/DetectorMappingManifestTests.cc
+    )
+    target_link_libraries(detector_mapping_manifest_tests PRIVATE services)
+    add_test(
+        NAME detector_mapping_manifest_tests
+        COMMAND detector_mapping_manifest_tests
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/manifests/valid.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/manifests/overlap.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/manifests/malformed.map
     )
 endif()
