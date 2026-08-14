@@ -61,5 +61,8 @@ if(BUILD_TESTING)
             ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/manifests/valid.map
             ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/manifests/overlap.map
             ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/manifests/malformed.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/catalogs/valid.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/catalogs/duplicate.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/catalogs/malformed.map
     )
 endif()
