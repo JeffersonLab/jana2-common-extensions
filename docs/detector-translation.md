@@ -69,6 +69,11 @@ calibrate measurements, or provide detector geometry.
   and does not combine Hall-B pulse fragments into reconstructed pulses.
 - TI scaler and helicity decoder records do not participate in detector
   translation and intentionally do not satisfy `DAQAddressable`.
+- Channel-addressed diagnostic CSVs keep `rocid`, `slot`, and `channel`
+  contiguous before module and detector fields so mapping inputs can be
+  compared directly with translated outputs.
+- Diagnostic outputs are grouped under a detector-named subdirectory; files
+  inside it are named only for their raw-hit family.
 
 ## Failure Behavior
 
@@ -119,8 +124,8 @@ The `translation_table_tests` CTest also verifies that `none` maps to
 
 For EVIO integration checks, load `detector_translation_dump` after
 `evio_parser`. It writes each published translated DigiHit type to a dedicated
-CSV in one output directory; the current demo mapping expects DAQ address
-`(rocid=1, slot=3, channel=0)`.
+CSV under its detector subdirectory; the current demo mapping expects DAQ
+address `(rocid=1, slot=3, channel=0)`.
 
 Production FADC scaler translation additionally requires an HMS mapping row
 for the real board address in the form `rocid slot none ...`; no hardware
