@@ -2,6 +2,7 @@
 
 #include <JANA/JService.h>
 
+#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -19,7 +20,7 @@ public:
 
     void Init() override;
 
-    std::shared_ptr<const TranslationTable> GetTable(std::uint64_t run_number) const;
+    const TranslationTable& getTable(std::uint64_t run_number) const;
 
 private:
     struct RunRangeTable {
@@ -27,7 +28,9 @@ private:
         std::uint64_t run_max;
         std::shared_ptr<const TranslationTable> table;
     };
+    static_assert(std::atomic<const RunRangeTable*>::is_always_lock_free);
 
     Parameter<std::string> m_mapping_directory;
     std::vector<RunRangeTable> m_run_tables;
+    mutable std::atomic<const RunRangeTable*> m_cached_run_table {nullptr};
 };
