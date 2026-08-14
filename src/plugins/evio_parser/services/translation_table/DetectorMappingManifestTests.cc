@@ -15,10 +15,19 @@ bool throwsFor(const char* path) {
     return false;
 }
 
+bool catalogThrowsFor(const char* path) {
+    try {
+        loadDetectorMappingCatalog(path);
+    } catch (const std::runtime_error&) {
+        return true;
+    }
+    return false;
+}
+
 } // namespace
 
 int main(int argc, char* argv[]) {
-    assert(argc == 4);
+    assert(argc == 7);
 
     const auto ranges = loadDetectorMappingManifest(argv[1]);
     assert(ranges.size() == 4);
@@ -33,4 +42,18 @@ int main(int argc, char* argv[]) {
 
     assert(throwsFor(argv[2]));
     assert(throwsFor(argv[3]));
+
+    const auto catalog = loadDetectorMappingCatalog(argv[4]);
+    assert(catalog.size() == 2);
+    assert(catalog[0] == DetectorMappingCatalogEntry({
+        "BCAL",
+        "bcal/manifest.map"
+    }));
+    assert(catalog[1] == DetectorMappingCatalogEntry({
+        "HMS_HODOSCOPE",
+        "hms_hodoscope/manifest.map"
+    }));
+
+    assert(catalogThrowsFor(argv[5]));
+    assert(catalogThrowsFor(argv[6]));
 }

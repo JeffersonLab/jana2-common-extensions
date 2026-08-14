@@ -4,6 +4,7 @@
 #include <charconv>
 #include <fstream>
 #include <limits>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -18,6 +19,15 @@ std::runtime_error manifestError(
     const std::string& message) {
     return std::runtime_error(
         "Invalid detector mapping manifest " + path + ":" +
+        std::to_string(line_number) + ": " + message);
+}
+
+std::runtime_error catalogError(
+    const std::string& path,
+    std::size_t line_number,
+    const std::string& message) {
+    return std::runtime_error(
+        "Invalid detector mapping catalog " + path + ":" +
         std::to_string(line_number) + ": " + message);
 }
 
@@ -107,4 +117,43 @@ std::vector<DetectorMappingRunRange> loadDetectorMappingManifest(
         }
     }
     return ranges;
+}
+
+std::vector<DetectorMappingCatalogEntry> loadDetectorMappingCatalog(
+    const std::string& path) {
+    std::ifstream input(path);
+    if (!input) {
+        throw std::runtime_error("Unable to read detector mapping catalog: " + path);
+    }
+
+    std::vector<DetectorMappingCatalogEntry> entries;
+    std::set<std::string> detectors;
+    std::size_t line_number = 0;
+    std::string line;
+    while (std::getline(input, line)) {
+        ++line_number;
+        const auto tokens = tokenize(std::move(line));
+        if (tokens.empty()) {
+            continue;
+        }
+        if (tokens.size() != 2) {
+            throw catalogError(path, line_number, "expected detector manifest_file");
+        }
+        if (!detectors.insert(tokens[0]).second) {
+            throw catalogError(path, line_number, "duplicate detector '" + tokens[0] + "'");
+        }
+        entries.push_back({tokens[0], tokens[1]});
+    }
+
+    if (!input.eof()) {
+        throw std::runtime_error("Unable to read detector mapping catalog: " + path);
+    }
+    if (entries.empty()) {
+        throw std::runtime_error("Detector mapping catalog contains no detectors: " + path);
+    }
+
+    std::sort(entries.begin(), entries.end(), [](const auto& left, const auto& right) {
+        return left.detector < right.detector;
+    });
+    return entries;
 }
