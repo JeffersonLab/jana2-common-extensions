@@ -64,6 +64,8 @@ if(BUILD_TESTING)
             caen1190_parser
             fadc_parser
             fadc_scaler_parser
+            tiscaler_parser
+            helicity_decoder_parsers
             mpd_parser
             vftdc_parser
     )
