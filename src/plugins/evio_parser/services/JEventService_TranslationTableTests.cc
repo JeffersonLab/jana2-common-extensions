@@ -10,10 +10,12 @@ int main(int argc, char* argv[]) {
     service.Init();
 
     const auto first_run = service.GetTable(100);
-    const auto second_run = service.GetTable(200);
+    const auto same_mapping_run = service.GetTable(175);
+    const auto second_run = service.GetTable(250);
 
     assert(first_run != nullptr);
-    assert(first_run == second_run);
+    assert(first_run == same_mapping_run);
+    assert(first_run != second_run);
 
     const DetectorAddress expected_hms {
         "HMS_HODOSCOPE",
@@ -23,6 +25,14 @@ int main(int argc, char* argv[]) {
     assert(hms_address != nullptr);
     assert(*hms_address == expected_hms);
 
+    const DetectorAddress expected_current_hms {
+        "HMS_HODOSCOPE",
+        {{"plane", 9}, {"bar", 8}, {"signal", 7}}
+    };
+    const auto* current_hms_address = second_run->Lookup({1, 3, 0});
+    assert(current_hms_address != nullptr);
+    assert(*current_hms_address == expected_current_hms);
+
     const DetectorAddress expected_bcal {
         "BCAL",
         {{"module", 2}, {"layer", 3}, {"sector", 4}, {"end", 0}}
@@ -30,4 +40,7 @@ int main(int argc, char* argv[]) {
     const auto* bcal_address = first_run->Lookup({2, 4, 1});
     assert(bcal_address != nullptr);
     assert(*bcal_address == expected_bcal);
+    const auto* current_bcal_address = second_run->Lookup({2, 4, 1});
+    assert(current_bcal_address != nullptr);
+    assert(*current_bcal_address == expected_bcal);
 }

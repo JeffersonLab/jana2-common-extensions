@@ -8,9 +8,10 @@ calibrate measurements, or provide detector geometry.
 
 ## Main Flow
 
-1. `JEventService_TranslationTable` loads every `*.map` file from the configured
-   detector mapping directory.
-2. The service publishes it as `shared_ptr<const TranslationTable>`.
+1. `JEventService_TranslationTable` loads the root detector catalog, each
+   detector's run-range manifest, and the referenced mapping files.
+2. During initialization, the service builds immutable combined tables for
+   every resulting run interval and publishes the table selected for each run.
 3. A module-parser hit type opts into translation by providing
    `DAQAddress getDAQAddress(const HitType&)`, which normalizes its hardware
    address field names.
@@ -29,9 +30,16 @@ calibrate measurements, or provide detector geometry.
 - Detector mapping files are installed under
   `config/<namespace>/evio_parser/detector_mappings/`.
 - `TRANSLATION:DIRECTORY` overrides the mapping directory.
-- Mapping files are loaded in deterministic filename order into one table.
-- Until run-range selection is added, every run receives the same table
-  instance.
+- The root `manifest.map` lists detector names and detector-manifest paths.
+- Each detector manifest contains inclusive `run_min run_max mapping_file`
+  rows; `max` is accepted as an open-ended upper bound.
+- Detector ranges may have gaps. A detector without a range for a run is absent
+  from that combined table; a run with no applicable detector mapping fails.
+- All referenced mapping files and combined tables are loaded during service
+  initialization. Event processing performs no configuration file I/O or table
+  construction.
+- Combined tables with the same selected mapping-file set share one immutable
+  table instance.
 - Mapping changes are expected only between runs.
 - Translation runs in the processor's parallel event callback.
 - The processor is registered by `evio_parser` and inserts DigiHits before
@@ -77,10 +85,12 @@ calibrate measurements, or provide detector geometry.
 
 ## Failure Behavior
 
-Loading throws when the directory cannot be read, contains no `*.map` files, a
-file cannot be read, declarations or channel rows are invalid, a numeric field
-is out of range, or a DAQ address is duplicated within or across files. The
-keyword `none` is accepted only in the DAQ channel column.
+Loading throws when the catalog or a manifest cannot be read, is empty, or has
+malformed or duplicate entries; when detector run ranges overlap or are
+reversed; when a referenced mapping file cannot be read; when declarations or
+channel rows are invalid; or when a DAQ address is duplicated within a combined
+table. The keyword `none` is accepted only in the DAQ channel column. A table
+request throws when no configured detector mapping applies to that run.
 
 ## Key Components
 
@@ -99,9 +109,9 @@ The `translation_table_tests` CTest loads the dependency-free demo HMS mapping
 and verifies its known lookup, duplicate insertion rejection, and an
 unknown-address lookup.
 
-The `translation_table_service_tests` CTest verifies that the service loads
-multiple detector files into one immutable table and currently reuses it for
-different run numbers.
+The `translation_table_service_tests` CTest verifies that the service combines
+multiple detectors, selects different HMS mappings across a run boundary, and
+preserves the applicable BCAL mapping in both tables.
 
 The `hms_hodoscope_fadc_translator_tests` CTest verifies detector identity and
 hardware measurements for every emitted FADC format, rejection of invalid
