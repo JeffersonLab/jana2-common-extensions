@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <charconv>
 #include <fstream>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -37,12 +38,20 @@ std::vector<std::string> tokenize(std::string line) {
 std::uint64_t parseRun(
     const std::string& token,
     const std::string& path,
-    std::size_t line_number) {
+    std::size_t line_number,
+    bool allow_max) {
+    if (allow_max && token == "max") {
+        return std::numeric_limits<std::uint64_t>::max();
+    }
+
     std::uint64_t run {};
     const auto [end, error] = std::from_chars(
         token.data(), token.data() + token.size(), run);
     if (error != std::errc {} || end != token.data() + token.size()) {
-        throw manifestError(path, line_number, "run bounds must be unsigned integers");
+        throw manifestError(
+            path,
+            line_number,
+            "run bounds must be unsigned integers; run_max may also be 'max'");
     }
     return run;
 }
@@ -71,8 +80,8 @@ std::vector<DetectorMappingRunRange> loadDetectorMappingManifest(
         }
 
         DetectorMappingRunRange range {
-            parseRun(tokens[0], path, line_number),
-            parseRun(tokens[1], path, line_number),
+            parseRun(tokens[0], path, line_number, false),
+            parseRun(tokens[1], path, line_number, true),
             tokens[2]
         };
         if (range.run_min > range.run_max) {
