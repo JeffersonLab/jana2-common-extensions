@@ -113,13 +113,20 @@ void JEventService_TranslationTable::Init() {
             "Detector mapping catalog produces no run tables: " + m_mapping_directory());
     }
     m_run_tables = std::move(run_tables);
+    m_cached_run_table.store(nullptr, std::memory_order_relaxed);
 }
 
-std::shared_ptr<const TranslationTable>
-JEventService_TranslationTable::GetTable(std::uint64_t run_number) const {
+const TranslationTable&
+JEventService_TranslationTable::getTable(std::uint64_t run_number) const {
     if (m_run_tables.empty()) {
         throw std::logic_error(
             "JEventService_TranslationTable has not been initialized");
+    }
+
+    const auto* cached = m_cached_run_table.load(std::memory_order_relaxed);
+    if (cached != nullptr &&
+        cached->run_min <= run_number && run_number <= cached->run_max) {
+        return *cached->table;
     }
 
     const auto upper = std::upper_bound(
@@ -137,5 +144,6 @@ JEventService_TranslationTable::GetTable(std::uint64_t run_number) const {
         throw std::runtime_error(
             "No detector translation table for run " + std::to_string(run_number));
     }
-    return range.table;
+    m_cached_run_table.store(&range, std::memory_order_relaxed);
+    return *range.table;
 }
