@@ -48,8 +48,8 @@ void writeFADCFields(
         << event_number << ','
         << hit.rocid << ','
         << hit.slot << ','
-        << hit.module_id << ','
         << hit.channel << ','
+        << hit.module_id << ','
         << hit.plane << ','
         << hit.bar << ','
         << hit.signal << ','
@@ -74,7 +74,8 @@ JEventProcessor_DetectorTranslationDump() {
 }
 
 void JEventProcessor_DetectorTranslationDump::Init() {
-    const std::filesystem::path directory(m_outputDirectory());
+    const std::filesystem::path directory =
+        std::filesystem::path(m_outputDirectory()) / "hms_hodoscope";
     std::error_code error;
     std::filesystem::create_directories(directory, error);
     if (error) {
@@ -85,36 +86,36 @@ void JEventProcessor_DetectorTranslationDump::Init() {
     }
 
     const std::string fadcFields =
-        "event,rocid,slot,module_id,channel,plane,bar,signal,trigger_num,"
+        "event,rocid,slot,channel,module_id,plane,bar,signal,trigger_num,"
         "timestamp1,timestamp2";
     m_fadcPulseOutput = openOutput(
         directory,
-        "hms_fadc_pulse.csv",
+        "fadc_pulse.csv",
         fadcFields +
             ",pedestal_quality,pedestal_sum,integral_sum,integral_quality,"
             "nsamples_above_threshold,coarse_time,fine_time,pulse_peak,"
             "time_quality");
     m_fadcWaveformOutput = openOutput(
         directory,
-        "hms_fadc_waveform.csv",
+        "fadc_waveform.csv",
         fadcFields + ",waveform");
     m_fadcPulseIntegralOutput = openOutput(
         directory,
-        "hms_fadc_pulse_integral.csv",
+        "fadc_pulse_integral.csv",
         fadcFields + ",pulse_number,pulse_integral");
     m_fadcPulseTimeOutput = openOutput(
         directory,
-        "hms_fadc_pulse_time.csv",
+        "fadc_pulse_time.csv",
         fadcFields +
             ",pulse_number,measurement_quality_factor,coarse_pulse_time,"
             "fine_pulse_time");
     m_fadcPulsePeakOutput = openOutput(
         directory,
-        "hms_fadc_pulse_peak.csv",
+        "fadc_pulse_peak.csv",
         fadcFields + ",pulse_number,minimum_voltage,peak_voltage");
     m_fadcScalerOutput = openOutput(
         directory,
-        "hms_fadc_scaler.csv",
+        "fadc_scaler.csv",
         "event,rocid,slot,plane,bar,signal,words_index,number_of_counts,counts");
 }
 
