@@ -1,3 +1,5 @@
 # run_min run_max mapping_file
+0 0 zero.map
 200 299 production.map
 1 99 commissioning.map
+300 max current.map
