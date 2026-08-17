@@ -6,6 +6,7 @@
 add_subdirectory(CAEN1190)
 add_subdirectory(FADC)
 add_subdirectory(FADCScaler)
+add_subdirectory(faV3_compton)
 add_subdirectory(TIScaler)
 add_subdirectory(helicity_decoder)
 add_subdirectory(MPD)
@@ -18,6 +19,7 @@ set(MODULE_PARSERS_LIBS
     caen1190_parser
     fadc_parser
     fadc_scaler_parser
+    faV3compton_parser
     tiscaler_parser
     mpd_parser
     helicity_decoder_parsers
@@ -30,6 +32,7 @@ set(MODULE_PARSERS_LIBS
 set(MODULE_PARSERS_INCLUDE_DIRS
     ${CAEN1190_INCLUDE_DIR}
     ${FADC_INCLUDE_DIR}
+    ${FAV3COMPTON_INCLUDE_DIR}
     ${FADC_SCALER_INCLUDE_DIR}
     ${TISCALER_INCLUDE_DIR}
     ${MPD_INCLUDE_DIR}
@@ -43,6 +46,7 @@ set(MODULE_PARSERS_INCLUDE_DIRS
 set(MODULE_PARSERS_HEADERS
     ${CAEN1190_PUBLIC_HEADERS}
     ${FADC_PUBLIC_HEADERS}
+    ${FAV3COMPTON_PUBLIC_HEADERS}
     ${FADC_SCALER_PUBLIC_HEADERS}
     ${TISCALER_PUBLIC_HEADERS}
     ${MPD_PUBLIC_HEADERS}

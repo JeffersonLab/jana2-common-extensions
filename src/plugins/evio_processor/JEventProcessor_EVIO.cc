@@ -23,6 +23,7 @@ JEventProcessor_EVIO::JEventProcessor_EVIO() {
     m_hallb_pulse_integral_hits_in.SetOptional(true);
     m_hallb_pulse_time_hits_in.SetOptional(true);
     m_hallb_pulse_peak_hits_in.SetOptional(true);
+    m_faV3compton_hits_in.SetOptional(true);
 }
 
 /**
@@ -262,6 +263,7 @@ void JEventProcessor_EVIO::ProcessSequential(const JEvent &event) {
         const auto& hallb_pulse_integral_hits = m_hallb_pulse_integral_hits_in();
         const auto& hallb_pulse_time_hits    = m_hallb_pulse_time_hits_in();
         const auto& hallb_pulse_peak_hits    = m_hallb_pulse_peak_hits_in();
+        const auto& faV3compton_hits    = m_faV3compton_hits_in();
 
         bool have_caen1190_hits          = !caen1190_hits.empty();
         bool have_waveforms              = !waveform_hits.empty();

@@ -8,6 +8,7 @@
 #include "ModuleParser_CAEN1190.h"
 #include "ModuleParser_FADC.h"
 #include "ModuleParser_FADCScaler.h"
+#include "ModuleParser_faV3compton.cc"
 #include "ModuleParser_TIScaler.h"
 #include "ModuleParser_HelicityDecoder.h"
 #include "ModuleParser_MPD.h"
@@ -21,6 +22,7 @@ void InitModuleParsers(JApplication* app) {
     // Format: module_parsers_svc->addParser(module_id, new ModuleParser_instance());
     module_parsers_svc->addParser(1190,  new ModuleParser_CAEN1190());
     module_parsers_svc->addParser(250,   new ModuleParser_FADC());
+    module_parsers_svc->addParser(253,   new ModuleParser_faV3compton());
     module_parsers_svc->addParser(9250,  new ModuleParser_FADCScaler());
     module_parsers_svc->addParser(9001,  new ModuleParser_TIScaler());
     module_parsers_svc->addParser(0xdec, new ModuleParser_HelicityDecoder());
