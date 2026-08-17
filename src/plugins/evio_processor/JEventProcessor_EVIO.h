@@ -21,6 +21,7 @@
 #include "FADC250HallBPulseIntegralHit.h"
 #include "FADC250HallBPulseTimeHit.h"
 #include "FADC250HallBPulsePeakHit.h"
+#include "faV3comptonHit.h"
 
 /**
  * @struct WaveformTreeRow
@@ -87,6 +88,7 @@ private:
     Input<FADC250HallBPulseIntegralHit> m_hallb_pulse_integral_hits_in {this};
     Input<FADC250HallBPulseTimeHit>    m_hallb_pulse_time_hits_in {this};
     Input<FADC250HallBPulsePeakHit>    m_hallb_pulse_peak_hits_in {this};
+    Input<faV3comptonHit>    m_faV3compton_hits_in {this};
 
     /**
      * @brief ROOT output filename parameter
