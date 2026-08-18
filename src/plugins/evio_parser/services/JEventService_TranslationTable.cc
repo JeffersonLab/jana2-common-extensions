@@ -41,7 +41,9 @@ std::filesystem::path resolveOwnedPath(
 
     const auto owner = fs::weakly_canonical(directory);
     const auto resolved = fs::weakly_canonical(owner / referenced_path);
-    if (!std::equal(owner.begin(), owner.end(), resolved.begin(), resolved.end())) {
+    const auto relative = resolved.lexically_relative(owner);
+    if (relative.empty() || relative.is_absolute() ||
+        (relative.begin() != relative.end() && *relative.begin() == "..")) {
         throw std::runtime_error(
             std::string(description) + " path escapes its configuration directory: " +
             referenced_path.string());
