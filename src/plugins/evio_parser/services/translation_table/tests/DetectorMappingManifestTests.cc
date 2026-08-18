@@ -1,4 +1,5 @@
 #include <cassert>
+#include <filesystem>
 #include <limits>
 #include <stdexcept>
 
@@ -6,18 +7,18 @@
 
 namespace {
 
-bool throwsFor(const char* path) {
+bool throwsFor(const std::filesystem::path& path) {
     try {
-        loadDetectorMappingManifest(path);
+        loadDetectorMappingManifest(path.string());
     } catch (const std::runtime_error&) {
         return true;
     }
     return false;
 }
 
-bool catalogThrowsFor(const char* path) {
+bool catalogThrowsFor(const std::filesystem::path& path) {
     try {
-        loadDetectorMappingCatalog(path);
+        loadDetectorMappingCatalog(path.string());
     } catch (const std::runtime_error&) {
         return true;
     }
@@ -27,9 +28,13 @@ bool catalogThrowsFor(const char* path) {
 } // namespace
 
 int main(int argc, char* argv[]) {
-    assert(argc == 7);
+    assert(argc == 2);
 
-    const auto ranges = loadDetectorMappingManifest(argv[1]);
+    const std::filesystem::path testdata(argv[1]);
+    const auto manifests = testdata / "manifests";
+    const auto catalogs = testdata / "catalogs";
+
+    const auto ranges = loadDetectorMappingManifest((manifests / "valid.map").string());
     assert(ranges.size() == 4);
     assert(ranges[0] == DetectorMappingRunRange({0, 0, "zero.map"}));
     assert(ranges[1] == DetectorMappingRunRange({1, 99, "commissioning.map"}));
@@ -40,10 +45,10 @@ int main(int argc, char* argv[]) {
         "current.map"
     }));
 
-    assert(throwsFor(argv[2]));
-    assert(throwsFor(argv[3]));
+    assert(throwsFor(manifests / "overlap.map"));
+    assert(throwsFor(manifests / "malformed.map"));
 
-    const auto catalog = loadDetectorMappingCatalog(argv[4]);
+    const auto catalog = loadDetectorMappingCatalog((catalogs / "valid.map").string());
     assert(catalog.size() == 2);
     assert(catalog[0] == DetectorMappingCatalogEntry({
         "BCAL",
@@ -54,6 +59,6 @@ int main(int argc, char* argv[]) {
         "hms_hodoscope/manifest.map"
     }));
 
-    assert(catalogThrowsFor(argv[5]));
-    assert(catalogThrowsFor(argv[6]));
+    assert(catalogThrowsFor(catalogs / "duplicate.map"));
+    assert(catalogThrowsFor(catalogs / "malformed.map"));
 }
