@@ -124,7 +124,9 @@ preserves the applicable BCAL mapping in both tables. It also rejects a mapping
 file whose declared detector differs from its root-catalog entry, plus absolute
 and escaping paths at both manifest levels. Run-coverage checks verify global
 gap failures, detector-specific omission, cached lookups across failures and
-repeated range switches, and cross-detector DAQ-address collision rejection.
+repeated range switches, cross-detector DAQ-address collision rejection,
+missing referenced files, empty catalogs and manifests, reversed ranges, and
+rejection of `max` as a lower bound.
 
 The `hms_hodoscope_fadc_translator_tests` CTest verifies detector identity and
 hardware measurements for every emitted FADC format, rejection of invalid

@@ -47,6 +47,9 @@ int main(int argc, char* argv[]) {
 
     assert(throwsFor(manifests / "overlap.map"));
     assert(throwsFor(manifests / "malformed.map"));
+    assert(throwsFor(manifests / "reversed.map"));
+    assert(throwsFor(manifests / "empty.map"));
+    assert(throwsFor(manifests / "max_run_min.map"));
 
     const auto catalog = loadDetectorMappingCatalog((catalogs / "valid.map").string());
     assert(catalog.size() == 2);
@@ -61,4 +64,5 @@ int main(int argc, char* argv[]) {
 
     assert(catalogThrowsFor(catalogs / "duplicate.map"));
     assert(catalogThrowsFor(catalogs / "malformed.map"));
+    assert(catalogThrowsFor(catalogs / "empty.map"));
 }

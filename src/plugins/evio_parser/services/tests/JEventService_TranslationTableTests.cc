@@ -42,6 +42,18 @@ bool rejectsDuplicateAddress(const std::filesystem::path& mapping_directory) {
     return false;
 }
 
+bool rejectsInitialization(
+    const std::filesystem::path& mapping_directory,
+    const char* expected_message) {
+    try {
+        JEventService_TranslationTable service(mapping_directory.string());
+        service.Init();
+    } catch (const std::runtime_error& error) {
+        return std::string(error.what()).find(expected_message) != std::string::npos;
+    }
+    return false;
+}
+
 bool rejectsRun(
     const JEventService_TranslationTable& service,
     std::uint64_t run_number) {
@@ -135,4 +147,10 @@ int main(int argc, char* argv[]) {
     assert(detector_gap.Lookup({2, 4, 1}) != nullptr);
 
     assert(rejectsDuplicateAddress(testdata / "duplicate_active_address"));
+    assert(rejectsInitialization(
+        testdata / "missing_detector_manifest",
+        "Unable to read detector mapping manifest"));
+    assert(rejectsInitialization(
+        testdata / "missing_mapping_file",
+        "Unable to open detector mapping"));
 }
