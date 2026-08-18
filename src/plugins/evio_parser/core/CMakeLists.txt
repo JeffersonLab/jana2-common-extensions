@@ -43,7 +43,7 @@ if(BUILD_TESTING)
     add_test(
         NAME translation_table_tests
         COMMAND translation_table_tests
-            ${CMAKE_SOURCE_DIR}/config/evio_parser/detector_mappings/hms_hodoscope.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/detector_mapping_objects/testdata/hms_hodoscope.map
             ${CMAKE_CURRENT_SOURCE_DIR}/detector_mapping_objects/testdata/channel_none.map
     )
 endif()
