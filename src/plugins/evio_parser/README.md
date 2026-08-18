@@ -5,6 +5,7 @@ The `evio_parser` plugin is the **data-ingestion layer** of the jana2-common-ext
 1. Opening EVIO files and streaming raw events through JANA2.
 2. Decoding hardware-specific banks (FADC250, MPD, VFTDC, scalers, helicity decoder, …) into strongly-typed C++ hit objects.
 3. Splitting EVIO block-level events into individual physics-level child events that downstream processors can consume.
+4. Translating mapped raw hits into typed, uncalibrated detector DigiHits.
 
 It is **hardware-agnostic at its core**. Hardware decoding lives in
 `module_parsers/`, while detector-specific DigiHit creation lives in
@@ -18,6 +19,7 @@ parser core.
 - [Architecture Overview](#architecture-overview)
 - [Directory Structure](#directory-structure)
 - [Data Flow](#data-flow)
+- [Detector Translation](#detector-translation)
 - [Data Objects](#data-objects)
 - [Configuration Parameters](#configuration-parameters)
 - [Environment Variables](#environment-variables)
@@ -43,7 +45,12 @@ JEventSource_EVIO          (reads file, emits block-level JEvents)
 JEventUnfolder_EVIO        (splits block → individual physics JEvents)
     │
     ▼
-Downstream JEventProcessors  (e.g. evio_processor)
+JEventProcessor_DetectorDigiHits
+    │   ├─ raw hit → DAQAddress
+    │   ├─ run-specific mapping lookup
+    │   └─ detector translator → typed DigiHit
+    ▼
+Downstream JEventProcessors  (e.g. detector_translation_dump)
 ```
 
 ### Key Components
@@ -84,10 +91,15 @@ src/plugins/evio_parser/
 │   ├── JEventService_BankToModuleMap.h
 │   ├── JEventService_FilterDB.cc/.h
 │   ├── JEventService_ModuleParsersMap.h
+│   ├── JEventService_DetectorTranslatorsMap.h
 │   └── JEventService_TranslationTable.cc/.h
 │
 ├── detector_translators/          # Detector-owned DigiHit types and conversion logic
+│   ├── README.md                   # Complete detector-translator extension guide
 │   └── HMSHodoscope/
+│       ├── HMSHodoscopeIdentity.*
+│       ├── FADC/
+│       └── FADCScaler/
 │
 ├── processors/                    # Parallel detector DigiHit translation
 │   └── detector_digi_hits/
@@ -108,6 +120,9 @@ src/plugins/evio_parser/
 - `core/` is the stable, experiment-agnostic kernel. You should rarely need to touch it.
 - `services/` are JANA2 singletons that provide shared, thread-safe configuration to all parsers.
 - `module_parsers/` is the extension zone. Each hardware type gets its own subdirectory and static library so that adding or removing a module requires only local changes.
+- `detector_translators/` is organized first by detector and then by raw-hit
+  family. It converts decoded hardware records into detector-qualified DigiHits
+  without adding calibration or geometry.
 
 ---
 
@@ -127,6 +142,39 @@ src/plugins/evio_parser/
 `JEventUnfolder_EVIO::Unfold()` is called once per `PhysicsEvent` in the block. It:
 - Sets the child event number and run number.
 - Calls `PhysicsEvent::insertHitsIntoEvent()`, which iterates each `EventHits` object and calls its `insertIntoEvent(JEvent&)` override, making typed hit objects available to downstream processors.
+
+### Translation flow (after unfolding)
+
+For each physics-level event, `JEventProcessor_DetectorDigiHits`:
+
+1. Selects the immutable translation table for the event's run number.
+2. Reads each supported raw-hit collection in `ProcessParallel()`.
+3. Normalizes the hit's hardware identity with `getDAQAddress()`.
+4. Looks up the detector key and detector-specific integer fields.
+5. Selects a translator by `(raw-hit C++ type, detector key)`.
+6. Inserts a concrete typed DigiHit into the same event.
+
+Unmapped addresses and mapped detectors without a route for that raw-hit type
+are skipped. The mapping service performs all configuration I/O and table
+construction during initialization, not on the event-processing path.
+
+## Detector Translation
+
+Detector translation is split deliberately across three responsibilities:
+
+| Responsibility | Owner | Guide |
+|---|---|---|
+| Decode hardware words into typed raw hits | `module_parsers/` | [Adding a New Module Parser](#adding-a-new-module-parser) |
+| Convert a mapped raw hit into a typed detector DigiHit | `detector_translators/` | [Adding Detector Translation](detector_translators/README.md) |
+| Assign DAQ addresses and run ranges | `config/evio_parser/detector_mappings/` | [Detector Mapping Configuration](../../../config/evio_parser/detector_mappings/README.md) |
+
+The module parser and typed raw hit must work before translator development
+starts. A mapping-only change is sufficient only when the existing raw-hit
+routes, DigiHit schemas, and detector identity fields are already correct.
+
+The current HMS Hodoscope route is a working reference implementation. Its
+checked-in mapping addresses and detector values are demonstration data and
+are not physics-approved production configuration.
 
 ---
 
@@ -152,6 +200,14 @@ Simple POD holding `uint64_t first_event_number`, extracted from the EB1 segment
 
 A `JObject` that wraps a `std::shared_ptr<evio::EvioEvent>` so that JANA2's ownership model can manage the lifetime of EVIO events.
 
+### Detector DigiHits
+
+Detector-owned, typed, uncalibrated records published after mapping and
+translation. They flatten the validated detector identity and copy the raw
+digitized payload needed by consumers. Public DigiHit headers live under each
+translator route's `data_objects/` directory and are exported through
+`evio_parser_data_types`.
+
 ---
 
 ## Configuration Parameters
@@ -171,6 +227,10 @@ catalog entry.
 fields. Translation remains separate from hardware decoding, calibration, and
 geometry.
 
+See [Detector Mapping Configuration](../../../config/evio_parser/detector_mappings/README.md)
+for the complete catalog, run-range, mapping-row, `max`, `none`, gap, path,
+validation, and deployment rules.
+
 `JEventService_TranslationTable` prebuilds immutable combined tables during
 initialization and selects one by run number without performing file I/O or
 table construction on the event-processing path.
@@ -188,6 +248,10 @@ Detector routes are registered through `InitDetectorTranslators()` and
 `JEventService_DetectorTranslatorsMap`, so the central event loop does not call
 detector-specific conversion functions directly. Each translator inserts its
 concrete DigiHit type into the current event using the default empty tag.
+
+See [Adding Detector Translation](detector_translators/README.md) for the exact
+raw-hit prerequisite, address overload, central scan, translator, registration,
+CMake, diagnostic output, mapping, and test checklist.
 
 ### Bank-to-module mapping
 
@@ -400,6 +464,11 @@ cmake --build build --parallel
 ```
 
 Run on an EVIO file that contains bank `350` and verify that `PhysicsEvent` objects are populated with `MyHWHit` data using instructions given in [Using the Plugins with JANA2](../../../README.md#basic-usage)
+
+If this raw-hit family must produce detector-qualified DigiHits, continue with
+[Adding Detector Translation](detector_translators/README.md). Before starting
+that guide, confirm the parser publishes the typed raw hit into the
+physics-level event and that its ROC, slot, and channel identity are stable.
 
 ---
 
