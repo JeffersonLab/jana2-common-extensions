@@ -16,6 +16,7 @@
 namespace {
 
 struct DetectorManifest {
+    std::string detector;
     std::filesystem::path directory;
     std::vector<DetectorMappingRunRange> ranges;
 };
@@ -66,10 +67,16 @@ void JEventService_TranslationTable::Init() {
                 boundaries.insert(range.run_max + 1);
             }
         }
-        detector_manifests.push_back({manifest_path.parent_path(), std::move(ranges)});
+        detector_manifests.push_back({
+            entry.detector,
+            manifest_path.parent_path(),
+            std::move(ranges)
+        });
     }
 
-    std::map<std::vector<std::string>, std::shared_ptr<const TranslationTable>> tables;
+    std::map<
+        std::vector<std::pair<std::string, std::string>>,
+        std::shared_ptr<const TranslationTable>> tables;
     std::vector<RunRangeTable> run_tables;
     for (auto boundary = boundaries.begin(); boundary != boundaries.end(); ++boundary) {
         const auto run_min = *boundary;
@@ -78,11 +85,12 @@ void JEventService_TranslationTable::Init() {
             ? std::numeric_limits<std::uint64_t>::max()
             : *next - 1;
 
-        std::vector<std::string> mapping_files;
+        std::vector<std::pair<std::string, std::string>> mapping_files;
         for (const auto& manifest : detector_manifests) {
             const auto* range = findRange(manifest.ranges, run_min);
             if (range != nullptr) {
-                mapping_files.push_back(
+                mapping_files.emplace_back(
+                    manifest.detector,
                     (manifest.directory / range->mapping_file).string());
             }
         }
@@ -93,8 +101,8 @@ void JEventService_TranslationTable::Init() {
         auto [table_entry, inserted] = tables.emplace(mapping_files, nullptr);
         if (inserted) {
             auto table = std::make_shared<TranslationTable>();
-            for (const auto& mapping_file : mapping_files) {
-                table->LoadMappingFile(mapping_file);
+            for (const auto& [detector, mapping_file] : mapping_files) {
+                table->LoadMappingFile(mapping_file, detector);
             }
             table_entry->second = std::move(table);
         }

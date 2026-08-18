@@ -164,6 +164,8 @@ Physicist-editable detector mappings live under
 `config/evio_parser/detector_mappings/`. The root `manifest.map` lists each
 detector and its manifest. Each detector manifest maps inclusive run ranges to
 mapping files in that detector's directory; `max` is an open-ended upper bound.
+Every referenced mapping file must declare the detector named by its root
+catalog entry.
 `TranslationTable::LoadMappingFile()` loads one referenced file and maps
 `(rocid, slot, channel)` to a detector name plus detector-specific integer
 fields. Translation remains separate from hardware decoding, calibration, and

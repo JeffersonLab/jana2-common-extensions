@@ -72,6 +72,12 @@ const DetectorAddress* TranslationTable::Lookup(const DAQAddress& daq) const {
 }
 
 void TranslationTable::LoadMappingFile(const std::string& path) {
+    LoadMappingFile(path, "");
+}
+
+void TranslationTable::LoadMappingFile(
+    const std::string& path,
+    const std::string& expected_detector) {
     std::ifstream input(path);
     if (!input) {
         throw std::runtime_error("Unable to open detector mapping: " + path);
@@ -93,6 +99,13 @@ void TranslationTable::LoadMappingFile(const std::string& path) {
         if (tokens.front() == "detector") {
             if (tokens.size() != 2 || !detector.empty() || !fields.empty()) {
                 throw MappingError(path, line_number, "expected one 'detector NAME' declaration");
+            }
+            if (!expected_detector.empty() && tokens[1] != expected_detector) {
+                throw MappingError(
+                    path,
+                    line_number,
+                    "detector '" + tokens[1] +
+                        "' does not match catalog detector '" + expected_detector + "'");
             }
             detector = tokens[1];
             continue;
