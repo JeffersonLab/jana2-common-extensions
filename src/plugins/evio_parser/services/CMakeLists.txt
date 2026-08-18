@@ -50,6 +50,10 @@ if(BUILD_TESTING)
         COMMAND translation_table_service_tests
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/detector_mappings
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/mismatched_detector_mappings
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/absolute_catalog_path
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/escaping_catalog_path
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/absolute_mapping_path
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/escaping_mapping_path
     )
 
     add_executable(detector_mapping_manifest_tests

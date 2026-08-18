@@ -21,6 +21,34 @@ struct DetectorManifest {
     std::vector<DetectorMappingRunRange> ranges;
 };
 
+std::filesystem::path resolveOwnedPath(
+    const std::filesystem::path& directory,
+    const std::filesystem::path& referenced_path,
+    const char* description) {
+    namespace fs = std::filesystem;
+
+    if (referenced_path.is_absolute()) {
+        throw std::runtime_error(
+            std::string(description) + " path must be relative: " +
+            referenced_path.string());
+    }
+    if (std::find(referenced_path.begin(), referenced_path.end(), "..") !=
+        referenced_path.end()) {
+        throw std::runtime_error(
+            std::string(description) + " path must not contain '..': " +
+            referenced_path.string());
+    }
+
+    const auto owner = fs::weakly_canonical(directory);
+    const auto resolved = fs::weakly_canonical(owner / referenced_path);
+    if (!std::equal(owner.begin(), owner.end(), resolved.begin(), resolved.end())) {
+        throw std::runtime_error(
+            std::string(description) + " path escapes its configuration directory: " +
+            referenced_path.string());
+    }
+    return resolved;
+}
+
 const DetectorMappingRunRange* findRange(
     const std::vector<DetectorMappingRunRange>& ranges,
     std::uint64_t run_number) {
@@ -59,7 +87,8 @@ void JEventService_TranslationTable::Init() {
     std::vector<DetectorManifest> detector_manifests;
     std::set<std::uint64_t> boundaries;
     for (const auto& entry : catalog) {
-        const auto manifest_path = mapping_directory / entry.manifest_file;
+        const auto manifest_path = resolveOwnedPath(
+            mapping_directory, entry.manifest_file, "Detector manifest");
         auto ranges = loadDetectorMappingManifest(manifest_path.string());
         for (const auto& range : ranges) {
             boundaries.insert(range.run_min);
@@ -91,7 +120,9 @@ void JEventService_TranslationTable::Init() {
             if (range != nullptr) {
                 mapping_files.emplace_back(
                     manifest.detector,
-                    (manifest.directory / range->mapping_file).string());
+                    resolveOwnedPath(
+                        manifest.directory, range->mapping_file, "Mapping file")
+                        .string());
             }
         }
         if (mapping_files.empty()) {

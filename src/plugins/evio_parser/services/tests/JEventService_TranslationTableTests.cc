@@ -18,10 +18,20 @@ bool rejectsMismatchedDetector(const char* mapping_directory) {
     return false;
 }
 
+bool rejectsPath(const char* mapping_directory, const char* expected_message) {
+    try {
+        JEventService_TranslationTable service(mapping_directory);
+        service.Init();
+    } catch (const std::runtime_error& error) {
+        return std::string(error.what()).find(expected_message) != std::string::npos;
+    }
+    return false;
+}
+
 } // namespace
 
 int main(int argc, char* argv[]) {
-    assert(argc == 3);
+    assert(argc == 7);
 
     JEventService_TranslationTable service(argv[1]);
     service.Init();
@@ -63,4 +73,8 @@ int main(int argc, char* argv[]) {
     assert(*current_bcal_address == expected_bcal);
 
     assert(rejectsMismatchedDetector(argv[2]));
+    assert(rejectsPath(argv[3], "Detector manifest path must be relative"));
+    assert(rejectsPath(argv[4], "Detector manifest path must not contain '..'"));
+    assert(rejectsPath(argv[5], "Mapping file path must be relative"));
+    assert(rejectsPath(argv[6], "Mapping file path must not contain '..'"));
 }
