@@ -2,7 +2,7 @@
 #include <limits>
 #include <stdexcept>
 
-#include "DetectorMappingManifest.h"
+#include "translation_table/DetectorMappingManifest.h"
 
 namespace {
 
