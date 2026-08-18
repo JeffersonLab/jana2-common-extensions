@@ -48,12 +48,7 @@ if(BUILD_TESTING)
     add_test(
         NAME translation_table_service_tests
         COMMAND translation_table_service_tests
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/detector_mappings
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/mismatched_detector_mappings
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/absolute_catalog_path
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/escaping_catalog_path
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/absolute_mapping_path
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/escaping_mapping_path
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata
     )
 
     add_executable(detector_mapping_manifest_tests
@@ -63,11 +58,6 @@ if(BUILD_TESTING)
     add_test(
         NAME detector_mapping_manifest_tests
         COMMAND detector_mapping_manifest_tests
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/manifests/valid.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/manifests/overlap.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/manifests/malformed.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/catalogs/valid.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/catalogs/duplicate.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/catalogs/malformed.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata
     )
 endif()
