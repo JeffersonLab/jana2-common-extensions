@@ -31,7 +31,7 @@ set(SERVICES_PUBLIC_HEADERS ${SERVICES_PUBLIC_HEADERS} PARENT_SCOPE)
 
 if(BUILD_TESTING)
     add_executable(detector_translators_map_tests
-        JEventService_DetectorTranslatorsMapTests.cc
+        tests/JEventService_DetectorTranslatorsMapTests.cc
     )
     target_link_libraries(detector_translators_map_tests PRIVATE services)
     add_test(
@@ -48,22 +48,22 @@ if(BUILD_TESTING)
     add_test(
         NAME translation_table_service_tests
         COMMAND translation_table_service_tests
-            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/detector_mappings
-            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/mismatched_detector_mappings
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/detector_mappings
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata/mismatched_detector_mappings
     )
 
     add_executable(detector_mapping_manifest_tests
-        translation_table/DetectorMappingManifestTests.cc
+        translation_table/tests/DetectorMappingManifestTests.cc
     )
     target_link_libraries(detector_mapping_manifest_tests PRIVATE services)
     add_test(
         NAME detector_mapping_manifest_tests
         COMMAND detector_mapping_manifest_tests
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/manifests/valid.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/manifests/overlap.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/manifests/malformed.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/catalogs/valid.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/catalogs/duplicate.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/testdata/catalogs/malformed.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/manifests/valid.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/manifests/overlap.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/manifests/malformed.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/catalogs/valid.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/catalogs/duplicate.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/translation_table/tests/testdata/catalogs/malformed.map
     )
 endif()

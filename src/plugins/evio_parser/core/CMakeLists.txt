@@ -35,7 +35,7 @@ set(CORE_PUBLIC_HEADERS ${CORE_PUBLIC_HEADERS} PARENT_SCOPE)
 
 if(BUILD_TESTING)
     add_executable(translation_table_tests
-        detector_mapping_objects/TranslationTableTests.cc
+        detector_mapping_objects/tests/TranslationTableTests.cc
     )
     target_link_libraries(translation_table_tests
         PRIVATE core
@@ -43,7 +43,7 @@ if(BUILD_TESTING)
     add_test(
         NAME translation_table_tests
         COMMAND translation_table_tests
-            ${CMAKE_CURRENT_SOURCE_DIR}/detector_mapping_objects/testdata/hms_hodoscope.map
-            ${CMAKE_CURRENT_SOURCE_DIR}/detector_mapping_objects/testdata/channel_none.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/detector_mapping_objects/tests/testdata/hms_hodoscope.map
+            ${CMAKE_CURRENT_SOURCE_DIR}/detector_mapping_objects/tests/testdata/channel_none.map
     )
 endif()

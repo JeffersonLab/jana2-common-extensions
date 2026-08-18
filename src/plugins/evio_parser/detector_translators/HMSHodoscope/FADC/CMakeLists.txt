@@ -32,7 +32,7 @@ set(HMS_HODOSCOPE_FADC_TRANSLATOR_PUBLIC_HEADERS
 
 if(BUILD_TESTING)
     add_executable(hms_hodoscope_fadc_translator_tests
-        FADCTranslatorTests.cc
+        tests/FADCTranslatorTests.cc
     )
     target_link_libraries(hms_hodoscope_fadc_translator_tests
         PRIVATE hms_hodoscope_fadc_translator

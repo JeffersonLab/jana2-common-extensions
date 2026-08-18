@@ -57,7 +57,7 @@ set(MODULE_PARSERS_HEADERS
 
 if(BUILD_TESTING)
     add_executable(daq_address_tests
-        DAQAddressTests.cc
+        tests/DAQAddressTests.cc
     )
     target_link_libraries(daq_address_tests
         PRIVATE
