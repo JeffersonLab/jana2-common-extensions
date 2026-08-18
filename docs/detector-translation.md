@@ -30,7 +30,9 @@ calibrate measurements, or provide detector geometry.
 - Detector mapping files are installed under
   `config/<namespace>/evio_parser/detector_mappings/`.
 - `TRANSLATION:DIRECTORY` overrides the mapping directory.
-- The root `manifest.map` lists detector names and detector-manifest paths.
+- The root `manifest.map` lists authoritative detector names and
+  detector-manifest paths. Every mapping file selected through a detector's
+  manifest must declare that same detector name.
 - Each detector manifest contains inclusive `run_min run_max mapping_file`
   rows; `max` is accepted as an open-ended upper bound.
 - Detector ranges may have gaps. A detector without a range for a run is absent
@@ -87,10 +89,11 @@ calibrate measurements, or provide detector geometry.
 
 Loading throws when the catalog or a manifest cannot be read, is empty, or has
 malformed or duplicate entries; when detector run ranges overlap or are
-reversed; when a referenced mapping file cannot be read; when declarations or
-channel rows are invalid; or when a DAQ address is duplicated within a combined
-table. The keyword `none` is accepted only in the DAQ channel column. A table
-request throws when no configured detector mapping applies to that run.
+reversed; when a referenced mapping file cannot be read or declares a detector
+different from its root-catalog entry; when declarations or channel rows are
+invalid; or when a DAQ address is duplicated within a combined table. The
+keyword `none` is accepted only in the DAQ channel column. A table request
+throws when no configured detector mapping applies to that run.
 
 ## Key Components
 
@@ -111,7 +114,8 @@ unknown-address lookup.
 
 The `translation_table_service_tests` CTest verifies that the service combines
 multiple detectors, selects different HMS mappings across a run boundary, and
-preserves the applicable BCAL mapping in both tables.
+preserves the applicable BCAL mapping in both tables. It also rejects a mapping
+file whose declared detector differs from its root-catalog entry.
 
 The `hms_hodoscope_fadc_translator_tests` CTest verifies detector identity and
 hardware measurements for every emitted FADC format, rejection of invalid

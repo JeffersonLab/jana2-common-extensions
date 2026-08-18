@@ -1,10 +1,27 @@
 #include <cassert>
 #include <cstdint>
+#include <stdexcept>
+#include <string>
 
 #include "JEventService_TranslationTable.h"
 
+namespace {
+
+bool rejectsMismatchedDetector(const char* mapping_directory) {
+    try {
+        JEventService_TranslationTable service(mapping_directory);
+        service.Init();
+    } catch (const std::runtime_error& error) {
+        return std::string(error.what()).find(
+            "does not match catalog detector 'HMS_HODOSCOPE'") != std::string::npos;
+    }
+    return false;
+}
+
+} // namespace
+
 int main(int argc, char* argv[]) {
-    assert(argc == 2);
+    assert(argc == 3);
 
     JEventService_TranslationTable service(argv[1]);
     service.Init();
@@ -44,4 +61,6 @@ int main(int argc, char* argv[]) {
     const auto* current_bcal_address = second_run.Lookup({2, 4, 1});
     assert(current_bcal_address != nullptr);
     assert(*current_bcal_address == expected_bcal);
+
+    assert(rejectsMismatchedDetector(argv[2]));
 }

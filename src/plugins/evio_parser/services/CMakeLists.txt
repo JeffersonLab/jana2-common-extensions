@@ -40,7 +40,7 @@ if(BUILD_TESTING)
     )
 
     add_executable(translation_table_service_tests
-        JEventService_TranslationTableTests.cc
+        tests/JEventService_TranslationTableTests.cc
     )
     target_link_libraries(translation_table_service_tests
         PRIVATE services
@@ -49,6 +49,7 @@ if(BUILD_TESTING)
         NAME translation_table_service_tests
         COMMAND translation_table_service_tests
             ${CMAKE_CURRENT_SOURCE_DIR}/testdata/detector_mappings
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/mismatched_detector_mappings
     )
 
     add_executable(detector_mapping_manifest_tests
