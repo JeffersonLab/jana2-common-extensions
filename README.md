@@ -9,6 +9,7 @@ This repository is designed to be **modular and extensible**, and can be adapted
 
 * [Dependencies](#dependencies)
 * [Build Instructions](#build-instructions)
+* [Running Tests](#running-tests)
 * [Installation Layout](#installation-layout)
 * [Basic Usage](#basic-usage)
 * [Logging](#logging)
@@ -58,7 +59,7 @@ Follow the official installation guide:
 ### 1. Configure
 
 ```tcsh
-cmake -S . -B build -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio;/path/to/root" -DCMAKE_INSTALL_PREFIX=`pwd`
+cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio;/path/to/root" -DCMAKE_INSTALL_PREFIX=`pwd`
 ```
 > ⚠️ **Important**
 > `CMAKE_INSTALL_PREFIX` must be set during the **initial CMake configuration**.
@@ -75,6 +76,30 @@ cmake --build build --parallel
 
 ```bash
 cmake --install build
+```
+
+## Running Tests
+
+Configure or reconfigure the build with tests enabled, then build the test
+executables. CMake's `CTest` module enables `BUILD_TESTING` by default, but the
+explicit option makes the test configuration unambiguous and overrides a build
+directory previously configured with tests disabled.
+
+```bash
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build --parallel
+```
+
+List the tests registered in the build directory:
+
+```bash
+ctest --test-dir build -N
+```
+
+Run all registered tests and display output for any failures:
+
+```bash
+ctest --test-dir build --output-on-failure
 ```
 
 ## Installation Layout
