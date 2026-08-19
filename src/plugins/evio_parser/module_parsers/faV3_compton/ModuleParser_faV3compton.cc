@@ -33,6 +33,8 @@ void ModuleParser_faV3compton::parse(std::shared_ptr<evio::BaseStructure> data_b
     uint32_t trigger_num = 0;
     uint32_t timestamp1 = 0;
     uint32_t timestamp2 = 0;
+    uint64_t event_number = 0;
+    uint32_t event_index = 0;
     
     // Map from event_number to EventHits_faV3compton, used to merge hits from
     // multiple blocks within the same data bank into a single PhysicsEvent.
@@ -74,12 +76,28 @@ void ModuleParser_faV3compton::parse(std::shared_ptr<evio::BaseStructure> data_b
 	       uint32_t evt_trig_time = getBitsInRange(d, 21, 12);
 	       uint32_t evt_trig_num = getBitsInRange(d, 11, 0);
 	       trigger_num = evt_trig_num;
+	       event_number = trigger_data.first_event_number + event_index;
+	       event_index++;
 
                if( evt_slot != block_slot ) 
                    throw JException(
                         "ModuleParser_faV3compton::Event Header: event header slot != block header slot"
                     );
 
+	       if (event_hits_map.find(event_number) == event_hits_map.end()) {
+                    event_hits_map[event_number] = std::make_shared<EventHits_faV3compton>();
+                }
+
+               faV3comptonHit hit;
+
+	       hit.trigger_num = event_number;
+	       hit.timestamp1 = timestamp1;
+	       hit.timestamp2 = timestamp2;
+	       hit.rocid = rocid;
+	       hit.slot = block_slot;
+	       hit.module_id = module_id;
+
+	       event_hits_map[event_number]->evtinfos.push_back(new faV3comptonHit(hit));
 
                LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 2: Event Header slot = " << evt_slot  << "; Trigger time = " << evt_trig_time << "; Trigger number = " << evt_trig_num << LOG_END;
 	    }
@@ -126,78 +144,109 @@ void ModuleParser_faV3compton::parse(std::shared_ptr<evio::BaseStructure> data_b
 	    }
 
 	    if( last_data_type == 10) { // Accumulators  word 2
-	       uint32_t acc_samp_overflow =  getBitsInRange(d, 8, 8);
-	       uint32_t acc_samp_underflow =  getBitsInRange(d, 7, 7);
-	       uint32_t acc_type = getBitsInRange(d, 6, 4);
-	       uint32_t acc_chan = getBitsInRange(d, 3, 0);
+               faV3comptonAccumulatorHit hit;
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 2: Sample Overflow = " << acc_samp_overflow << "; Sample Underflow = " << acc_samp_underflow << "; Accumulator Type = " << acc_type << "; ADC Channel = " << acc_chan << LOG_END;
-	    }
+	       hit.acc_samp_overflow =  getBitsInRange(d, 8, 8);
+	       hit.acc_samp_underflow =  getBitsInRange(d, 7, 7);
+	       hit.acc_type = getBitsInRange(d, 6, 4);
+	       hit.acc_chan = getBitsInRange(d, 3, 0);
 
-	    if( last_data_type == 10) { // Accumulators  word 3
-	       uint32_t acc_overflow_timestamp1 = getBitsInRange(d, 23, 0);
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 2: Sample Overflow = " << hit.acc_samp_overflow << "; Sample Underflow = " << hit.acc_samp_underflow << "; Accumulator Type = " << hit.acc_type << "; ADC Channel = " << hit.acc_chan << LOG_END;
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 3: timestamp1 of first overflow sample = " << acc_overflow_timestamp1 << LOG_END;
-	    }
+               j++;
+               d = data_words[j];
+	       nwords++;
 
-	    if( last_data_type == 10) { // Accumulators  word 4
-	       uint32_t acc_overflow_timestamp2 = getBitsInRange(d, 23, 0);
+	       // Accumulators  word 3
+	       hit.acc_overflow_timestamp1 = getBitsInRange(d, 23, 0);
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 4: timestamp2 of first overflow sample = " << acc_overflow_timestamp2 << LOG_END;
-	    }
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 3: timestamp1 of first overflow sample = " << hit.acc_overflow_timestamp1 << LOG_END;
 
-	    if( last_data_type == 10) { // Accumulators  word 5
-	       uint32_t acc_underflow_timestamp1 = getBitsInRange(d, 23, 0);
+               j++;
+               d = data_words[j];
+	       nwords++;
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 5: timestamp1 of first underflow sample = " << acc_underflow_timestamp1 << LOG_END;
-	    }
+	       // Accumulators  word 4
+	       hit.acc_overflow_timestamp2 = getBitsInRange(d, 23, 0);
 
-	    if( last_data_type == 10) { // Accumulators  word 6
-	       uint32_t acc_underflow_timestamp2 = getBitsInRange(d, 23, 0);
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 4: timestamp2 of first overflow sample = " << hit.acc_overflow_timestamp2 << LOG_END;
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 6: timestamp2 of first underflow sample = " << acc_underflow_timestamp2 << LOG_END;
-	    }
+               j++;
+               d = data_words[j];
+	       nwords++;
 
-	    if( last_data_type == 10) { // Accumulators  word 7
-	       uint32_t acc_sum_nsample1 = getBitsInRange(d, 25, 0);
+	       // Accumulators  word 5
+	       hit.acc_underflow_timestamp1 = getBitsInRange(d, 23, 0);
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 7: LSBytes number of samples in sum = " << acc_sum_nsample1 << LOG_END;
-	    }
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 5: timestamp1 of first underflow sample = " << hit.acc_underflow_timestamp1 << LOG_END;
 
-	    if( last_data_type == 10) { // Accumulators  word 8
-	       uint32_t acc_sum_nsample2 = getBitsInRange(d, 6, 0);
+               j++;
+               d = data_words[j];
+	       nwords++;
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 7: MSBytes number of samples in sum = " << acc_sum_nsample2 << LOG_END;
-	    }
+	       // Accumulators  word 6
+	       hit.acc_underflow_timestamp2 = getBitsInRange(d, 23, 0);
 
-	    if( last_data_type == 10) { // Accumulators  word 9
-	       uint32_t acc_sum1 = getBitsInRange(d, 29, 0);
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 6: timestamp2 of first underflow sample = " << hit.acc_underflow_timestamp2 << LOG_END;
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 7: LSBytes sum = " << acc_sum1 << LOG_END;
-	    }
+               j++;
+               d = data_words[j];
+	       nwords++;
 
-	    if( last_data_type == 10) { // Accumulators  word 10
-	       uint32_t acc_sum2 = getBitsInRange(d, 4, 0);
+	       // Accumulators  word 7
+	       hit.acc_sum_nsample1 = getBitsInRange(d, 25, 0);
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 10: MSBytes sum = " << acc_sum2 << LOG_END;
-	    }
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 7: LSBytes number of samples in sum = " << hit.acc_sum_nsample1 << LOG_END;
 
-	    if( last_data_type == 10) { // Accumulators  word 11
-	       uint32_t acc_np_nsboverlapped = getBitsInRange(d, 27, 14);
-	       uint32_t acc_np_nonsa = getBitsInRange(d, 13, 0);
+               j++;
+               d = data_words[j];
+	       nwords++;
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 11: number of pulses have NSB overlapped = " << acc_np_nsboverlapped << "; number of pulses have no NSA cross" << acc_np_nonsa << LOG_END;
-	    }
+	       // Accumulators  word 8
+	       hit.acc_sum_nsample2 = getBitsInRange(d, 6, 0);
 
-	    if( last_data_type == 10) { // Accumulators  word 12
-	       uint32_t acc_np_miss = getBitsInRange(d, 13, 0);
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 8: MSBytes number of samples in sum = " << hit.acc_sum_nsample2 << LOG_END;
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 12: total missed pulses = " << acc_np_miss << LOG_END;
-	    }
+               j++;
+               d = data_words[j];
+	       nwords++;
 
+	       // Accumulators  word 9
+	       hit.acc_sum1 = getBitsInRange(d, 29, 0);
 
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 9: LSBytes sum = " << hit.acc_sum1 << LOG_END;
+
+               j++;
+               d = data_words[j];
+	       nwords++;
+
+	       // Accumulators  word 10
+	       hit.acc_sum2 = getBitsInRange(d, 4, 0);
+
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 10: MSBytes sum = " << hit.acc_sum2 << LOG_END;
+
+               j++;
+               d = data_words[j];
+	       nwords++;
+
+	       // Accumulators  word 11
+	       hit.acc_np_nsboverlapped = getBitsInRange(d, 27, 14);
+	       hit.acc_np_nonsa = getBitsInRange(d, 13, 0);
+
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 11: number of pulses have NSB overlapped = " << hit.acc_np_nsboverlapped << "; number of pulses have no NSA cross" << hit.acc_np_nonsa << LOG_END;
+
+               j++;
+               d = data_words[j];
+	       nwords++;
+
+	       // Accumulators  word 12
+	       hit.acc_np_miss = getBitsInRange(d, 13, 0);
+
+               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 10 Word 12: total missed pulses = " << hit.acc_np_miss << LOG_END;
+
+	       event_hits_map[event_number]->accumulators.push_back(new faV3comptonAccumulatorHit(hit));
+            }
 	}
-        
     }
 
     // Create PhysicsEvent objects from the map

@@ -16,7 +16,6 @@ public:
     uint32_t rocid;
     uint32_t slot;
     uint32_t module_id;
-    uint32_t chan;
 
     /**
      * @brief Default constructor
@@ -24,7 +23,7 @@ public:
      * Initializes all members to zero.
      */
     faV3comptonHit() : trigger_num(0), timestamp1(0), timestamp2(0), 
-            rocid(0), slot(0), module_id(0), chan(0) {}
+            rocid(0), slot(0), module_id(0) {}
     
     /**
      * @brief Parameterized constructor
@@ -37,12 +36,11 @@ public:
      * @param rocid Readout Controller ID
      * @param slot Slot number in the crate
      * @param module_id Module identifier
-     * @param chan Channel number
      */
     faV3comptonHit(uint64_t trigger_num, uint64_t timestamp1, uint64_t timestamp2,
-        uint32_t rocid, uint32_t slot, uint32_t module_id, uint32_t chan)
+        uint32_t rocid, uint32_t slot, uint32_t module_id)
         : trigger_num(trigger_num), timestamp1(timestamp1), timestamp2(timestamp2),
-          rocid(rocid), slot(slot), module_id(module_id), chan(chan) {}
+          rocid(rocid), slot(slot), module_id(module_id) {}
     
     /**
      * @brief Virtual destructor

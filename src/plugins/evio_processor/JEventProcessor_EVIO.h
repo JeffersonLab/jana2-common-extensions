@@ -21,6 +21,7 @@
 #include "FADC250HallBPulseIntegralHit.h"
 #include "FADC250HallBPulseTimeHit.h"
 #include "FADC250HallBPulsePeakHit.h"
+#include "faV3comptonAccumulatorHit.h"
 #include "faV3comptonHit.h"
 
 /**
@@ -88,6 +89,7 @@ private:
     Input<FADC250HallBPulseIntegralHit> m_hallb_pulse_integral_hits_in {this};
     Input<FADC250HallBPulseTimeHit>    m_hallb_pulse_time_hits_in {this};
     Input<FADC250HallBPulsePeakHit>    m_hallb_pulse_peak_hits_in {this};
+    Input<faV3comptonAccumulatorHit>    m_faV3comptonAccumulator_hits_in {this};
     Input<faV3comptonHit>    m_faV3compton_hits_in {this};
 
     /**
@@ -151,6 +153,31 @@ private:
     // helicity decoder tree variables
     HelDec_t heldec{};
 
+    // faV3compton accumulator tree variables
+    uint64_t comp_trigger_num;
+    uint32_t comp_timestamp1;
+    uint32_t comp_timestamp2;
+    uint32_t comp_rocid;
+    uint32_t comp_slot;
+    uint32_t comp_module_id;
+
+    std::vector<uint32_t> acc_samp_overflow;
+    std::vector<uint32_t> acc_samp_underflow;
+    std::vector<uint32_t> acc_type;
+    std::vector<uint32_t> acc_chan;
+    std::vector<uint32_t> acc_overflow_timestamp1;
+    std::vector<uint32_t> acc_overflow_timestamp2;
+    std::vector<uint32_t> acc_underflow_timestamp1;
+    std::vector<uint32_t> acc_underflow_timestamp2;
+    std::vector<uint32_t> acc_sum_nsample1;
+    std::vector<uint32_t> acc_sum_nsample2;
+    std::vector<uint32_t> acc_sum1;
+    std::vector<uint32_t> acc_sum2;
+    std::vector<uint32_t> acc_np_nsboverlapped;
+    std::vector<uint32_t> acc_np_nonsa;
+    std::vector<uint32_t> acc_np_miss;
+
+
     // ROOT output objects
     TFile *m_root_output_file;                ///< ROOT file for histogram and tree storage
     WaveformTreeRow m_waveform_tree_row;      ///< Data structure holding the current row for TTree filling
@@ -159,6 +186,7 @@ private:
     TH1I *m_pulse_integral_hist;              ///< Histogram of pulse integral sums
     TTree *m_pulse_tree;                      ///< ROOT tree for pulse hit
     TTree *m_caen1190_tree;                     ///< Root tree for CAEN1190 data
+    TTree *compton_tree;                      // faV3 compton tree
     
     // Text output for human-readable dump of hits per event
     std::ofstream m_txt_output_file;

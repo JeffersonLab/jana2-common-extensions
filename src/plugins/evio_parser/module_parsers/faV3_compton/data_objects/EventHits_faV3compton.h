@@ -4,6 +4,7 @@
 #include <JANA/JEvent.h>
 
 #include "EventHits.h"
+#include "faV3comptonAccumulatorHit.h"
 #include "faV3comptonHit.h"
 
 /**
@@ -16,7 +17,18 @@
 class EventHits_faV3compton : public EventHits {
 public:
 
+    std::vector<faV3comptonAccumulatorHit*> accumulators;
+    std::vector<faV3comptonHit*> evtinfos;
+
+
     void insertIntoEvent(JEvent& event) override {
+        for (auto& accumulator : accumulators) {
+            event.Insert(accumulator);
+        }
+	
+        for (auto& evtinfo : evtinfos) {
+            event.Insert(evtinfo);
+        }
 
     }
 };
