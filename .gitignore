@@ -27,3 +27,6 @@ rootfiles
 *.x
 mollerpol
 raw
+
+# default example
+config/filter.db 
