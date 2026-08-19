@@ -24,6 +24,7 @@ JEventProcessor_EVIO::JEventProcessor_EVIO() {
     m_hallb_pulse_time_hits_in.SetOptional(true);
     m_hallb_pulse_peak_hits_in.SetOptional(true);
     m_faV3compton_hits_in.SetOptional(true);
+    m_faV3comptonAccumulator_hits_in.SetOptional(true);
 }
 
 /**
@@ -104,6 +105,31 @@ void JEventProcessor_EVIO::Init() {
         "last32wins_helicity/i:"
         "last32wins_pattsync_hel/i"
     );
+
+    // faV3 compton tree
+    compton_tree = new TTree("compton_tree", "compton tree");
+    compton_tree->Branch("event_number", &comp_trigger_num);
+    compton_tree->Branch("trig_timestamp1", &comp_timestamp1);
+    compton_tree->Branch("trig_timestamp2", &comp_timestamp2);
+    compton_tree->Branch("rocid", &comp_rocid);
+    compton_tree->Branch("slot", &comp_slot);
+    compton_tree->Branch("moduleid", &comp_module_id);
+
+    compton_tree->Branch("acc_samp_overflow", &acc_samp_overflow);
+    compton_tree->Branch("acc_samp_underflow", &acc_samp_underflow);
+    compton_tree->Branch("acc_type", &acc_type);
+    compton_tree->Branch("acc_chan", &acc_chan);
+    compton_tree->Branch("acc_overflow_timestamp1", &acc_overflow_timestamp1);
+    compton_tree->Branch("acc_overflow_timestamp2", &acc_overflow_timestamp2);
+    compton_tree->Branch("acc_underflow_timestamp1", &acc_underflow_timestamp1);
+    compton_tree->Branch("acc_underflow_timestamp2", &acc_underflow_timestamp2);
+    compton_tree->Branch("acc_sum_nsample1", &acc_sum_nsample1);
+    compton_tree->Branch("acc_sum_nsample2", &acc_sum_nsample2);
+    compton_tree->Branch("acc_sum1", &acc_sum1);
+    compton_tree->Branch("acc_sum2", &acc_sum2);
+    compton_tree->Branch("acc_np_nsboverlapped", &acc_np_nsboverlapped);
+    compton_tree->Branch("acc_np_nonsa", &acc_np_nonsa);
+    compton_tree->Branch("acc_np_miss", &acc_np_miss);
 
     // Optionally: Text output file for human-readable hit summaries
     m_txt_output_file.open(m_txt_output_filename().c_str());
@@ -248,6 +274,50 @@ void JEventProcessor_EVIO::ProcessSequential(const JEvent &event) {
         heldec.last32wins_pattsync_hel= heldec_hit->last32wins_pattsync_hel;
         m_tree->Fill();
     }
+
+    for(const auto& compton_evt : m_faV3compton_hits_in()){
+        comp_trigger_num = compton_evt->trigger_num;
+	comp_timestamp1 = compton_evt->timestamp1;
+	comp_timestamp2 = compton_evt->timestamp2;
+        comp_rocid = compton_evt->rocid;
+	comp_slot = compton_evt->slot;
+	comp_module_id = compton_evt->module_id;
+    }
+
+    acc_samp_overflow.clear();
+    acc_samp_underflow.clear();
+    acc_type.clear();
+    acc_chan.clear();
+    acc_overflow_timestamp1.clear();
+    acc_overflow_timestamp2.clear();
+    acc_underflow_timestamp1.clear();
+    acc_underflow_timestamp2.clear();
+    acc_sum_nsample1.clear();
+    acc_sum_nsample2.clear();
+    acc_sum1.clear();
+    acc_sum2.clear();
+    acc_np_nsboverlapped.clear();
+    acc_np_nonsa.clear();
+    acc_np_miss.clear();
+    for(const auto& compton_accum : m_faV3comptonAccumulator_hits_in()){
+        acc_samp_overflow.push_back(compton_accum->acc_samp_overflow);
+        acc_samp_underflow.push_back(compton_accum->acc_samp_underflow);
+	acc_type.push_back(compton_accum->acc_type);
+	acc_chan.push_back(compton_accum->acc_chan);
+	acc_overflow_timestamp1.push_back(compton_accum->acc_overflow_timestamp1);
+	acc_overflow_timestamp2.push_back(compton_accum->acc_overflow_timestamp2);
+	acc_underflow_timestamp1.push_back(compton_accum->acc_underflow_timestamp1);
+	acc_underflow_timestamp2.push_back(compton_accum->acc_underflow_timestamp2);
+	acc_sum_nsample1.push_back(compton_accum->acc_sum_nsample1);
+	acc_sum_nsample2.push_back(compton_accum->acc_sum_nsample2);
+	acc_sum1.push_back(compton_accum->acc_sum1);
+	acc_sum2.push_back(compton_accum->acc_sum2);
+	acc_np_nsboverlapped.push_back(compton_accum->acc_np_nsboverlapped);
+	acc_np_nonsa.push_back(compton_accum->acc_np_nonsa);
+	acc_np_miss.push_back(compton_accum->acc_np_miss);
+    }
+
+    compton_tree->Fill();
 
     // ------------------------------------------------------------------
     // Optional text dump of hits for this event (waveforms, pulses, scalers)
@@ -486,6 +556,7 @@ void JEventProcessor_EVIO::Finish() {
 	    m_tree->Write();
         m_pulse_tree->Write();           // Save pulse tree to file
         m_caen1190_tree->Write();        // Save caen1190 tree to file
+        compton_tree->Write();        // Save compton tree to file
         m_root_output_file->Close();     // Close ROOT file
         delete m_root_output_file;       // Free memory
         m_root_output_file = nullptr;
