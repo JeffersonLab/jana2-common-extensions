@@ -88,17 +88,6 @@ void ModuleParser_faV3compton::parse(std::shared_ptr<evio::BaseStructure> data_b
                     event_hits_map[event_number] = std::make_shared<EventHits_faV3compton>();
                 }
 
-               faV3comptonHit hit;
-
-	       hit.trigger_num = event_number;
-	       hit.timestamp1 = timestamp1;
-	       hit.timestamp2 = timestamp2;
-	       hit.rocid = rocid;
-	       hit.slot = block_slot;
-	       hit.module_id = module_id;
-
-	       event_hits_map[event_number]->evtinfos.push_back(new faV3comptonHit(hit));
-
                LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 2: Event Header slot = " << evt_slot  << "; Trigger time = " << evt_trig_time << "; Trigger number = " << evt_trig_num << LOG_END;
 	    }
 
@@ -134,7 +123,19 @@ void ModuleParser_faV3compton::parse(std::shared_ptr<evio::BaseStructure> data_b
 	    if( last_data_type == 3) { // trigger time word 2
 	       timestamp2 =  getBitsInRange(d, 23, 0);
 
-               LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 3: Trigger Time 2 = " << timestamp2 << LOG_END;
+         LOG_DEBUG(GetLogger()) << std::dec << "ModuleParser_faV3compton::DEBUG - Word " << nwords << " 0x" << std::hex << d << std::dec<<" - data type 3: Trigger Time 2 = " << timestamp2 << LOG_END;
+
+         faV3comptonHit hit;
+
+	       hit.trigger_num = event_number;
+	       hit.timestamp1 = timestamp1;
+	       hit.timestamp2 = timestamp2;
+	       hit.rocid = rocid;
+	       hit.slot = block_slot;
+	       hit.module_id = module_id;
+
+	       event_hits_map[event_number]->evtinfos.push_back(new faV3comptonHit(hit));
+
 	    }
 
 	    if( last_data_type == 8) { // Helicity 
