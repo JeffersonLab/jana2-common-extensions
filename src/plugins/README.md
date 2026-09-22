@@ -101,7 +101,7 @@ Model this directly on `evio_processor/JEventProcessor_EVIO.h/.cc`. The key patt
 ```cpp
 #pragma once
 #include <JANA/JEventProcessor.h>
-#include "FADC250PulseHit.h"    // from evio_parser_data_types
+#include "FADC250PulseHit.h"    // from evio_common_modules_data_types
 
 class MyProcessor : public JEventProcessor {
 public:
@@ -156,7 +156,7 @@ add_jana_plugin(my_plugin
 target_link_libraries(my_plugin
     PRIVATE
         ${JANA_LIBRARY}
-        evio_parser_data_types   # gives access to all hit-class headers
+        evio_common_modules_data_types   # common raw-hit headers
 )
 ```
 
@@ -166,7 +166,7 @@ If your plugin also writes ROOT output, add the ROOT targets:
 target_link_libraries(my_plugin
     PRIVATE
         ${JANA_LIBRARY}
-        evio_parser_data_types
+        evio_common_modules_data_types
         ROOT::Core
         ...
 )
@@ -208,6 +208,11 @@ scripts/jce.sh -Pplugins=my_plugin /path/to/data.evio
 
 ## Consuming Hit Types from evio_parser
 
-Linking against `evio_parser_data_types` (as shown in Step 4) gives your plugin access to every hit-class header without any manual `include_directories` entries.
+Linking against `evio_common_modules_data_types` (as shown in Step 4) gives
+your plugin access to reusable electronics hit headers without manual
+`include_directories` entries. The older `evio_parser_data_types` target is
+retained as a compatibility umbrella.
 
-If you add a new hardware module to `evio_parser` (see [evio_parser/README.md → Adding a New Module Parser](evio_parser/README.md#adding-a-new-module-parser)), its hit type becomes available to any plugin linking `evio_parser_data_types` automatically — no changes to this directory are needed.
+If you add a reusable hardware module under
+[`evio_common_modules/module_parsers/`](evio_common_modules/README.md), its
+hit headers become available through `evio_common_modules_data_types`.

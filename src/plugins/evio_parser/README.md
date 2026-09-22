@@ -63,6 +63,13 @@ types, and the bank/parser/top-level registries. Registries accept additions
 during JANA service initialization and freeze on first event lookup. Duplicate
 keys fail during initialization.
 
+Common electronics parsers and their hit headers are built and installed by
+`evio_common_modules`. Link
+`jana2_common_extensions::evio_common_modules_data_types` to consume FADC and
+other common raw-hit types. HMS DigiHits use
+`jana2_common_extensions::hms_detector_translation_data_types`.
+`evio_parser_data_types` remains available for existing CMake consumers.
+
 ## Event Classes
 
 Physics tags `0xff50`, `0xff58`, `0xff70`, and `0xff78` become block-level

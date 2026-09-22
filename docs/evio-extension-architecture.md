@@ -32,12 +32,20 @@ The resulting components are:
 | Component | Kind | Responsibility |
 |---|---|---|
 | `evio_parser_api` | CMake interface library | `BankParser`, `TopLevelEventDecoder`, raw event types, and registration services |
+| `evio_common_modules_data_types` | CMake interface library | Reusable electronics raw-hit headers |
 | `detector_mapping_api` | CMake interface library | DAQ/detector addresses, translation table, and translator registry |
+| `hms_detector_translation_data_types` | CMake interface library | HMS DigiHit headers |
 | `evio_parser` | JANA plugin | EVIO source, event classification, physics parser, block-to-physics unfolder, registries |
 | `evio_common_modules` | JANA plugin | Registers reusable CAEN1190, FADC, scaler, helicity, MPD, and VFTDC parsers |
 | `detector_translation` | JANA plugin | Run-aware mapping service and generic raw-hit translation processor |
 | `hms_detector_translation` | JANA plugin | Optional HMS-specific translator registrations and DigiHit types |
 | `compton` | External JANA plugin | Compton-owned bank/event decoders, objects, mappings, and translator routes |
+
+Reusable parser implementations and their raw-hit objects live in
+`src/plugins/evio_common_modules/module_parsers/`. The EVIO source and public
+registration interfaces live in `src/plugins/evio_parser/`. The original
+`evio_parser_data_types` target remains an umbrella for older consumers; new
+consumers should link the specific data-types target they use.
 
 Plugins may request dependencies with `app->AddPlugin()`. Registration itself
 is performed from a small `JService::Init()` callback. This matters because
@@ -196,6 +204,7 @@ A minimal external build links APIs and the module library it actually uses:
 
 ```cmake
 find_package(JANA REQUIRED)
+find_package(evio REQUIRED)
 find_package(jana2_common_extensions REQUIRED)
 
 add_jana_plugin(compton
@@ -203,6 +212,7 @@ add_jana_plugin(compton
 
 target_link_libraries(compton PRIVATE
     jana2_common_extensions::evio_parser_api
+    jana2_common_extensions::evio_common_modules_data_types
     jana2_common_extensions::detector_mapping_api)
 ```
 

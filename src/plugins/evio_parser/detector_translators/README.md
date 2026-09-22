@@ -15,8 +15,8 @@ You need:
 - stable ROC, slot, and channel information for that raw hit; and
 - representative raw-hit values and DAQ addresses for tests.
 
-If any item is missing, follow
-[Adding a New Module Parser](../README.md#adding-a-new-module-parser) first.
+If any item is missing, follow the
+[common module parser guide](../../evio_common_modules/README.md) first.
 Translation does not decode EVIO words, calibrate measurements, reconstruct
 physics quantities, or provide geometry.
 
@@ -108,27 +108,12 @@ return {hit.rocid, hit.slot, DAQAddress::UnspecifiedChannel};
 That sentinel is written as `none` in mapping files. It is not a wildcard.
 Add the raw-hit type to `daq_address_tests` so the normalization is checked.
 
-## Step 2: Add the Raw-Hit Family to the Central Scan
+## Step 2: Register the Raw-Hit Family
 
-`JEventProcessor_DetectorDigiHits` scans each supported raw-hit collection once.
-A new addressable type is not routed automatically.
-
-In `processors/detector_digi_hits/JEventProcessor_DetectorDigiHits.h`:
-
-```cpp
-#include "MyRawHit.h"
-```
-
-In `ProcessParallel()` add:
-
-```cpp
-routeHits<MyRawHit>(
-    event.Get<MyRawHit>("", false), table, translator_map, event);
-```
-
-Keep `event.Get<Hit>("", false)` in this parallel callback. Do not replace it
-with processor `Input<T>`; `Input<T>` is populated for the sequential callback
-and may be stale here.
+`JEventProcessor_DetectorDigiHits` scans each raw-hit type registered with
+`JEventService_DetectorTranslatorsMap`. Registering a translator for an
+addressable type makes that type available to the central processor; its event
+loop requires no source edit.
 
 ## Step 3: Define the Detector Identity
 
@@ -223,17 +208,18 @@ void InitMyDetectorTranslators(
 }
 ```
 
-Then call that detector initializer from
-`detector_translators/InitDetectorTranslators.cc` before `freeze()`:
+Call the detector initializer from a registration service's `Init()`:
 
 ```cpp
-#include "InitMyDetectorTranslators.h"
+Service<JEventService_DetectorTranslatorsMap> translators {this};
 
-InitMyDetectorTranslators(*translators);
+void Init() override {
+    InitMyDetectorTranslators(translators());
+}
 ```
 
 The registry key is `(raw-hit C++ type, detector key)`. Duplicate keys and
-registration after `freeze()` fail during initialization. A mapped detector
+registration after the first translation fail. A mapped detector
 with no translator for the current raw-hit type is skipped.
 
 ## Step 7: Wire CMake and Public Headers
@@ -251,7 +237,9 @@ Follow the existing three-level aggregation:
 
 Do not name individual route targets in the top-level translator CMake file.
 Public DigiHit headers must be included in the exported header list so
-downstream plugins receive them through `evio_parser_data_types`.
+downstream plugins receive HMS DigiHits through
+`hms_detector_translation_data_types`. Common raw hits are exposed through
+`evio_common_modules_data_types`.
 
 Route `MyDetector/MyRawHitFamily/CMakeLists.txt`:
 

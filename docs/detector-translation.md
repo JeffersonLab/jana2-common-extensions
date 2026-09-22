@@ -107,7 +107,7 @@ throws when no configured detector mapping applies to that run.
 - `config/evio_parser/detector_mappings/`
 - `src/plugins/evio_parser/core/detector_mapping_objects/`
 - Address overloads beside participating hit types under
-  `src/plugins/evio_parser/module_parsers/`
+  `src/plugins/evio_common_modules/module_parsers/`
 - `src/plugins/evio_parser/services/JEventService_TranslationTable.*`
 - `src/plugins/evio_parser/services/JEventService_DetectorTranslatorsMap.h`
 - `src/plugins/evio_parser/detector_translators/`

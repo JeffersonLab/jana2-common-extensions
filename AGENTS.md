@@ -16,7 +16,8 @@
   facilities, JANA2 facilities, and already configured dependencies.
 - Avoid speculative abstractions, unrelated cleanup, and new dependencies.
 - Keep `evio_parser/core` hardware- and experiment-agnostic.
-- Keep hardware decoding in `evio_parser/module_parsers/<module>/`.
+- Keep reusable hardware decoding in
+  `evio_common_modules/module_parsers/<module>/`.
 - Keep shared JANA resources in `evio_parser/services/`.
 - Keep physicist-editable runtime data under the repository-level `config/`
   directory; keep the C++ implementation under `src/`.
@@ -59,8 +60,9 @@
   `<DETECTOR>_TRANSLATOR_INCLUDE_DIRS`, and `<DETECTOR>_TRANSLATOR_HEADERS`;
   the shared `detector_translators/CMakeLists.txt` aggregates only those
   detector-level variables and never names individual route targets.
-- Export public hit/data headers through the existing
-  `evio_parser_data_types` mechanism when downstream plugins need them.
+- Export common raw-hit headers through `evio_common_modules_data_types` and
+  HMS DigiHit headers through `hms_detector_translation_data_types`.
+  `evio_parser_data_types` remains a compatibility umbrella for consumers.
 - Whenever a detector translator publishes a new DigiHit type, add a matching
   optional input and type-specific CSV output to `detector_translation_dump`
   in the same change so every translated data product remains observable
