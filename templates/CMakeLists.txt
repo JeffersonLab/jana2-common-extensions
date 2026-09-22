@@ -20,6 +20,10 @@ target_include_directories(jce_config INTERFACE
     $<INSTALL_INTERFACE:include/${INSTALL_NAMESPACE}>
 )
 
+install(TARGETS jce_config
+    EXPORT jana2_common_extensionsTargets
+)
+
 # Install the generated header for external consumers
 install(FILES ${CMAKE_BINARY_DIR}/include/jce_config_paths.h
     DESTINATION include/${INSTALL_NAMESPACE}

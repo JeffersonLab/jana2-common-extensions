@@ -5,7 +5,16 @@
 
 #include <JANA/JObject.h>
 
+#include <string>
+#include <utility>
+
 #include "eviocc.h"
+
+enum class EvioEventKind {
+    Physics,
+    Control,
+    User
+};
 
 /**
  * @class EvioEventWrapper
@@ -29,12 +38,20 @@ public:
     JOBJECT_PUBLIC(EvioEventWrapper)
 
     std::shared_ptr<evio::EvioEvent> evio_event;
+    EvioEventKind kind = EvioEventKind::Physics;
+    std::string decoder_key;
 
     /**
      * @brief Constructor
      * @param evio_event Shared pointer to the EVIO event to wrap
      */
-    EvioEventWrapper(std::shared_ptr<evio::EvioEvent> evio_event) : evio_event(evio_event) {};
+    explicit EvioEventWrapper(
+        std::shared_ptr<evio::EvioEvent> event,
+        EvioEventKind event_kind = EvioEventKind::Physics,
+        std::string key = {})
+        : evio_event(std::move(event)),
+          kind(event_kind),
+          decoder_key(std::move(key)) {}
 
     /**
      * @brief Provide string representation of EvioEventWrapper
@@ -55,4 +72,3 @@ public:
 };
 
 #endif // _EvioEventWrapper_h_
-

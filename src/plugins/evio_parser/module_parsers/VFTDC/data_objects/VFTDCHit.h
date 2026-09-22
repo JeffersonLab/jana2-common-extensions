@@ -1,6 +1,8 @@
 #ifndef VFTDCHIT_H
 #define VFTDCHIT_H
 
+#include "DAQAddress.h"
+
 /**
  * @class VFTDCHit
  * @brief Class for VFTDC hits
@@ -44,5 +46,9 @@ public:
     VFTDCHit(uint32_t rocid, uint32_t slot, uint32_t board_id, uint64_t timestamp, uint32_t group_num, uint32_t channel_num, uint32_t edge_type, uint32_t coarse_time, uint32_t fine_time, uint32_t two_ns)
         : rocid(rocid), slot(slot), board_id(board_id), timestamp(timestamp), group_num(group_num), channel_num(channel_num), edge_type(edge_type), coarse_time(coarse_time), fine_time(fine_time), two_ns(two_ns) {}
 };
+
+inline DAQAddress getDAQAddress(const VFTDCHit& hit) {
+    return {hit.rocid, hit.slot, hit.channel_num};
+}
 
 #endif // VFTDCHIT_H

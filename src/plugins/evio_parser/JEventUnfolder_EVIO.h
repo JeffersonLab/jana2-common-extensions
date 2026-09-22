@@ -3,8 +3,6 @@
 
 #include <JANA/JEventUnfolder.h>
 #include "PhysicsEvent.h"
-#include "FADC250WaveformHit.h"
-#include "FADC250PulseHit.h"
 
 /**
  * @class JEventUnfolder_EVIO

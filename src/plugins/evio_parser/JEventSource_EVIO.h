@@ -11,6 +11,7 @@
 
 #include "eviocc.h"
 #include "EvioEventParser.h"
+#include "JEventService_TopLevelEventDecoders.h"
 
 
 /**
@@ -27,6 +28,8 @@ private:
     std::unique_ptr<EvioEventParser> m_evio_event_parser;
 
     std::unique_ptr<evio::EvioReader> m_evio_reader;  ///< EVIO file reader instance
+    std::shared_ptr<evio::EvioEvent> m_pending_event;
+    std::shared_ptr<JEventService_TopLevelEventDecoders> m_user_decoders;
     int m_run_number = 0;                             ///< Current run number
 
     /**
@@ -67,4 +70,3 @@ template <>
 double JEventSourceGeneratorT<JEventSource_EVIO>::CheckOpenable(std::string);
 
 #endif // _JEventSource_EVIO_h_
-
