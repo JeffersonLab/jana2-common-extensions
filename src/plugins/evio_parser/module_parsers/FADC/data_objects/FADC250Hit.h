@@ -1,6 +1,8 @@
 #ifndef FADC250HIT_H
 #define FADC250HIT_H
 
+#include "DAQAddress.h"
+
 /**
  * @class FADC250Hit
  * @brief Base class for all FADC250 hits
@@ -51,5 +53,9 @@ public:
      */
     virtual ~FADC250Hit() = default;
 };
+
+inline DAQAddress getDAQAddress(const FADC250Hit& hit) {
+    return {hit.rocid, hit.slot, hit.chan};
+}
 
 #endif // FADC250HIT_H

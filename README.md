@@ -4,11 +4,18 @@ A collection of reusable plugins and libraries built on top of JANA2 for reading
 
 This repository is designed to be **modular and extensible**, and can be adapted for any experiment using EVIO-based readout with VME/VXS hardware modules.
 
+The EVIO implementation is split into small runtime plugins and public CMake
+API targets so an experiment repository can supply its own banks, standalone
+events, and detector translations without modifying this repository. See the
+[EVIO extension architecture and migration guide](docs/evio-extension-architecture.md)
+for the component boundaries, public C++ APIs, and a Compton example.
+
 
 ## Table of Contents
 
 * [Dependencies](#dependencies)
 * [Build Instructions](#build-instructions)
+* [Running Tests](#running-tests)
 * [Installation Layout](#installation-layout)
 * [Basic Usage](#basic-usage)
 * [Logging](#logging)
@@ -58,7 +65,7 @@ Follow the official installation guide:
 ### 1. Configure
 
 ```tcsh
-cmake -S . -B build -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio;/path/to/root" -DCMAKE_INSTALL_PREFIX=`pwd`
+cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio;/path/to/root" -DCMAKE_INSTALL_PREFIX=`pwd`
 ```
 > ⚠️ **Important**
 > `CMAKE_INSTALL_PREFIX` must be set during the **initial CMake configuration**.
@@ -77,6 +84,30 @@ cmake --build build --parallel
 cmake --install build
 ```
 
+## Running Tests
+
+Configure or reconfigure the build with tests enabled, then build the test
+executables. CMake's `CTest` module enables `BUILD_TESTING` by default, but the
+explicit option makes the test configuration unambiguous and overrides a build
+directory previously configured with tests disabled.
+
+```bash
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build --parallel
+```
+
+List the tests registered in the build directory:
+
+```bash
+ctest --test-dir build -N
+```
+
+Run all registered tests and display output for any failures:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
 ## Installation Layout
 
 After installation (with `-DCMAKE_INSTALL_PREFIX=\`pwd\``), your directory will look like:
@@ -92,6 +123,9 @@ lib/
 ├── cmake/
 └── plugins/
     ├── evio_parser.so
+    ├── evio_common_modules.so
+    ├── detector_translation.so
+    ├── hms_detector_translation.so
     ├── evio_processor.so
     └── ...
 scripts/

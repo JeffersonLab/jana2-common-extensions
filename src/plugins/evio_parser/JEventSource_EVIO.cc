@@ -29,6 +29,8 @@ JEventSource_EVIO::JEventSource_EVIO() : JEventSource() {
     SetPrefix("EVIO_PARSER");
     SetCallbackStyle(CallbackStyle::ExpertMode);
     SetLevel(JEventLevel::Block);
+    SetParentLevels({JEventLevel::Run, JEventLevel::SlowControls});
+    SetNextEventLevel(JEventLevel::Block);
     EnableProcessParallel(true);
 }
 
@@ -45,6 +47,8 @@ void JEventSource_EVIO::Open() {
     const std::string resource_name = GetResourceName();
     /// Open the file here!
     m_evio_reader = std::make_unique<evio::EvioReader>(resource_name);
+    m_user_decoders =
+        GetApplication()->GetService<JEventService_TopLevelEventDecoders>();
 
     // Create EVIO event parser, JApplication is used to access
     // services and JLogger is used for logging
@@ -71,37 +75,56 @@ void JEventSource_EVIO::Close() {
  * @return Result indicating success, failure, or end of file
  */
 JEventSource::Result JEventSource_EVIO::Emit(JEvent& event) {
-
-    // Read the next event from the EVIO file
-    std::shared_ptr<evio::EvioEvent> evio_event = m_evio_reader->parseNextEvent();
+    if (m_pending_event == nullptr) {
+        m_pending_event = m_evio_reader->parseNextEvent();
+    }
 
     // Check for end of file
-    if (evio_event == nullptr) {
+    if (m_pending_event == nullptr) {
         return Result::FailureFinished;
     }
 
-    // Skip events with no data
-    if (evio_event->getChildren().empty()) {
-        return Result::FailureTryAgain;
+    const auto header = m_pending_event->getHeader();
+    const auto tag = static_cast<std::uint16_t>(header->getTag());
+    const auto number = static_cast<std::uint8_t>(header->getNumber());
+    const auto data_type = static_cast<std::uint8_t>(
+        header->getDataType().getValue());
+
+    EvioEventKind kind;
+    JEventLevel level;
+    std::string decoder_key;
+
+    if (isRunControlEvent(m_pending_event, m_run_number)) {
+        kind = EvioEventKind::Control;
+        level = JEventLevel::Run;
+    } else if (isPhysicsEvent(m_pending_event)) {
+        kind = EvioEventKind::Physics;
+        level = JEventLevel::Block;
+    } else {
+        auto match = m_user_decoders->resolve(tag, number, data_type);
+        if (!match) {
+            LOG_DEBUG(GetLogger())
+                << "Skipping unregistered EVIO event tag 0x"
+                << std::hex << tag << std::dec << LOG_END;
+            m_pending_event.reset();
+            return Result::FailureTryAgain;
+        }
+        kind = EvioEventKind::User;
+        level = match->level;
+        decoder_key = match->key;
     }
 
-    // Check if this is a physics event or not. If not, skip it.
-    if (!isPhysicsEvent(evio_event)) {
-        return Result::FailureTryAgain;
+    if (event.GetLevel() != level) {
+        SetNextEventLevel(level);
+        return Result::FailureLevelChange;
     }
 
-    // Check if this is a run control event. Apart from extracting the run number,
-    // these events are not useful for further processing, so get run number and skip.
-    if (isRunControlEvent(evio_event, m_run_number)) {
-        return Result::FailureTryAgain;
-    }
-
-    // Create a wrapper for the EVIO event and add it to the JANA2 event
-    // The wrapper is necessary because JANA2 cannot directly store shared_ptr objects,
-    // so we wrap the shared_ptr inside a JObject to maintain proper lifetime management
-    EvioEventWrapper* wrapper = new EvioEventWrapper(evio_event); 
+    SetNextEventLevel(level);
     event.SetRunNumber(m_run_number);
-    event.Insert(wrapper);  // Insert wrapper into event - JANA2 will manage its lifetime
+    event.SetEventNumber(m_pending_event->getEventNumber());
+    event.Insert(new EvioEventWrapper(
+        m_pending_event, kind, std::move(decoder_key)));
+    m_pending_event.reset();
     return Result::Success;
 }
 
@@ -126,6 +149,33 @@ std::string JEventSource_EVIO::GetDescription() {
  * @param event Block-level JEvent containing an `EvioEventWrapper`
  */
 void JEventSource_EVIO::ProcessParallel(JEvent& event) const {
+    const auto* wrapper = event.GetSingle<EvioEventWrapper>();
+    if (wrapper->kind == EvioEventKind::Control) {
+        return;
+    }
+    if (wrapper->kind == EvioEventKind::User) {
+        const auto header = wrapper->evio_event->getHeader();
+        auto match = m_user_decoders->resolve(
+            static_cast<std::uint16_t>(header->getTag()),
+            static_cast<std::uint8_t>(header->getNumber()),
+            static_cast<std::uint8_t>(header->getDataType().getValue()));
+        if (!match || match->key != wrapper->decoder_key) {
+            throw JException(
+                "Top-level EVIO decoder '%s' is no longer registered",
+                wrapper->decoder_key.c_str());
+        }
+        TopLevelEventContext context {
+            static_cast<std::uint16_t>(header->getTag()),
+            static_cast<std::uint8_t>(header->getNumber()),
+            static_cast<std::uint8_t>(header->getDataType().getValue()),
+            wrapper->evio_event->getEventNumber(),
+            event.GetRunNumber(),
+            m_evio_event_parser->GetLogger()
+        };
+        match->decoder->decode(wrapper->evio_event, context, event);
+        return;
+    }
+
     std::vector<PhysicsEvent*> physics_events;
     // Parse the EVIO block-level event into PhysicsEvent objects in parallel.
     // The parser is shared, but contains no per-event mutable state; all
@@ -147,10 +197,8 @@ void JEventSource_EVIO::ProcessParallel(JEvent& event) const {
 bool JEventSource_EVIO::isPhysicsEvent(std::shared_ptr<evio::EvioEvent> event) {
     std::shared_ptr<evio::BaseStructureHeader> header = event->getHeader();
     uint16_t tag = header->getTag();
-    if (event->getEventNumber() == 31524) {
-        std::cout << "Physics event: " << event->getEventNumber() << std::endl;
-    }
-    if (tag == 0xFF50 || tag == 0xFF58) {
+    if (tag == 0xFF50 || tag == 0xFF58 ||
+        tag == 0xFF70 || tag == 0xFF78) {
         return true;
     }
     

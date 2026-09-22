@@ -1,0 +1,3 @@
+# run_min run_max mapping_file
+0 99 hms_hodoscope.map
+200 max hms_hodoscope.map

@@ -1,2 +1,6 @@
 add_subdirectory(evio_parser)
+add_subdirectory(evio_common_modules)
+add_subdirectory(detector_translation)
+add_subdirectory(hms_detector_translation)
 add_subdirectory(evio_processor)
+add_subdirectory(detector_translation_dump)

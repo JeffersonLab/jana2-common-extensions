@@ -1,6 +1,8 @@
 #ifndef CAEN1190HIT_H
 #define CAEN1190HIT_H
 
+#include "DAQAddress.h"
+
 /**
  * @class CAEN1190Hit
  * @brief Base class for all CAEN1190 hits
@@ -54,5 +56,9 @@ public:
      */
     virtual ~CAEN1190Hit() = default;
 };
+
+inline DAQAddress getDAQAddress(const CAEN1190Hit& hit) {
+    return {hit.rocid, hit.slot, hit.chan};
+}
 
 #endif // CAEN1190HIT_H

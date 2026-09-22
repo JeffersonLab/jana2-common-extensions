@@ -153,7 +153,9 @@ void EvioEventParser::parseROCBanks(const std::vector<std::shared_ptr<evio::Base
         // Parse one or more DMA banks within this ROC bank using the registered ModuleParsers
         auto dma_blocks = db->getChildren();
         for (auto dma : dma_blocks) {
-            auto bank_id = dma->getHeader()->getTag();
+            const auto full_bank_tag =
+                static_cast<std::uint16_t>(dma->getHeader()->getTag());
+            const auto bank_id = full_bank_tag & 0x0FFF;
 
             // Check if bank is allowed for this ROC
             if (!filter_db_svc->isBankAllowed(db_rocid, bank_id)) {
@@ -178,12 +180,18 @@ void EvioEventParser::parseROCBanks(const std::vector<std::shared_ptr<evio::Base
                 throw JException("EvioEventParser::parseROCBanks: No parser found for module ID %d (bank tag %d)", module_id, bank_id);
             }
 
-            // Set the logger equal to component logger
-            module_parser->SetLogger(m_logger);
-
             // Parse bank using resolved module parser
-            module_parser->parse(dma, db_rocid, physics_events, trigger_data);
+            BankContext context {
+                db_rocid,
+                static_cast<std::uint16_t>(bank_id),
+                static_cast<std::uint8_t>((full_bank_tag >> 12) & 0x0F),
+                static_cast<std::uint8_t>(dma->getHeader()->getNumber()),
+                static_cast<std::uint8_t>(
+                    dma->getHeader()->getDataType().getValue()),
+                m_logger
+            };
+            module_parser->parse(
+                dma, context, physics_events, trigger_data);
         }
     }
 }
-

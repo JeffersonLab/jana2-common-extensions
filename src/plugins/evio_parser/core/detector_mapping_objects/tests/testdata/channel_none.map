@@ -1,0 +1,5 @@
+detector BOARD_LEVEL_DETECTOR
+fields index
+
+# rocid slot channel index
+9 10 none 1

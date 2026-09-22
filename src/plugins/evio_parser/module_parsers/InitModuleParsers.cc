@@ -1,33 +1,36 @@
-#ifndef INITMODULEPARSERS_H
-#define INITMODULEPARSERS_H
-
-#include <JANA/JApplication.h>
+#include <JANA/JService.h>
+#include <memory>
 #include "JEventService_ModuleParsersMap.h"
 
 // Module parsers
 #include "ModuleParser_CAEN1190.h"
 #include "ModuleParser_FADC.h"
 #include "ModuleParser_FADCScaler.h"
-#include "ModuleParser_faV3compton.cc"
 #include "ModuleParser_TIScaler.h"
 #include "ModuleParser_HelicityDecoder.h"
 #include "ModuleParser_MPD.h"
 #include "ModuleParser_VFTDC.h"
 
-void InitModuleParsers(JApplication* app) {
-    // Get the module parsers service
-    auto module_parsers_svc = app->GetService<JEventService_ModuleParsersMap>();
+class JEventService_CommonModuleParsers final : public JService {
+public:
+    Service<JEventService_ModuleParsersMap> parsers {this};
 
-    // Register all module parsers
-    // Format: module_parsers_svc->addParser(module_id, new ModuleParser_instance());
-    module_parsers_svc->addParser(1190,  new ModuleParser_CAEN1190());
-    module_parsers_svc->addParser(250,   new ModuleParser_FADC());
-    module_parsers_svc->addParser(253,   new ModuleParser_faV3compton());
-    module_parsers_svc->addParser(9250,  new ModuleParser_FADCScaler());
-    module_parsers_svc->addParser(9001,  new ModuleParser_TIScaler());
-    module_parsers_svc->addParser(0xdec, new ModuleParser_HelicityDecoder());
-    module_parsers_svc->addParser(3561,  new ModuleParser_MPD());
-    module_parsers_svc->addParser(9,     new ModuleParser_VFTDC());
+    void Init() override {
+        add(1190, std::make_shared<ModuleParser_CAEN1190>());
+        add(250, std::make_shared<ModuleParser_FADC>());
+        add(9250, std::make_shared<ModuleParser_FADCScaler>());
+        add(9001, std::make_shared<ModuleParser_TIScaler>());
+        add(0xdec, std::make_shared<ModuleParser_HelicityDecoder>());
+        add(3561, std::make_shared<ModuleParser_MPD>());
+        add(9, std::make_shared<ModuleParser_VFTDC>());
+    }
+
+private:
+    void add(int id, std::shared_ptr<BankParser> parser) {
+        parsers->addParser(id, std::move(parser));
+    }
+};
+
+std::shared_ptr<JService> MakeCommonModuleParserRegistrationService() {
+    return std::make_shared<JEventService_CommonModuleParsers>();
 }
-
-#endif
