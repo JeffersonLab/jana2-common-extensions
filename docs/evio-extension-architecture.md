@@ -93,8 +93,8 @@ The setup registration service adds both the bank route and parser:
 ```cpp
 class ComptonRegistration final : public JService {
 public:
-    Service<JEventService_BankRoutes> banks {this};
-    Service<JEventService_BankParsers> parsers {this};
+    Service<JEventService_BankToModuleMap> banks {this};
+    Service<JEventService_ModuleParsersMap> parsers {this};
 
     void Init() override {
         constexpr int parser_id = 0x100ace; // private setup namespace
