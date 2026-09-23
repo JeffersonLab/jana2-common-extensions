@@ -10,7 +10,7 @@
 #include <JANA/JEvent.h>
 
 #include "eviocc.h"
-#include "ModuleParser.h"
+#include "BankParser.h"
 #include "EventHits.h"
 #include "PhysicsEvent.h"
 #include "TriggerData.h"

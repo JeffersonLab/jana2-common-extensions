@@ -64,8 +64,7 @@ target_link_libraries(my_setup_plugin PRIVATE
     jana2_common_extensions::evio_parser_api)
 ```
 
-`evio_parser_api` exposes `BankParser`, `BankContext`, the `ModuleParser`
-compatibility alias, physics data objects, `TopLevelEventDecoder`, selector
+`evio_parser_api` exposes `BankParser`, `BankContext`, physics data objects, `TopLevelEventDecoder`, selector
 types, and the bank/parser/top-level registries. Registries accept additions
 during JANA service initialization and freeze on first event lookup. Duplicate
 keys fail during initialization.

@@ -1,14 +1,14 @@
 #ifndef MODULEPARSER_CAEN1190_H
 #define MODULEPARSER_CAEN1190_H
 
-#include "ModuleParser.h"
+#include "BankParser.h"
 #include "CAEN1190Hit.h"
 #include "EventHits_CAEN1190.h"
 /**
  * @class ModuleParser_CAEN1190
- * @brief ModuleParser implementation for CAEN1190 data
+ * @brief BankParser implementation for CAEN1190 data
  */
-class ModuleParser_CAEN1190 : public ModuleParser {
+class ModuleParser_CAEN1190 : public BankParser {
 public:
     void parse(std::shared_ptr<evio::BaseStructure> data_block,
                uint32_t rocid,
