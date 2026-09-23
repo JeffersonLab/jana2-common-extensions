@@ -76,6 +76,8 @@ Common electronics parsers and their hit headers are built and installed by
 other common raw-hit types. HMS DigiHits use
 `jana2_common_extensions::hms_detector_translation_data_types`.
 `evio_parser_data_types` remains available for existing CMake consumers.
+For a new reusable hardware parser, follow the
+[evio_common_modules guide](../evio_common_modules/README.md#adding-a-reusable-module-parser).
 
 ## Event Classes
 
