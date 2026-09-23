@@ -150,6 +150,8 @@ These scripts:
 
 * Prepends the JCE plugin path
 * Loads default plugins automatically
+* Resolves existing input file paths and configures two Run/SlowControls event
+  slots so consecutive non-physics events do not stall JANA's multilevel source
 * Forwards all arguments to `jana`
 
 ### Set Environment

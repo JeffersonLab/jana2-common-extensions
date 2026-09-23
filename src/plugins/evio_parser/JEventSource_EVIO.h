@@ -10,7 +10,6 @@
 #include <filesystem>
 
 #include "eviocc.h"
-#include "EvioEventParser.h"
 #include "JEventService_TopLevelEventDecoders.h"
 
 
@@ -24,9 +23,6 @@
 class JEventSource_EVIO : public JEventSource {
 
 private:
-    /// Helper class for parsing EVIO events into PhysicsEvent objects
-    std::unique_ptr<EvioEventParser> m_evio_event_parser;
-
     std::unique_ptr<evio::EvioReader> m_evio_reader;  ///< EVIO file reader instance
     std::shared_ptr<evio::EvioEvent> m_pending_event;
     std::shared_ptr<JEventService_TopLevelEventDecoders> m_user_decoders;
@@ -60,7 +56,6 @@ public:
     void Open() override;
     void Close() override;
     Result Emit(JEvent& event) override;
-    void ProcessParallel(JEvent& event) const override;
     /// Static description is required by JEventSourceGeneratorT<T>
     static std::string GetDescription();
 
