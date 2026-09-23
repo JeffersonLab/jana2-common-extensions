@@ -128,8 +128,8 @@ services directly in `InitPlugin()`:
 ```cpp
 class SetupRegistration final : public JService {
 public:
-    Service<JEventService_BankRoutes> banks {this};
-    Service<JEventService_BankParsers> parsers {this};
+    Service<JEventService_BankToModuleMap> banks {this};
+    Service<JEventService_ModuleParsersMap> parsers {this};
     Service<JEventService_TopLevelEventDecoders> events {this};
 
     void Init() override {
