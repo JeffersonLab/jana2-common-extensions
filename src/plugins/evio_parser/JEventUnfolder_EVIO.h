@@ -3,6 +3,7 @@
 
 #include <JANA/JEventUnfolder.h>
 #include "PhysicsEvent.h"
+#include "EvioEventParser.h"
 
 /**
  * @class JEventUnfolder_EVIO
@@ -14,7 +15,7 @@
  */
 class JEventUnfolder_EVIO : public JEventUnfolder {
 private:
-    Input<PhysicsEvent> events_in {this};  
+    std::unique_ptr<EvioEventParser> m_parser;
 
 public:
     /**
@@ -27,6 +28,16 @@ public:
         SetChildLevel(JEventLevel::PhysicsEvent);  
     }  
 
+    void Init() override {
+        m_parser = std::make_unique<EvioEventParser>(GetApplication(), GetLogger());
+    }
+
+    void Preprocess(const JEvent& parent) const override {
+        std::vector<PhysicsEvent*> physics_events;
+        m_parser->parse(parent, physics_events);
+        parent.Insert(physics_events);
+    }
+
     /**
      * @brief Unfold a physics event from the block-level parent event
      * 
@@ -35,7 +46,7 @@ public:
      * 
      * Data flow:
      * 1. JEventSource_EVIO reads EVIO file and creates block-level events with EvioEventWrapper
-     * 2. JEventSource_EVIO::ProcessParallel uses EvioEventParser and ModuleParser implementations
+     * 2. Preprocess uses EvioEventParser and ModuleParser implementations
      *    to decode EVIO banks into PhysicsEvent objects and inserts them into the block event
      * 3. This unfolder creates child physics events, each containing info from one PhysicsEvent
      * 
@@ -46,7 +57,7 @@ public:
      */
     Result Unfold(const JEvent& parent, JEvent& child, int iter) override {  
         // Get all physics events from the block-level parent event
-        auto& physics_events = events_in();
+        auto physics_events = parent.Get<PhysicsEvent>();
         
         // Safety check: if index is out of bounds, throw an exception
         if (iter >= physics_events.size()) {

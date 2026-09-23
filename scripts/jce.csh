@@ -22,6 +22,16 @@ foreach arg ($argv)
     endif
 end
 
+set resolved_args = ()
+foreach arg ($passthrough_args)
+    if (-f "$arg") then
+        set resolved_args = ($resolved_args "`realpath "$arg"`")
+    else
+        set resolved_args = ($resolved_args "$arg")
+    endif
+end
+set passthrough_args = ($resolved_args)
+
 # Resolve JCE install path for plugins.
 set jce_root = ""
 if ($?JCE_HOME) then
@@ -109,6 +119,16 @@ endif
 setenv JANA_PLUGIN_PATH "$final_plugin_path"
 
 set final_args = ($passthrough_args "-Pplugins=${merged_plugins}" "-Pjana:plugin_path=${final_plugin_path}")
+
+# JANA's multilevel source needs two parent slots for consecutive events.
+set has_run_pool = 0
+set has_slowcontrols_pool = 0
+foreach arg ($passthrough_args)
+    if ("$arg" =~ "-Pjana:max_inflight_runs=*") set has_run_pool = 1
+    if ("$arg" =~ "-Pjana:max_inflight_slowcontrols=*") set has_slowcontrols_pool = 1
+end
+if ($has_run_pool == 0) set final_args = ($final_args "-Pjana:max_inflight_runs=2")
+if ($has_slowcontrols_pool == 0) set final_args = ($final_args "-Pjana:max_inflight_slowcontrols=2")
 
 set jana_cmd = ""
 if ($?JANA_HOME) then

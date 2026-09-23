@@ -46,6 +46,13 @@ EVIO record
 
 Standalone events do not enter the trigger parser or unfolder. Embedded user
 banks do because they are part of a physics block and share its trigger data.
+Physics-block parsing runs in the unfolder's parallel `Preprocess`; standalone
+user-event decoders run in the source as events are emitted. JANA's multilevel
+source retains a parent event while requesting the next one. The `jce.sh` and
+`jce.csh` launchers therefore set `jana:max_inflight_runs` and
+`jana:max_inflight_slowcontrols` to at least 2 by default. When invoking `jana`
+directly, pass both `-Pjana:max_inflight_runs=2` and
+`-Pjana:max_inflight_slowcontrols=2` (or use `-Pnthreads=2` or higher).
 
 ## Public APIs
 

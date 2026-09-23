@@ -1,8 +1,6 @@
 
 #include "JEventSource_EVIO.h"
 #include "EvioEventWrapper.h"
-#include "EvioEventParser.h"
-#include "PhysicsEvent.h"
 
 #include <JANA/JApplication.h>
 #include <JANA/JEvent.h>
@@ -31,7 +29,6 @@ JEventSource_EVIO::JEventSource_EVIO() : JEventSource() {
     SetLevel(JEventLevel::Block);
     SetParentLevels({JEventLevel::Run, JEventLevel::SlowControls});
     SetNextEventLevel(JEventLevel::Block);
-    EnableProcessParallel(true);
 }
 
 /**
@@ -50,9 +47,6 @@ void JEventSource_EVIO::Open() {
     m_user_decoders =
         GetApplication()->GetService<JEventService_TopLevelEventDecoders>();
 
-    // Create EVIO event parser, JApplication is used to access
-    // services and JLogger is used for logging
-    m_evio_event_parser = std::make_unique<EvioEventParser>(GetApplication(), GetLogger());
 }
 
 /**
@@ -119,12 +113,52 @@ JEventSource::Result JEventSource_EVIO::Emit(JEvent& event) {
         return Result::FailureLevelChange;
     }
 
-    SetNextEventLevel(level);
     event.SetRunNumber(m_run_number);
     event.SetEventNumber(m_pending_event->getEventNumber());
     event.Insert(new EvioEventWrapper(
         m_pending_event, kind, std::move(decoder_key)));
+    if (kind == EvioEventKind::User) {
+        const auto* wrapper = event.GetSingle<EvioEventWrapper>();
+        auto match = m_user_decoders->resolve(tag, number, data_type);
+        TopLevelEventContext context {
+            tag, number, data_type, m_pending_event->getEventNumber(),
+            event.GetRunNumber(), GetLogger()
+        };
+        match->decoder->decode(wrapper->evio_event, context, event);
+    }
     m_pending_event.reset();
+
+    // JMultilevelSourceArrow requests its next pool by this level. Keep the
+    // following event buffered so it never requests a parent pool too early.
+    while ((m_pending_event = m_evio_reader->parseNextEvent()) != nullptr) {
+        const auto next_header = m_pending_event->getHeader();
+        const auto next_tag = static_cast<std::uint16_t>(next_header->getTag());
+        if (next_tag >= 0xFFD0 && next_tag <= 0xFFDF) {
+            SetNextEventLevel(JEventLevel::Run);
+            break;
+        }
+        if (isPhysicsEvent(m_pending_event)) {
+            SetNextEventLevel(JEventLevel::Block);
+            break;
+        }
+        auto next_match = m_user_decoders->resolve(
+            next_tag,
+            static_cast<std::uint8_t>(next_header->getNumber()),
+            static_cast<std::uint8_t>(next_header->getDataType().getValue()));
+        if (next_match) {
+            SetNextEventLevel(next_match->level);
+            break;
+        }
+        LOG_DEBUG(GetLogger()) << "Skipping unregistered EVIO event tag 0x"
+            << std::hex << next_tag << std::dec << LOG_END;
+    }
+    if (level != JEventLevel::Block) {
+        // This JANA multilevel arrow evicts the previous parent only when
+        // its next requested level is another parent of the same kind.
+        SetNextEventLevel(level);
+    } else if (m_pending_event == nullptr) {
+        SetNextEventLevel(JEventLevel::Block);
+    }
     return Result::Success;
 }
 
@@ -135,56 +169,6 @@ JEventSource::Result JEventSource_EVIO::Emit(JEvent& event) {
 std::string JEventSource_EVIO::GetDescription() {
     return "EVIO event source for experiment data";
 }
-
-/**
- * @brief Decode EVIO data into PhysicsEvent objects in parallel
- *
- * This method is called by JANA after `Emit()` when `EnableProcessParallel(true)` is set.
- * It takes the block-level `JEvent` (which already contains an `EvioEventWrapper`),
- * uses `EvioEventParser` together with registered `BankParser` implementations to
- * decode the EVIO banks into `PhysicsEvent` objects, and inserts those objects into
- * the same block-level event so that downstream `JEventUnfolder_EVIO`
- * can consume them.
- *
- * @param event Block-level JEvent containing an `EvioEventWrapper`
- */
-void JEventSource_EVIO::ProcessParallel(JEvent& event) const {
-    const auto* wrapper = event.GetSingle<EvioEventWrapper>();
-    if (wrapper->kind == EvioEventKind::Control) {
-        return;
-    }
-    if (wrapper->kind == EvioEventKind::User) {
-        const auto header = wrapper->evio_event->getHeader();
-        auto match = m_user_decoders->resolve(
-            static_cast<std::uint16_t>(header->getTag()),
-            static_cast<std::uint8_t>(header->getNumber()),
-            static_cast<std::uint8_t>(header->getDataType().getValue()));
-        if (!match || match->key != wrapper->decoder_key) {
-            throw JException(
-                "Top-level EVIO decoder '%s' is no longer registered",
-                wrapper->decoder_key.c_str());
-        }
-        TopLevelEventContext context {
-            static_cast<std::uint16_t>(header->getTag()),
-            static_cast<std::uint8_t>(header->getNumber()),
-            static_cast<std::uint8_t>(header->getDataType().getValue()),
-            wrapper->evio_event->getEventNumber(),
-            event.GetRunNumber(),
-            m_evio_event_parser->GetLogger()
-        };
-        match->decoder->decode(wrapper->evio_event, context, event);
-        return;
-    }
-
-    std::vector<PhysicsEvent*> physics_events;
-    // Parse the EVIO block-level event into PhysicsEvent objects in parallel.
-    // The parser is shared, but contains no per-event mutable state; all
-    // event-specific data (TriggerData, PhysicsEvent pointers) is local.
-    m_evio_event_parser->parse(event, physics_events);
-    event.Insert(physics_events);
-}
-
-
 
 /**
  * @brief Identifies physics events by their EVIO tag

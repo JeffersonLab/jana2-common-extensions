@@ -22,7 +22,11 @@ for arg in "$@"; do
             cli_default_plugins_file="$arg"
             ;;
         *)
-            passthrough_args+=("$arg")
+            if [[ -f "$arg" ]]; then
+                passthrough_args+=("$(realpath "$arg")")
+            else
+                passthrough_args+=("$arg")
+            fi
             ;;
     esac
 done
@@ -88,6 +92,15 @@ fi
 export JANA_PLUGIN_PATH="$final_plugin_path"
 
 final_args=("${passthrough_args[@]}" "-Pplugins=${merged_plugins}" "-Pjana:plugin_path=${final_plugin_path}")
+
+# JANA's multilevel source retains a parent while requesting its successor.
+# The default one-slot parent pools stall on consecutive control events.
+if [[ " ${passthrough_args[*]} " != *" -Pjana:max_inflight_runs="* ]]; then
+    final_args+=("-Pjana:max_inflight_runs=2")
+fi
+if [[ " ${passthrough_args[*]} " != *" -Pjana:max_inflight_slowcontrols="* ]]; then
+    final_args+=("-Pjana:max_inflight_slowcontrols=2")
+fi
 
 jana_cmd=""
 if [[ -n "${JANA_HOME:-}" && -x "${JANA_HOME}/bin/jana" ]]; then
