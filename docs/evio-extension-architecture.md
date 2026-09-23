@@ -107,8 +107,8 @@ public:
 ```
 
 New parsers should derive from `BankParser` and override the context-rich
-overload. `ModuleParser` remains an alias and the legacy `(bank, rocid, ... )`
-overload remains available during migration.
+overload. The legacy `(bank, rocid, ... )` overload remains available for
+electronics parsers during migration.
 
 ```cpp
 class ComptonAceParser final : public BankParser {
@@ -232,8 +232,9 @@ Dependency plugins are requested by its entry point.
 
 ## Migration Plan
 
-1. Keep current parsers building through the `ModuleParser` compatibility
-   alias; convert them to `BankParser` terminology incrementally.
+1. Derive current and new parsers from `BankParser`. The `ModuleParser.h`
+   compatibility alias has been removed; downstream repositories must update
+   their includes and base classes.
 2. Change deployments from `evio_parser` alone to
    `evio_parser,evio_common_modules`. The default plugin file already does so.
 3. Move experiment-owned parser source and hit objects to the experiment repo.
@@ -243,9 +244,8 @@ Dependency plugins are requested by its entry point.
    that it is emitted without trigger-bank parsing.
 5. Move detector-specific route registration and mapping configuration to the
    setup repo. Load `detector_translation` only for jobs producing DigiHits.
-6. After downstream repositories no longer include `ModuleParser.h`, remove
-   the compatibility alias and rename the remaining module-oriented service
-   methods in a later major release.
+6. Rename the remaining module-oriented service methods in a later major
+   release, after downstream callers have migrated.
 
 ## Required Tests for a Setup Plugin
 

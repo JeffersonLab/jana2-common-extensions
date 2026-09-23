@@ -13,12 +13,12 @@
 #include "eviocc.h"
 
 struct BankContext {
-    std::uint32_t rocid;
-    std::uint16_t description;
-    std::uint8_t status;
-    std::uint8_t number;
-    std::uint8_t data_type;
-    JLogger& logger;
+    std::uint32_t rocid;          // ROC ID from the containing ROC bank tag.
+    std::uint16_t description;    // Low 12 bits of the DMA bank tag, used for routing.
+    std::uint8_t status;          // High 4 bits of the DMA bank tag.
+    std::uint8_t number;          // DMA bank header number (num).
+    std::uint8_t data_type;       // DMA bank header data type code.
+    JLogger& logger;              // Parser logger supplied by EvioEventParser.
 };
 
 class BankParser {

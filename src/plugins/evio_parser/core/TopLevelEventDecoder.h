@@ -10,12 +10,12 @@
 #include "eviocc.h"
 
 struct TopLevelEventContext {
-    std::uint16_t tag;
-    std::uint8_t number;
-    std::uint8_t data_type;
-    std::uint64_t record_number;
-    std::int32_t run_number;
-    JLogger& logger;
+    std::uint16_t tag;            // Top-level EVIO event header tag.
+    std::uint8_t number;          // Top-level EVIO event header number (num).
+    std::uint8_t data_type;       // Top-level EVIO event header data type code.
+    std::uint64_t record_number;  // EVIO event number, not a trigger-derived physics event number.
+    std::int32_t run_number;      // Current JANA run number assigned by the source.
+    JLogger& logger;              // Source logger for decoder diagnostics.
 };
 
 class TopLevelEventDecoder {

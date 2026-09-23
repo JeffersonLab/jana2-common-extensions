@@ -25,7 +25,7 @@ module's block, event, data, and trailer word layouts before decoding them.
 Bank routing uses `tag & 0x0fff`; the upper nibble is status. If a parser needs
 the full context (status, EVIO number, or data type), override the
 `BankParser::parse(..., const BankContext&, ...)` overload instead of the
-legacy `ModuleParser::parse(..., rocid, ...)` overload used by FADC.
+legacy `BankParser::parse(..., rocid, ...)` overload used by FADC.
 
 ### 2. Add the parser and hit types
 
@@ -51,8 +51,7 @@ out of the hardware parser.
 
 ### 3. Decode into physics events
 
-Implement `ModuleParser_MyHW` by deriving from `ModuleParser` (the compatibility
-alias for `BankParser`). Match the signature in
+Implement `ModuleParser_MyHW` by deriving from `BankParser`. Match the signature in
 [`ModuleParser_FADC.h`](module_parsers/FADC/ModuleParser_FADC.h):
 
 ```cpp

@@ -16,7 +16,7 @@
  * This method orchestrates the parsing of an EVIO event by:
  * 1. Validating the event structure
  * 2. Parsing the trigger bank to extract ROC segments and event number
- * 3. Parsing data banks to extract detector hits using ModuleParser
+ * 3. Parsing data banks to extract detector hits using BankParser
  */
 void EvioEventParser::parse(const JEvent& event, std::vector<PhysicsEvent*>& physics_events) {
     // Get all child structures (Trigger Bank + ROC Banks)
@@ -108,7 +108,7 @@ std::vector<std::shared_ptr<evio::BaseStructure>> EvioEventParser::parseTriggerB
  * This method processes the data banks by:
  * 1. Validating that the number of data banks matches trigger bank ROC segments
  * 2. Matching ROC IDs between trigger and data banks
- * 3. Parsing each data block using ModuleParser
+ * 3. Parsing each data block using BankParser
  * 
  * @param data_banks                 Vector of data banks to parse
  * @param trigger_bank_roc_segments  Vector of trigger bank ROC segments for validation
