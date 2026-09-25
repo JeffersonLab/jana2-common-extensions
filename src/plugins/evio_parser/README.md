@@ -64,6 +64,9 @@ target_link_libraries(my_setup_plugin PRIVATE
     jana2_common_extensions::evio_parser_api)
 ```
 
+The installed package config loads the public JANA and EVIO dependencies.
+Their install prefixes must still be discoverable through `CMAKE_PREFIX_PATH`.
+
 `evio_parser_api` exposes `BankParser`, `BankContext`, physics data objects, `TopLevelEventDecoder`, selector
 types, and the bank/parser/top-level registries. Registries accept additions
 during JANA service initialization and freeze on first event lookup. Duplicate

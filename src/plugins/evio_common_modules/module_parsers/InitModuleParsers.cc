@@ -1,3 +1,4 @@
+#include <JANA/JApplication.h>
 #include <JANA/JService.h>
 #include <memory>
 #include "JEventService_ModuleParsersMap.h"
@@ -31,6 +32,6 @@ private:
     }
 };
 
-std::shared_ptr<JService> MakeCommonModuleParserRegistrationService() {
-    return std::make_shared<JEventService_CommonModuleParsers>();
+void RegisterCommonModuleParsers(JApplication* app) {
+    app->ProvideService(std::make_shared<JEventService_CommonModuleParsers>());
 }

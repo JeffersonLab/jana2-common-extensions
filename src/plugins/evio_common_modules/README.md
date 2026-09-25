@@ -2,6 +2,8 @@
 
 `evio_common_modules` registers reusable electronics-bank parsers with the
 registries supplied by `evio_parser`. It loads `evio_parser` automatically.
+Its registration service is provided under its concrete C++ type so setup
+plugins can provide their own registration services without replacing it.
 The built-in parsers cover CAEN1190, FADC, FADC scaler, TI scaler, helicity,
 MPD, and VFTDC. Keep experiment-specific banks in the experiment's own plugin;
 see the [extension architecture guide](../../../docs/evio-extension-architecture.md).
