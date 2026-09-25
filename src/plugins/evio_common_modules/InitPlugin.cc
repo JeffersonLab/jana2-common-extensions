@@ -3,10 +3,10 @@
 
 #include <memory>
 
-std::shared_ptr<JService> MakeCommonModuleParserRegistrationService();
+void RegisterCommonModuleParsers(JApplication* app);
 
 extern "C" void InitPlugin(JApplication* app) {
     InitJANAPlugin(app);
     app->AddPlugin("evio_parser");
-    app->ProvideService(MakeCommonModuleParserRegistrationService());
+    RegisterCommonModuleParsers(app);
 }

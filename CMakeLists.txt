@@ -26,15 +26,25 @@ add_subdirectory(src/plugins)
 
 # ── Unified package export ─────────────────────────────────────────────────────
 # All install(TARGETS ... EXPORT jana2_common_extensionsTargets) calls across
-# subdirectories accumulate into this single export set.  One find_package() call
-# then gives consumers access to every exported target under the same namespace:
+# subdirectories accumulate into this single export set. One find_package() call
+# loads public dependencies and every exported target under the same namespace:
 #   find_package(jana2_common_extensions REQUIRED)
 #   target_link_libraries(my_plugin PRIVATE jana2_common_extensions::evio_parser_data_types)
 
 include(CMakePackageConfigHelpers)
 
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/jana2_common_extensionsConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/jana2_common_extensionsConfig.cmake
+    INSTALL_DESTINATION lib/cmake/jana2_common_extensions
+)
+
 install(EXPORT jana2_common_extensionsTargets
-    FILE jana2_common_extensionsConfig.cmake
+    FILE jana2_common_extensionsTargets.cmake
     NAMESPACE jana2_common_extensions::
+    DESTINATION lib/cmake/jana2_common_extensions
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jana2_common_extensionsConfig.cmake
     DESTINATION lib/cmake/jana2_common_extensions
 )

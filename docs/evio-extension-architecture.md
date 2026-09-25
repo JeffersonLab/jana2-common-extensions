@@ -203,8 +203,6 @@ plugin should request it with `app->AddPlugin("detector_translation")`.
 A minimal external build links APIs and the module library it actually uses:
 
 ```cmake
-find_package(JANA REQUIRED)
-find_package(evio REQUIRED)
 find_package(jana2_common_extensions REQUIRED)
 
 add_jana_plugin(compton
