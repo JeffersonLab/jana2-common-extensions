@@ -1,13 +1,10 @@
-add_subdirectory(
-    ../evio_parser/detector_translators
-    ${CMAKE_CURRENT_BINARY_DIR}/detector_translators
-)
+add_subdirectory(detector_translators/HMSHodoscope)
 
 add_jana_plugin(hms_detector_translation
     SOURCES
         InitPlugin.cc
     PUBLIC_HEADER
-        ${DETECTOR_TRANSLATOR_HEADERS}
+        ${HMS_TRANSLATOR_HEADERS}
 )
 
 target_link_libraries(hms_detector_translation
@@ -22,7 +19,7 @@ target_link_libraries(hms_detector_translation_data_types INTERFACE
     evio_common_modules_data_types
     detector_mapping_api
 )
-foreach(_dir IN LISTS DETECTOR_TRANSLATOR_INCLUDE_DIRS)
+foreach(_dir IN LISTS HMS_TRANSLATOR_INCLUDE_DIRS)
     target_include_directories(hms_detector_translation_data_types INTERFACE
         $<BUILD_INTERFACE:${_dir}>
     )

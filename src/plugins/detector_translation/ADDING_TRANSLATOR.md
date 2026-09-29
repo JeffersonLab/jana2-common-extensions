@@ -3,7 +3,7 @@
 Detector translation converts hardware-oriented raw hits into typed,
 uncalibrated detector DigiHits. This guide covers the C++ work. For mapping
 DAQ addresses and run ranges, see the
-[detector mapping guide](../../../../config/evio_parser/detector_mappings/README.md).
+[detector mapping guide](../../../config/evio_parser/detector_mappings/README.md).
 
 ## Before You Start
 
@@ -16,7 +16,7 @@ You need:
 - representative raw-hit values and DAQ addresses for tests.
 
 If any item is missing, follow the
-[common module parser guide](../../evio_common_modules/README.md) first.
+[common module parser guide](../evio_common_modules/README.md) first.
 Translation does not decode EVIO words, calibrate measurements, reconstruct
 physics quantities, or provide geometry.
 
@@ -51,21 +51,24 @@ raw-hit route, change a DigiHit schema, or perform calibration.
 Use one directory per detector and one route directory per raw-hit family:
 
 ```text
-detector_translators/
-└── MyDetector/
-    ├── CMakeLists.txt
-    ├── MyDetectorIdentity.h
-    ├── MyDetectorIdentity.cc
-    ├── InitMyDetectorTranslators.h
-    ├── InitMyDetectorTranslators.cc
-    └── MyRawHitFamily/
+my_detector_translation/
+├── InitPlugin.cc
+├── CMakeLists.txt
+└── detector_translators/
+    └── MyDetector/
         ├── CMakeLists.txt
-        ├── MyRawHitFamilyTranslator.h
-        ├── MyRawHitFamilyTranslator.cc
-        ├── data_objects/
-        │   └── MyRawHitFamilyDigiHit.h
-        └── tests/
-            └── MyRawHitFamilyTranslatorTests.cc
+        ├── MyDetectorIdentity.h
+        ├── MyDetectorIdentity.cc
+        ├── InitMyDetectorTranslators.h
+        ├── InitMyDetectorTranslators.cc
+        └── MyRawHitFamily/
+            ├── CMakeLists.txt
+            ├── MyRawHitFamilyTranslator.h
+            ├── MyRawHitFamilyTranslator.cc
+            ├── data_objects/
+            │   └── MyRawHitFamilyDigiHit.h
+            └── tests/
+                └── MyRawHitFamilyTranslatorTests.cc
 ```
 
 Keep tests in `tests/`, even when there is only one test file. Public headers
@@ -137,7 +140,8 @@ The implementation must:
 - throw a clear `JException` naming a missing field.
 
 Do not silently default missing detector fields. Use
-`HMSHodoscope/HMSHodoscopeIdentity.*` as the current concrete example.
+`examples/hms_detector_translation/detector_translators/HMSHodoscope/HMSHodoscopeIdentity.*`
+as the current concrete example.
 
 ## Step 4: Define the DigiHit
 
@@ -224,7 +228,7 @@ with no translator for the current raw-hit type is skipped.
 
 ## Step 7: Wire CMake and Public Headers
 
-Follow the existing three-level aggregation:
+Follow the example plugin's route, detector, and plugin CMake files:
 
 1. The route `CMakeLists.txt` builds one static translator library, links the
    raw-hit parser, detector mapping, and detector identity libraries, and
@@ -232,8 +236,9 @@ Follow the existing three-level aggregation:
 2. The detector `CMakeLists.txt` adds each route, builds the detector
    initializer, and exports `<DETECTOR>_TRANSLATOR_LIBS`,
    `<DETECTOR>_TRANSLATOR_INCLUDE_DIRS`, and `<DETECTOR>_TRANSLATOR_HEADERS`.
-3. `detector_translators/CMakeLists.txt` adds the detector and appends only
-   those detector-level variables to `DETECTOR_TRANSLATOR_*`.
+3. The plugin `CMakeLists.txt` adds the detector subdirectory, builds the
+   JANA plugin, and installs its public DigiHit headers. Keep experiment
+   plugins in their own repositories; the HMS example is built here.
 
 Do not name individual route targets in the top-level translator CMake file.
 Public DigiHit headers must be included in the exported header list so
@@ -327,26 +332,19 @@ set(MY_DETECTOR_TRANSLATOR_HEADERS
 )
 ```
 
-Finally, append the detector-level variables in
-`detector_translators/CMakeLists.txt`:
+In the setup plugin's `CMakeLists.txt`, add the detector and use its exported
+header and include lists:
 
 ```cmake
-add_subdirectory(MyDetector)
+add_subdirectory(detector_translators/MyDetector)
 
-set(DETECTOR_TRANSLATOR_LIBS
-    ${HMS_TRANSLATOR_LIBS}
-    ${MY_DETECTOR_TRANSLATOR_LIBS}
-    PARENT_SCOPE
+add_jana_plugin(my_detector_translation
+    SOURCES InitPlugin.cc
+    PUBLIC_HEADER ${MY_DETECTOR_TRANSLATOR_HEADERS}
 )
-set(DETECTOR_TRANSLATOR_INCLUDE_DIRS
-    ${HMS_TRANSLATOR_INCLUDE_DIRS}
-    ${MY_DETECTOR_TRANSLATOR_INCLUDE_DIRS}
-    PARENT_SCOPE
-)
-set(DETECTOR_TRANSLATOR_HEADERS
-    ${HMS_TRANSLATOR_HEADERS}
-    ${MY_DETECTOR_TRANSLATOR_HEADERS}
-    PARENT_SCOPE
+target_link_libraries(my_detector_translation PRIVATE
+    my_detector_translators_init
+    jana2_common_extensions::detector_mapping_api
 )
 ```
 
@@ -375,7 +373,7 @@ the CSV check in Step 11.
 Add the detector to the root catalog, create its run-range manifest, and add
 at least one mapping file. The mapping field names must match the fields
 required by the detector identity helper. Follow the
-[mapping authoring guide](../../../../config/evio_parser/detector_mappings/README.md)
+[mapping authoring guide](../../../config/evio_parser/detector_mappings/README.md)
 for exact formats and validation rules.
 
 ## Step 10: Add Focused Tests
