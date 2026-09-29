@@ -3,7 +3,7 @@
 This directory contains physicist-editable configuration that maps DAQ
 addresses to detector identities for specific run ranges. Use this guide when
 the required raw-hit and DigiHit types already exist. For C++ translator work,
-see the [detector translator guide](../../../src/plugins/evio_parser/detector_translators/README.md).
+see the [detector translator guide](../../../src/plugins/detector_translation/ADDING_TRANSLATOR.md).
 
 ## Current HMS Status
 

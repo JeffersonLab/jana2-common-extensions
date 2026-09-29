@@ -38,7 +38,7 @@ The resulting components are:
 | `evio_parser` | JANA plugin | EVIO source, event classification, physics parser, block-to-physics unfolder, registries |
 | `evio_common_modules` | JANA plugin | Registers reusable CAEN1190, FADC, scaler, helicity, MPD, and VFTDC parsers |
 | `detector_translation` | JANA plugin | Run-aware mapping service and generic raw-hit translation processor |
-| `hms_detector_translation` | JANA plugin | Optional HMS-specific translator registrations and DigiHit types |
+| `hms_detector_translation` | JANA plugin | Optional HMS-specific translator example under `detector_translation/examples/` |
 | `compton` | External JANA plugin | Compton-owned bank/event decoders, objects, mappings, and translator routes |
 
 Reusable parser implementations and their raw-hit objects live in
