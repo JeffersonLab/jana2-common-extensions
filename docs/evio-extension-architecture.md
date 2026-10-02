@@ -30,6 +30,9 @@ modifying `evio_parser`.
 - Existing module parsers implementing the ROC-ID-only overload remain valid.
   New parsers may implement the context-rich overload when they need the bank
   description, status, number, data type, or logger.
+- Module parser plugins register shared parser instances during JANA service
+  initialization. Null parsers, duplicate module IDs, and registration after
+  the first lookup fail with `JException`.
 - Registering a translator for `RawHitT` makes the generic processor scan
   `RawHitT`; the processor has no central raw-type list.
 - Plugins can link the installed `evio_parser_api` or `detector_mapping_api`
@@ -46,6 +49,7 @@ modifying `evio_parser`.
 
 - A mapped bank without a registered parser fails through the existing parser
   lookup error.
+- Invalid, duplicate, or late module-parser registration fails immediately.
 - A mapped detector without a route for the raw-hit type is skipped.
 - Missing or invalid detector mapping configuration fails during mapping
   service initialization.
@@ -63,6 +67,7 @@ modifying `evio_parser`.
 
 - Build all four plugins independently in the same build.
 - Run `detector_translators_map_tests`.
+- Run `module_parsers_map_tests`.
 - Install JCE and configure an external consumer using the namespaced API
   targets.
 - Confirm the generic `evio_parser` target has no common-hit or HMS link
