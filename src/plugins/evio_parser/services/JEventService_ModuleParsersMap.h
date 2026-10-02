@@ -1,9 +1,14 @@
 #pragma once
 
+#include <JANA/JException.h>
 #include <JANA/JService.h>
-#include "ModuleParser.h"
+
 #include <map>
+#include <memory>
 #include <mutex>
+#include <utility>
+
+#include "ModuleParser.h"
 
 /**
  * @class JEventService_ModuleParsersMap
@@ -11,26 +16,30 @@
  */
 class JEventService_ModuleParsersMap : public JService {
 
-    std::map<int, ModuleParser*> m_module_parsers;
-    std::mutex m_mutex;
+    std::map<int, std::shared_ptr<ModuleParser>> m_module_parsers;
+    mutable std::mutex m_mutex;
+    bool m_frozen = false;
 
 public:
     /// Register a parser implementation for a given module ID
-    void addParser(int module_id, ModuleParser* parser) {
+    void addParser(int module_id, std::shared_ptr<ModuleParser> parser) {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_module_parsers[module_id] = parser;
+        if (m_frozen) {
+            throw JException("Module parser registry is already frozen");
+        }
+        if (parser == nullptr) {
+            throw JException("Module parser ID %d is null", module_id);
+        }
+        if (!m_module_parsers.emplace(module_id, std::move(parser)).second) {
+            throw JException("Duplicate module parser ID %d", module_id);
+        }
     }
 
     /// Look up a parser implementation for a given module ID
-    ModuleParser* getParser(int module_id) {
+    std::shared_ptr<ModuleParser> getParser(int module_id) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_frozen = true;
         auto it = m_module_parsers.find(module_id);
         return (it != m_module_parsers.end()) ? it->second : nullptr;
-    }
-
-    /// Destructor to clean up parser instances
-    ~JEventService_ModuleParsersMap() override {
-        for (auto& entry : m_module_parsers) {
-            delete entry.second;
-        }
     }
 };

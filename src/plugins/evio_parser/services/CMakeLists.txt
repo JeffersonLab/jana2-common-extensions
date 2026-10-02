@@ -36,6 +36,15 @@ file(GLOB SERVICES_PUBLIC_HEADERS
 set(SERVICES_PUBLIC_HEADERS ${SERVICES_PUBLIC_HEADERS} PARENT_SCOPE)
 
 if(BUILD_TESTING)
+    add_executable(module_parsers_map_tests
+        tests/JEventService_ModuleParsersMapTests.cc
+    )
+    target_link_libraries(module_parsers_map_tests PRIVATE services)
+    add_test(
+        NAME module_parsers_map_tests
+        COMMAND module_parsers_map_tests
+    )
+
     add_executable(detector_translators_map_tests
         tests/JEventService_DetectorTranslatorsMapTests.cc
     )

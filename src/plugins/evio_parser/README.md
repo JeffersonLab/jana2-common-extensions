@@ -69,7 +69,7 @@ Downstream JEventProcessors  (e.g. detector_translation_dump)
 | `evio_common_modules` | `../evio_common_modules/` | Registers JCE's reusable concrete module parsers |
 | `ModuleParser_FADC` etc. | `../evio_common_modules/module_parsers/*/ModuleParser_*.cc/.h` | Concrete reusable decoder implementations |
 | `JEventService_BankToModuleMap` | `services/JEventService_BankToModuleMap.h` | Loads `mapping.db`; resolves EVIO bank tag → module ID |
-| `JEventService_ModuleParsersMap` | `services/JEventService_ModuleParsersMap.h` | Registry of `ModuleParser*` instances keyed by module ID |
+| `JEventService_ModuleParsersMap` | `services/JEventService_ModuleParsersMap.h` | Frozen-on-first-use registry of shared `ModuleParser` instances keyed by module ID |
 | `JEventService_FilterDB` | `services/JEventService_FilterDB.cc/.h` | Optional allow-list; gates which ROC IDs and bank tags are decoded |
 | `JEventService_TranslationTable` | `services/JEventService_TranslationTable.cc/.h` | Publishes the configured DAQ-to-detector table as immutable run-specific data |
 | `JEventService_DetectorTranslatorsMap` | `services/JEventService_DetectorTranslatorsMap.h` | Publishes immutable detector-name-to-function maps by raw-hit type |
@@ -290,7 +290,8 @@ Config file resolution order (implemented in `jce_config_paths.h`):
 
 ## Adding a New Module Parser
 
-This section is the guide for extending the plugin with support for a new hardware module.
+This section shows how an experiment plugin can add support for a new hardware
+module without modifying `evio_parser` or `evio_common_modules`.
 
 ### Step 1 — Choose a bank ID and module ID
 
@@ -299,7 +300,7 @@ Decide which EVIO bank tag your module produces (e.g. `350`) and assign a unique
 ### Step 2 — Create the directory layout
 
 ```bash
-mkdir -p src/plugins/evio_common_modules/module_parsers/MyHW/data_objects
+mkdir -p src/plugins/my_experiment/module_parsers/MyHW/data_objects
 ```
 
 Use `../evio_common_modules/module_parsers/FADC/` as a reference:
@@ -375,9 +376,10 @@ target_include_directories(myhw_parser
         ${CMAKE_CURRENT_SOURCE_DIR}/data_objects
 )
 
-target_link_libraries(myhw_parser
-    PUBLIC
-        core   # provides ModuleParser base class and core data objects
+find_package(jana2_common_extensions REQUIRED)
+
+target_link_libraries(myhw_parser PUBLIC
+    jana2_common_extensions::evio_parser_api
 )
 
 set(MYHW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/data_objects PARENT_SCOPE)
@@ -386,45 +388,56 @@ file(GLOB MYHW_PUBLIC_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/data_objects/*.h)
 set(MYHW_PUBLIC_HEADERS ${MYHW_PUBLIC_HEADERS} PARENT_SCOPE)
 ```
 
-### Step 6 — Register the new parser in `module_parsers/CMakeLists.txt`
+### Step 6 — Add the parser to the experiment plugin
 
-Open `src/plugins/evio_common_modules/module_parsers/CMakeLists.txt` and add three lines:
+Add the parser library and link it to the experiment plugin:
 
 ```cmake
-# Add subdirectory
-add_subdirectory(MyHW)
-
-# Extend the library list (inside the set() call for MODULE_PARSERS_LIBS)
-set(MODULE_PARSERS_LIBS
-    ...existing entries...
-    myhw_parser          # <-- add this
-    PARENT_SCOPE
-)
-
-# Extend include dirs
-set(MODULE_PARSERS_INCLUDE_DIRS
-    ...existing entries...
-    ${MYHW_INCLUDE_DIR}  # <-- add this
-    PARENT_SCOPE
-)
-
-# Extend headers
-set(MODULE_PARSERS_HEADERS
-    ...existing entries...
-    ${MYHW_PUBLIC_HEADERS}  # <-- add this
-    PARENT_SCOPE
+add_subdirectory(module_parsers/MyHW)
+add_jana_plugin(my_experiment SOURCES InitPlugin.cc RegisterModuleParsers.cc)
+target_link_libraries(my_experiment PRIVATE
+    jana2_common_extensions::evio_parser_api
+    myhw_parser
 )
 ```
 
-### Step 7 — Register the parser instance in `module_parsers/InitModuleParsers.cc`
+### Step 7 — Register the parser from a JANA service
 
-Open `src/plugins/evio_common_modules/module_parsers/InitModuleParsers.cc` and add:
+Register during service initialization so dependencies are resolved before the
+registry freezes:
 
 ```cpp
-#include "ModuleParser_MyHW.h"   // at the top (with other parser includes)
+#include <JANA/JService.h>
+#include <memory>
 
-// Inside InitModuleParsers(JApplication* app):
-module_parsers_svc->addParser(350, new ModuleParser_MyHW());
+#include "JEventService_ModuleParsersMap.h"
+#include "ModuleParser_MyHW.h"
+
+class MyExperimentModuleParsers final : public JService {
+public:
+    Service<JEventService_ModuleParsersMap> parsers {this};
+
+    void Init() override {
+        parsers->addParser(350, std::make_shared<ModuleParser_MyHW>());
+    }
+};
+
+void RegisterModuleParsers(JApplication* app) {
+    app->ProvideService(std::make_shared<MyExperimentModuleParsers>());
+}
+```
+
+The plugin's `InitPlugin.cc` must request the core plugin before providing the
+registration service:
+
+```cpp
+void RegisterModuleParsers(JApplication* app);
+
+extern "C" void InitPlugin(JApplication* app) {
+    InitJANAPlugin(app);
+    app->AddPlugin("evio_parser");
+    RegisterModuleParsers(app);
+}
 ```
 
 ### Step 8 — Add a bank-to-module mapping entry
