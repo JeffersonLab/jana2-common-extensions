@@ -8,7 +8,5 @@ target_include_directories(detector_digi_hit_processor
 
 target_link_libraries(detector_digi_hit_processor
     PUBLIC
-        ${DETECTOR_TRANSLATOR_LIBS}
-        ${MODULE_PARSERS_LIBS}
         services
 )

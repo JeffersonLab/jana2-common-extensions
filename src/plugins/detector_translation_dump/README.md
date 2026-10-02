@@ -38,4 +38,4 @@ For candidate configuration, boundary checks, and common failure causes, see
 the [detector mapping guide](../../../config/evio_parser/detector_mappings/README.md).
 Developers adding a new DigiHit type must also add a matching optional input
 and CSV writer here; follow the
-[detector translator guide](../evio_parser/detector_translators/README.md).
+[detector translator guide](../detector_translation/examples/hms_detector_translation/detector_translators/README.md).

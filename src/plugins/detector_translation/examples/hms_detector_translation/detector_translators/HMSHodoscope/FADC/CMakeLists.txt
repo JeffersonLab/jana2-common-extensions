@@ -11,7 +11,7 @@ target_include_directories(hms_hodoscope_fadc_translator
 target_link_libraries(hms_hodoscope_fadc_translator
     PUBLIC
         detector_mapping
-        fadc_parser
+        evio_common_modules_data_types
         hms_hodoscope_identity
 )
 
