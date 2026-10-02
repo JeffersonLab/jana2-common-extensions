@@ -71,8 +71,8 @@ Downstream JEventProcessors  (e.g. detector_translation_dump)
 | `JEventService_BankToModuleMap` | `services/JEventService_BankToModuleMap.h` | Loads `mapping.db`; resolves EVIO bank tag → module ID |
 | `JEventService_ModuleParsersMap` | `services/JEventService_ModuleParsersMap.h` | Frozen-on-first-use registry of shared `ModuleParser` instances keyed by module ID |
 | `JEventService_FilterDB` | `services/JEventService_FilterDB.cc/.h` | Optional allow-list; gates which ROC IDs and bank tags are decoded |
-| `JEventService_TranslationTable` | `services/JEventService_TranslationTable.cc/.h` | Publishes the configured DAQ-to-detector table as immutable run-specific data |
-| `JEventService_DetectorTranslatorsMap` | `services/JEventService_DetectorTranslatorsMap.h` | Publishes immutable detector-name-to-function maps by raw-hit type |
+| `JEventService_TranslationTable` | `../detector_translation/services/JEventService_TranslationTable.cc/.h` | Publishes the configured DAQ-to-detector table as immutable run-specific data |
+| `JEventService_DetectorTranslatorsMap` | `../detector_translation/services/JEventService_DetectorTranslatorsMap.h` | Publishes immutable detector-name-to-function maps by raw-hit type |
 | `detector_translation` | `../detector_translation/` | Owns the generic type-erased DigiHit translation processor and mapping services |
 | `hms_detector_translation` | `../detector_translation/examples/hms_detector_translation/` | Registers HMS-specific translators and publishes HMS DigiHit types |
 
@@ -96,15 +96,15 @@ src/plugins/evio_parser/
 ├── services/                      # JANA2 services (singletons shared across threads)
 │   ├── JEventService_BankToModuleMap.h
 │   ├── JEventService_FilterDB.cc/.h
-│   ├── JEventService_ModuleParsersMap.h
-│   ├── JEventService_DetectorTranslatorsMap.h
-│   └── JEventService_TranslationTable.cc/.h
+│   └── JEventService_ModuleParsersMap.h
 ```
 
 **Why this layout?**
 
 - `core/` is the stable, experiment-agnostic kernel. You should rarely need to touch it.
-- `services/` are JANA2 singletons that provide shared, thread-safe configuration to all parsers.
+- `services/` contains the shared, thread-safe services used by EVIO parsing.
+- `detector_translation/` owns its mapping model, services, registry, and
+  processor rather than exposing them from the EVIO parser.
 - `evio_common_modules/module_parsers/` contains reusable JCE implementations.
   Experiment-specific parsers register through `evio_parser_api` from their
   own plugin.

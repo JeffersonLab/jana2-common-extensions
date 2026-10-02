@@ -60,7 +60,7 @@ modifying `evio_parser`.
 - `src/plugins/evio_common_modules/`
 - `src/plugins/detector_translation/`
 - `src/plugins/detector_translation/examples/hms_detector_translation/`
-- `src/plugins/evio_parser/services/JEventService_DetectorTranslatorsMap.h`
+- `src/plugins/detector_translation/services/JEventService_DetectorTranslatorsMap.h`
 - `src/plugins/evio_parser/core/ModuleParser.h`
 
 ## Verification

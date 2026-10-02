@@ -104,11 +104,11 @@ throws when no configured detector mapping applies to that run.
 ## Key Components
 
 - `config/evio_parser/detector_mappings/`
-- `src/plugins/evio_parser/core/detector_mapping_objects/`
+- `src/plugins/detector_translation/detector_mapping/`
 - Address overloads beside participating common raw-hit types under
   `src/plugins/evio_common_modules/module_parsers/`
-- `src/plugins/evio_parser/services/JEventService_TranslationTable.*`
-- `src/plugins/evio_parser/services/JEventService_DetectorTranslatorsMap.h`
+- `src/plugins/detector_translation/services/JEventService_TranslationTable.*`
+- `src/plugins/detector_translation/services/JEventService_DetectorTranslatorsMap.h`
 - `src/plugins/detector_translation/examples/hms_detector_translation/detector_translators/`
 - `src/plugins/detector_translation/processors/detector_digi_hits/`
 
