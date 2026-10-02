@@ -10,8 +10,14 @@ add_library(services STATIC
 
 target_include_directories(services
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}    # Expose services/ headers
-        ${JANA_INCLUDE_DIRS}           # JANA2 headers
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../core>
+        $<INSTALL_INTERFACE:include/${INSTALL_NAMESPACE}/plugins/evio_parser>
+)
+
+install(TARGETS services
+    EXPORT jana2_common_extensionsTargets
+    ARCHIVE DESTINATION lib/${INSTALL_NAMESPACE}
 )
 
 target_link_libraries(services
