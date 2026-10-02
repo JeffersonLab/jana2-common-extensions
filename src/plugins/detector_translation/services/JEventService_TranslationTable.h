@@ -9,14 +9,14 @@
 #include <vector>
 
 #include "TranslationTable.h"
-#include "jce_config_paths.h"
+#include "JEventService_DetectorMappingCatalogs.h"
 
 class JEventService_TranslationTable : public JService {
 public:
     explicit JEventService_TranslationTable(
-        std::string default_mapping_directory = jce_config_path(
-            "evio_parser/detector_mappings",
-            "TRANSLATION:DIRECTORY"));
+        std::string default_mapping_directory = "");
+    explicit JEventService_TranslationTable(
+        std::vector<DetectorMappingCatalogProvider> default_catalogs);
 
     void Init() override;
 
@@ -31,6 +31,8 @@ private:
     static_assert(std::atomic<const RunRangeTable*>::is_always_lock_free);
 
     Parameter<std::string> m_mapping_directory;
+    Service<JEventService_DetectorMappingCatalogs> m_catalogs {this};
+    std::vector<DetectorMappingCatalogProvider> m_default_catalogs;
     std::vector<RunRangeTable> m_run_tables;
     mutable std::atomic<const RunRangeTable*> m_cached_run_table {nullptr};
 };

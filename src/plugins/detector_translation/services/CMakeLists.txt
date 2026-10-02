@@ -38,6 +38,17 @@ set(DETECTOR_TRANSLATION_SERVICES_PUBLIC_HEADERS
 )
 
 if(BUILD_TESTING)
+    add_executable(detector_mapping_catalogs_tests
+        tests/JEventService_DetectorMappingCatalogsTests.cc
+    )
+    target_link_libraries(detector_mapping_catalogs_tests
+        PRIVATE detector_translation_services
+    )
+    add_test(
+        NAME detector_mapping_catalogs_tests
+        COMMAND detector_mapping_catalogs_tests
+    )
+
     add_executable(detector_translators_map_tests
         tests/JEventService_DetectorTranslatorsMapTests.cc
     )

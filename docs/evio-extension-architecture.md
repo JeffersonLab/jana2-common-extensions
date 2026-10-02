@@ -15,7 +15,7 @@ modifying `evio_parser`.
 3. `detector_translation` requests `evio_parser` and provides the run-aware
    mapping service plus the generic translation processor.
 4. A setup plugin such as `hms_detector_translation` requests its dependencies
-   and registers detector routes with the shared translator registry.
+   and registers detector routes and its mapping catalog with shared services.
 5. The first event translation freezes the registry. Event processing then
    uses immutable type-erased scanner entries.
 
@@ -33,6 +33,10 @@ modifying `evio_parser`.
 - Module parser plugins register shared parser instances during JANA service
   initialization. Null parsers, duplicate module IDs, and registration after
   the first lookup fail with `JException`.
+- Setup plugins register named detector-mapping catalog directories during
+  plugin loading. The translation-table service freezes and merges those
+  catalogs during initialization; `TRANSLATION:DIRECTORY` remains an explicit
+  single-directory override.
 - Registering a translator for `RawHitT` makes the generic processor scan
   `RawHitT`; the processor has no central raw-type list.
 - Plugins can link the installed `evio_parser_api` or `detector_mapping_api`
@@ -50,6 +54,8 @@ modifying `evio_parser`.
 - A mapped bank without a registered parser fails through the existing parser
   lookup error.
 - Invalid, duplicate, or late module-parser registration fails immediately.
+- Duplicate mapping-provider names, late provider registration, and detectors
+  declared by multiple providers fail immediately.
 - A mapped detector without a route for the raw-hit type is skipped.
 - Missing or invalid detector mapping configuration fails during mapping
   service initialization.
