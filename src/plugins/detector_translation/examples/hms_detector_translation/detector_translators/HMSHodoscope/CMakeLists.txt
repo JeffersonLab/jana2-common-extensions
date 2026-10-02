@@ -23,6 +23,8 @@ target_link_libraries(hms_hodoscope_translators_init
     PUBLIC
         hms_hodoscope_fadc_translator
         hms_hodoscope_fadc_scaler_translator
+    PRIVATE
+        detector_mapping_api
 )
 
 set(HMS_TRANSLATOR_LIBS
