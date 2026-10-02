@@ -68,7 +68,7 @@ Downstream JEventProcessors  (e.g. detector_translation_dump)
 | `ModuleParser` (base) | `core/ModuleParser.h` | Base class for hardware parsers; receives the source bank metadata in `BankContext` |
 | `evio_common_modules` | `../evio_common_modules/` | Registers JCE's reusable concrete module parsers |
 | `ModuleParser_FADC` etc. | `../evio_common_modules/module_parsers/*/ModuleParser_*.cc/.h` | Concrete reusable decoder implementations |
-| `JEventService_BankToModuleMap` | `services/JEventService_BankToModuleMap.h` | Loads `mapping.db`; resolves EVIO bank tag → module ID |
+| `JEventService_BankToModuleMap` | `services/JEventService_BankToModuleMap.h` | Accepts bank routes from plugins and `mapping.db`; resolves EVIO bank tag → module ID |
 | `JEventService_ModuleParsersMap` | `services/JEventService_ModuleParsersMap.h` | Frozen-on-first-use registry of shared `ModuleParser` instances keyed by module ID |
 | `JEventService_FilterDB` | `services/JEventService_FilterDB.cc/.h` | Optional allow-list; gates which ROC IDs and bank tags are decoded |
 | `JEventService_TranslationTable` | `../detector_translation/services/JEventService_TranslationTable.cc/.h` | Publishes the configured DAQ-to-detector table as immutable run-specific data |
@@ -410,14 +410,17 @@ registry freezes:
 #include <JANA/JService.h>
 #include <memory>
 
+#include "JEventService_BankToModuleMap.h"
 #include "JEventService_ModuleParsersMap.h"
 #include "ModuleParser_MyHW.h"
 
 class MyExperimentModuleParsers final : public JService {
 public:
+    Service<JEventService_BankToModuleMap> routes {this};
     Service<JEventService_ModuleParsersMap> parsers {this};
 
     void Init() override {
+        routes->addRoute(350, 350);
         parsers->addParser(350, std::make_shared<ModuleParser_MyHW>());
     }
 };
@@ -440,16 +443,13 @@ extern "C" void InitPlugin(JApplication* app) {
 }
 ```
 
-### Step 8 — Add a bank-to-module mapping entry
+### Step 8 — Register the bank-to-module route
 
-Edit `config/mapping.db` (or whichever file is pointed to by `BANKMAP:FILE`):
-
-```
-# module  bank
-  350    350
-```
-
-This tells `EvioEventParser` to route bank tag `350` to module ID `350`, which is then looked up in `JEventService_ModuleParsersMap` to retrieve your `ModuleParser_MyHW` instance.
+The `addRoute(350, 350)` call above tells `EvioEventParser` to route bank tag
+`350` to module ID `350`, which is then looked up in
+`JEventService_ModuleParsersMap` to retrieve your `ModuleParser_MyHW` instance.
+`BANKMAP:FILE` remains available for legacy deployments; a duplicate bank ID
+from any source is rejected.
 
 ### Step 9 — Expose hits to downstream processors
 
