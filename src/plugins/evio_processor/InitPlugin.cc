@@ -4,6 +4,7 @@
 extern "C" {
     void InitPlugin(JApplication* app) {
         InitJANAPlugin(app);
+        app->AddPlugin("evio_common_modules");
         app->Add(new JEventProcessor_EVIO());
     }
 }

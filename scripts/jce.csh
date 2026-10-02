@@ -70,7 +70,7 @@ endif
 
 # Fallback to evio_parser if default plugins file is missing or empty
 if ("$default_plugins" == "") then
-    set default_plugins = "evio_parser"
+    set default_plugins = "evio_parser,evio_common_modules"
 endif
 
 # Merge default plugins with user-specified plugins
