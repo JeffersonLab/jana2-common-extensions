@@ -33,6 +33,9 @@ modifying `evio_parser`.
 - Module parser plugins register shared parser instances during JANA service
   initialization. Null parsers, duplicate module IDs, and registration after
   the first lookup fail with `JException`.
+- Module parser plugins register their bank-to-module routes during service
+  initialization. `mapping.db` remains a compatibility source; duplicate bank
+  IDs and registration after the first lookup fail with `JException`.
 - Setup plugins register named detector-mapping catalog directories during
   plugin loading. The translation-table service freezes and merges those
   catalogs during initialization; `TRANSLATION:DIRECTORY` remains an explicit
@@ -54,6 +57,7 @@ modifying `evio_parser`.
 - A mapped bank without a registered parser fails through the existing parser
   lookup error.
 - Invalid, duplicate, or late module-parser registration fails immediately.
+- Duplicate or late bank-to-module route registration fails immediately.
 - Duplicate mapping-provider names, late provider registration, and detectors
   declared by multiple providers fail immediately.
 - A mapped detector without a route for the raw-hit type is skipped.
@@ -74,6 +78,7 @@ modifying `evio_parser`.
 - Build all four plugins independently in the same build.
 - Run `detector_translators_map_tests`.
 - Run `module_parsers_map_tests`.
+- Run `bank_to_module_map_tests`.
 - Install JCE and configure an external consumer using the namespaced API
   targets.
 - Confirm the generic `evio_parser` target has no common-hit or HMS link
