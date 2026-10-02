@@ -2,12 +2,6 @@
 
 #include <JANA/JEventProcessor.h>
 
-#include "FADC250HallBPulseIntegralHit.h"
-#include "FADC250HallBPulsePeakHit.h"
-#include "FADC250HallBPulseTimeHit.h"
-#include "FADC250PulseHit.h"
-#include "FADC250WaveformHit.h"
-#include "FADCScalerHit.h"
 #include "JEventService_DetectorTranslatorsMap.h"
 #include "JEventService_TranslationTable.h"
 
