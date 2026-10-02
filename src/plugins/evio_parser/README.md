@@ -3,14 +3,19 @@
 The `evio_parser` plugin is the **data-ingestion layer** of the jana2-common-extensions framework. It is responsible for:
 
 1. Opening EVIO files and streaming raw events through JANA2.
-2. Decoding hardware-specific banks (FADC250, MPD, VFTDC, scalers, helicity decoder, …) into strongly-typed C++ hit objects.
+2. Routing hardware-specific banks to parsers registered by setup plugins.
 3. Splitting EVIO block-level events into individual physics-level child events that downstream processors can consume.
-4. Translating mapped raw hits into typed, uncalibrated detector DigiHits.
+4. Publishing stable parser and detector-mapping extension APIs.
 
 It is **hardware-agnostic at its core**. Hardware decoding lives in
-`module_parsers/`, while detector-specific DigiHit creation lives in
-`detector_translators/` and `processors/`; all remain outside the generic
-parser core.
+`../evio_common_modules/module_parsers/`, generic translation processing lives
+in `../detector_translation/`, and detector-specific DigiHit creation lives in
+`../detector_translation/examples/hms_detector_translation/`; all remain
+outside the generic parser core.
+JCE's reusable electronics parsers are registered by the optional
+`evio_common_modules` plugin. Generic detector mapping is provided by
+`detector_translation`, while HMS routes are registered by
+`hms_detector_translation`.
 
 ---
 
@@ -61,20 +66,21 @@ Downstream JEventProcessors  (e.g. detector_translation_dump)
 | `EvioEventParser` | `core/EvioEventParser.cc/.h` | Parses the trigger bank and ROC banks; parses each bank using its `ModuleParser` and insert parsed hits into a `PhysicsEvent` object; later inserts the `PhysicsEvent` objects into the block-level `JEvent` |
 | `JEventUnfolder_EVIO` | `JEventUnfolder_EVIO.h` | Receives a block-level `JEvent` containing `PhysicsEvent` objects; splits each one into an individual physics-level child `JEvent` and calls `insertHitsIntoEvent` on each |
 | `ModuleParser` (base) | `core/ModuleParser.h` | Abstract base class all hardware parsers implement |
-| `ModuleParser_FADC` etc. | `module_parsers/*/ModuleParser_*.cc/.h` | Concrete decoders for specific hardware modules; produce `EventHits` objects per event |
+| `evio_common_modules` | `../evio_common_modules/` | Registers JCE's reusable concrete module parsers |
+| `ModuleParser_FADC` etc. | `../evio_common_modules/module_parsers/*/ModuleParser_*.cc/.h` | Concrete reusable decoder implementations |
 | `JEventService_BankToModuleMap` | `services/JEventService_BankToModuleMap.h` | Loads `mapping.db`; resolves EVIO bank tag → module ID |
 | `JEventService_ModuleParsersMap` | `services/JEventService_ModuleParsersMap.h` | Registry of `ModuleParser*` instances keyed by module ID |
 | `JEventService_FilterDB` | `services/JEventService_FilterDB.cc/.h` | Optional allow-list; gates which ROC IDs and bank tags are decoded |
 | `JEventService_TranslationTable` | `services/JEventService_TranslationTable.cc/.h` | Publishes the configured DAQ-to-detector table as immutable run-specific data |
 | `JEventService_DetectorTranslatorsMap` | `services/JEventService_DetectorTranslatorsMap.h` | Publishes immutable detector-name-to-function maps by raw-hit type |
-| `JEventProcessor_DetectorDigiHits` | `processors/detector_digi_hits/` | Scans raw hits once and dispatches typed, uncalibrated detector DigiHits |
-| Detector translators | `detector_translators/` | Own detector-specific DigiHit types and raw-hit conversion logic |
+| `detector_translation` | `../detector_translation/` | Owns the generic type-erased DigiHit translation processor and mapping services |
+| `hms_detector_translation` | `../detector_translation/examples/hms_detector_translation/` | Registers HMS-specific translators and publishes HMS DigiHit types |
 
 ## Directory Structure
 
 ```
 src/plugins/evio_parser/
-├── InitPlugin.cc                  # Plugin entry point; registers all components and module parsers
+├── InitPlugin.cc                  # Setup-neutral EVIO source, unfolder, and services
 ├── JEventSource_EVIO.cc/.h        # EVIO file event source
 ├── JEventUnfolder_EVIO.h          # Block → physics event unfolder
 │
@@ -93,36 +99,18 @@ src/plugins/evio_parser/
 │   ├── JEventService_ModuleParsersMap.h
 │   ├── JEventService_DetectorTranslatorsMap.h
 │   └── JEventService_TranslationTable.cc/.h
-│
-├── detector_translators/          # Detector-owned DigiHit types and conversion logic
-│   ├── README.md                   # Complete detector-translator extension guide
-│   └── HMSHodoscope/
-│       ├── HMSHodoscopeIdentity.*
-│       ├── FADC/
-│       └── FADCScaler/
-│
-├── processors/                    # Parallel detector DigiHit translation
-│   └── detector_digi_hits/
-│
-└── module_parsers/                # Hardware-specific parsers (extend here)
-    ├── CMakeLists.txt             # Aggregates MODULE_PARSERS_LIBS for the main build
-    ├── InitModuleParsers.cc       # Central module parser registration function
-    ├── FADC/                      # FADC250 waveform + pulse parser
-    ├── FADCScaler/                # FADC scaler parser
-    ├── TIScaler/                  # TI scaler parser
-    ├── helicity_decoder/          # Helicity decoder parser
-    ├── MPD/                       # MPD (Multi-Purpose Digitizer) parser
-    └── VFTDC/                     # VFTDC TDC parser
 ```
 
 **Why this layout?**
 
 - `core/` is the stable, experiment-agnostic kernel. You should rarely need to touch it.
 - `services/` are JANA2 singletons that provide shared, thread-safe configuration to all parsers.
-- `module_parsers/` is the extension zone. Each hardware type gets its own subdirectory and static library so that adding or removing a module requires only local changes.
-- `detector_translators/` is organized first by detector and then by raw-hit
-  family. It converts decoded hardware records into detector-qualified DigiHits
-  without adding calibration or geometry.
+- `evio_common_modules/module_parsers/` contains reusable JCE implementations.
+  Experiment-specific parsers register through `evio_parser_api` from their
+  own plugin.
+- `detector_translation/examples/hms_detector_translation/detector_translators/` is organized first by
+  detector and then by raw-hit family. It converts decoded hardware records
+  into detector-qualified DigiHits without adding calibration or geometry.
 
 ---
 
@@ -164,8 +152,8 @@ Detector translation is split deliberately across three responsibilities:
 
 | Responsibility | Owner | Guide |
 |---|---|---|
-| Decode hardware words into typed raw hits | `module_parsers/` | [Adding a New Module Parser](#adding-a-new-module-parser) |
-| Convert a mapped raw hit into a typed detector DigiHit | `detector_translators/` | [Adding Detector Translation](detector_translators/README.md) |
+| Decode hardware words into typed raw hits | `../evio_common_modules/module_parsers/` | [Adding a New Module Parser](#adding-a-new-module-parser) |
+| Convert a mapped raw hit into a typed detector DigiHit | `../detector_translation/examples/hms_detector_translation/detector_translators/` | [Adding Detector Translation](../detector_translation/examples/hms_detector_translation/detector_translators/README.md) |
 | Assign DAQ addresses and run ranges | `config/evio_parser/detector_mappings/` | [Detector Mapping Configuration](../../../config/evio_parser/detector_mappings/README.md) |
 
 The module parser and typed raw hit must work before translator development
@@ -244,12 +232,13 @@ table construction on the event-processing path.
 outputs. Supported HMS routes currently translate every emitted FADC format to
 its corresponding typed DigiHit and board-level FADC scaler records to
 `HMSHodoscopeFADCScalerDigiHit`; unmapped and non-HMS addresses are ignored.
-Detector routes are registered through `InitDetectorTranslators()` and
-`JEventService_DetectorTranslatorsMap`, so the central event loop does not call
-detector-specific conversion functions directly. Each translator inserts its
-concrete DigiHit type into the current event using the default empty tag.
+Detector routes are registered by setup plugins through
+`JEventService_DetectorTranslatorsMap`. Registering a route also installs the
+type-erased raw-hit scan, so the central event loop does not name or call
+detector-specific types directly. Each translator inserts its concrete DigiHit
+type into the current event using the default empty tag.
 
-See [Adding Detector Translation](detector_translators/README.md) for the exact
+See [Adding Detector Translation](../detector_translation/examples/hms_detector_translation/detector_translators/README.md) for the exact
 raw-hit prerequisite, address overload, central scan, translator, registration,
 CMake, diagnostic output, mapping, and test checklist.
 
@@ -310,10 +299,10 @@ Decide which EVIO bank tag your module produces (e.g. `350`) and assign a unique
 ### Step 2 — Create the directory layout
 
 ```bash
-mkdir -p src/plugins/evio_parser/module_parsers/MyHW/data_objects
+mkdir -p src/plugins/evio_common_modules/module_parsers/MyHW/data_objects
 ```
 
-Use `module_parsers/FADC/` as a reference:
+Use `../evio_common_modules/module_parsers/FADC/` as a reference:
 
 ```
 module_parsers/MyHW/
@@ -332,7 +321,7 @@ In `data_objects/`, create two files:
 - **`MyHWHit.h`** — a plain struct holding the per-hit fields your hardware produces (slot, channel, value, timestamp, etc.).
 - **`EventHits_MyHW.h`** — subclass of `EventHits` that owns a `std::vector<MyHWHit*>` and implements `insertIntoEvent(JEvent&)` by calling `event.Insert(hits)`.
  
-See `module_parsers/FADC/data_objects/` for a concrete reference.
+See `../evio_common_modules/module_parsers/FADC/data_objects/` for a concrete reference.
 
 ### Step 4 — Implement `ModuleParser_MyHW`
  
@@ -343,7 +332,7 @@ Your parser class inherits from `ModuleParser` and overrides `parse()` (signatur
 - Use `getBitsInRange(word, high_bit, low_bit)` for all bit-field extraction.
 - Accumulate hits per event number in a local `std::map<uint64_t, std::shared_ptr<EventHits_MyHW>>`, then push a `new PhysicsEvent(evnum, hits)` per entry into `physics_events`.
  
-See `module_parsers/FADC/ModuleParser_FADC.cc` for a complete worked example.
+See `../evio_common_modules/module_parsers/FADC/ModuleParser_FADC.cc` for a complete worked example.
 
 ### Step 5 — Add a `CMakeLists.txt` for the new parser
 
@@ -373,7 +362,7 @@ set(MYHW_PUBLIC_HEADERS ${MYHW_PUBLIC_HEADERS} PARENT_SCOPE)
 
 ### Step 6 — Register the new parser in `module_parsers/CMakeLists.txt`
 
-Open `src/plugins/evio_parser/module_parsers/CMakeLists.txt` and add three lines:
+Open `src/plugins/evio_common_modules/module_parsers/CMakeLists.txt` and add three lines:
 
 ```cmake
 # Add subdirectory
@@ -403,7 +392,7 @@ set(MODULE_PARSERS_HEADERS
 
 ### Step 7 — Register the parser instance in `module_parsers/InitModuleParsers.cc`
 
-Open `src/plugins/evio_parser/module_parsers/InitModuleParsers.cc` and add:
+Open `src/plugins/evio_common_modules/module_parsers/InitModuleParsers.cc` and add:
 
 ```cpp
 #include "ModuleParser_MyHW.h"   // at the top (with other parser includes)
@@ -466,7 +455,7 @@ cmake --build build --parallel
 Run on an EVIO file that contains bank `350` and verify that `PhysicsEvent` objects are populated with `MyHWHit` data using instructions given in [Using the Plugins with JANA2](../../../README.md#basic-usage)
 
 If this raw-hit family must produce detector-qualified DigiHits, continue with
-[Adding Detector Translation](detector_translators/README.md). Before starting
+[Adding Detector Translation](../detector_translation/examples/hms_detector_translation/detector_translators/README.md). Before starting
 that guide, confirm the parser publishes the typed raw hit into the
 physics-level event and that its ROC, slot, and channel identity are stable.
 

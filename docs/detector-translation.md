@@ -15,9 +15,9 @@ calibrate measurements, or provide detector geometry.
 3. A module-parser hit type opts into translation by providing
    `DAQAddress getDAQAddress(const HitType&)`, which normalizes its hardware
    address field names.
-4. One central event processor acquires the table for each event, scans each
-   addressable raw-hit collection once, and performs one immutable lookup per
-   hit using only `getDAQAddress()`.
+4. Registering a translator also registers a type-erased scanner for that raw
+   hit type. The central processor asks the registry to scan the event and
+   performs one immutable lookup per hit using only `getDAQAddress()`.
 5. `JEventService_DetectorTranslatorsMap` selects a translator by raw-hit C++
    type and detector name.
 6. The translator inserts its concrete typed DigiHit into the current event.
@@ -48,12 +48,12 @@ calibrate measurements, or provide detector geometry.
   table instance.
 - Mapping changes are expected only between runs.
 - Translation runs in the processor's parallel event callback.
-- The processor is registered by `evio_parser` and inserts DigiHits before
+- The processor is registered by `detector_translation` and inserts DigiHits before
   downstream processors consume the physics event.
 - Unmapped channels and channels belonging to other detectors are skipped.
 - Routes are keyed by raw-hit C++ type and detector name.
-- Each detector directory owns its route registrations. The central
-  initializer composes detector initializers and freezes the completed registry.
+- Each setup plugin owns its route registrations. The registry freezes on the
+  first event translation, after plugin initialization is complete.
 - Addressable raw-hit types satisfy the `DAQAddressable` C++20 concept.
 - Each addressable module-parser hit family provides a `getDAQAddress()`
   overload beside its hit type; mapping lookup code must not access raw address
@@ -105,12 +105,12 @@ throws when no configured detector mapping applies to that run.
 
 - `config/evio_parser/detector_mappings/`
 - `src/plugins/evio_parser/core/detector_mapping_objects/`
-- Address overloads beside participating hit types under
-  `src/plugins/evio_parser/module_parsers/`
+- Address overloads beside participating common raw-hit types under
+  `src/plugins/evio_common_modules/module_parsers/`
 - `src/plugins/evio_parser/services/JEventService_TranslationTable.*`
 - `src/plugins/evio_parser/services/JEventService_DetectorTranslatorsMap.h`
-- `src/plugins/evio_parser/detector_translators/`
-- `src/plugins/evio_parser/processors/detector_digi_hits/`
+- `src/plugins/detector_translation/examples/hms_detector_translation/detector_translators/`
+- `src/plugins/detector_translation/processors/detector_digi_hits/`
 
 ## Verification
 

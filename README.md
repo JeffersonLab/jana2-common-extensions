@@ -117,6 +117,9 @@ lib/
 ├── cmake/
 └── plugins/
     ├── evio_parser.so
+    ├── evio_common_modules.so
+    ├── detector_translation.so
+    ├── hms_detector_translation.so
     ├── evio_processor.so
     └── ...
 scripts/
@@ -168,7 +171,7 @@ ${JCE_HOME}/scripts/jce.csh /path/to/data.evio
 ```
 
 * Uses plugins from [default_plugins.db](#default-plugins)
-* Falls back to [evio_parser](src/plugins/evio_parser/README.md) if the file is missing or empty
+* Falls back to [evio_parser](src/plugins/evio_parser/README.md) and `evio_common_modules` if the file is missing or empty
 
 
 ### Add Additional Plugins
@@ -211,7 +214,7 @@ ${JCE_HOME}/scripts/jce.csh -Pjana:plugin_path=/my/custom/plugins -Pplugins=my_c
 You can run plugins directly with `jana` if you prefer full manual control and do not want to use `default_plugins.db`.
 
 ```bash
-jana -Pplugins=evio_parser,evio_processor -Pjana:plugin_path=/path/to/plugins data.evio
+jana -Pplugins=evio_parser,evio_common_modules,evio_processor -Pjana:plugin_path=/path/to/plugins data.evio
 ```
 
 **Important:**
@@ -269,7 +272,7 @@ For example, `LOG_DEBUG` only appears when the level is `DEBUG` or `TRACE`.
 Set logging level for all JANA2 components:
 
 ```bash
-"${JCE_HOME}/scripts/jce.sh" -Pjana:global_loglevel=WARN -Pplugins=evio_parser,evio_processor data.evio
+"${JCE_HOME}/scripts/jce.sh" -Pjana:global_loglevel=WARN -Pplugins=evio_parser,evio_common_modules,evio_processor data.evio
 ```
 
 This give logs on the given level for both the internal jana components and plugin components. Default is `INFO`.
@@ -281,7 +284,7 @@ This give logs on the given level for both the internal jana components and plug
 To get only evio_parser logs at a certain level use `-PEVIO_PARSER:loglevel`:
 
 ```bash
-"${JCE_HOME}/scripts/jce.sh" -PEVIO_PARSER:loglevel=DEBUG -Pplugins=evio_parser,evio_processor data.evio
+"${JCE_HOME}/scripts/jce.sh" -PEVIO_PARSER:loglevel=DEBUG -Pplugins=evio_parser,evio_common_modules,evio_processor data.evio
 ```
 
 Use `TRACE` for maximum detail.
@@ -375,12 +378,12 @@ controls which plugins are loaded by default.
 
 * Supports comments using `#`
 * Empty lines are ignored
-* Falls back to `evio_parser` if empty or missing
+* Falls back to `evio_parser,evio_common_modules` if empty or missing
 * CLI `-Pplugins=...` values are appended (not replaced)
 
 #### Example
 
 ```text
 # Default plugins
-evio_parser,evio_processor
+evio_parser,evio_common_modules,evio_processor
 ```
