@@ -8,3 +8,5 @@ or hardware-specific routes. Setup plugins register those routes through
 Generic detector addresses and translation tables live in `detector_mapping/`.
 The run-aware table and translator registry live in `services/`. The plugin
 exports them to setup plugins through `detector_mapping_api`.
+`JEventProcessor_DetectorDigiHits` is the plugin's primary event-processing
+component and therefore lives directly in this directory.
