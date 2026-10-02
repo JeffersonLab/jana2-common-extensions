@@ -58,7 +58,7 @@ if [[ -f "$default_plugins_file" ]]; then
 fi
 
 if [[ -z "$default_plugins" ]]; then
-    default_plugins="evio_parser"
+    default_plugins="evio_parser,evio_common_modules"
 fi
 
 if [[ -n "$plugins_value" ]]; then

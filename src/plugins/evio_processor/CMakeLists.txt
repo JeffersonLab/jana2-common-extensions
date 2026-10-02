@@ -15,5 +15,5 @@ target_link_libraries(evio_processor
         ROOT::RIO
         ROOT::Tree
         ROOT::Hist
-        evio_parser_data_types  # data-object headers (FADC, TIScaler, MPD, VFTDC, ...)
+        evio_common_modules_data_types
 )
