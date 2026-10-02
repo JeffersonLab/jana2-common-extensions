@@ -29,7 +29,9 @@ modifying `evio_parser`.
   a one-to-one EVIO bank type.
 - Existing module parsers implementing the ROC-ID-only overload remain valid.
   New parsers may implement the context-rich overload when they need the bank
-  description, status, number, data type, or logger.
+  tag, number, data type, or logger.
+- Filtering, bank-to-module routing, and `BankContext` use the original 16-bit
+  EVIO bank tag without masking its upper bits.
 - Module parser plugins register shared parser instances during JANA service
   initialization. Null parsers, duplicate module IDs, and registration after
   the first lookup fail with `JException`.

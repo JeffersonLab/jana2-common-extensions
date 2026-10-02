@@ -347,10 +347,11 @@ void parse(
     TriggerData& trigger_data) override;
 ```
 
-`BankContext` provides the containing ROC ID, the low 12-bit bank description,
-the high 4-bit status, the EVIO bank number, the EVIO data-type code, and the
-parser logger. The parser remains selected by the configured module ID; the
-context describes this particular bank invocation.
+`BankContext` provides the containing ROC ID, the original 16-bit EVIO bank
+tag, the EVIO bank number, the EVIO data-type code, and the parser logger. The
+same unmodified tag is used for filtering and bank-to-module routing. The parser
+remains selected by the configured module ID; the context describes this
+particular bank invocation.
 
 In the `::parse()` implementation:
  

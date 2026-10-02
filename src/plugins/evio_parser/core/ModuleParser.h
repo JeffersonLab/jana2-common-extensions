@@ -16,8 +16,7 @@
 /** Metadata describing the EVIO bank passed to a module parser. */
 struct BankContext {
     std::uint32_t rocid;
-    std::uint16_t description;
-    std::uint8_t status;
+    std::uint16_t tag;
     std::uint8_t number;
     std::uint8_t data_type;
     JLogger& logger;
