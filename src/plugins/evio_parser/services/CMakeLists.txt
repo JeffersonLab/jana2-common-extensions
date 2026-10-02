@@ -10,6 +10,7 @@ target_include_directories(services
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../core>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../core/data_objects>
         $<INSTALL_INTERFACE:include/${INSTALL_NAMESPACE}/plugins/evio_parser>
 )
 
