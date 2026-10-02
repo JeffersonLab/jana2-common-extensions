@@ -3,7 +3,7 @@
 This directory contains physicist-editable configuration that maps DAQ
 addresses to detector identities for specific run ranges. Use this guide when
 the required raw-hit and DigiHit types already exist. For C++ translator work,
-see the [detector translator guide](../../../src/plugins/evio_parser/detector_translators/README.md).
+see the [detector translator guide](../../../src/plugins/detector_translation/examples/hms_detector_translation/detector_translators/README.md).
 
 ## Current HMS Status
 
@@ -267,4 +267,3 @@ inspection with representative data is their primary pre-deployment check.
 - [ ] No active mappings collide on a DAQ address.
 - [ ] Candidate configuration initializes successfully.
 - [ ] Boundary runs and known channels were verified in diagnostic CSVs.
-

@@ -16,7 +16,8 @@
   facilities, JANA2 facilities, and already configured dependencies.
 - Avoid speculative abstractions, unrelated cleanup, and new dependencies.
 - Keep `evio_parser/core` hardware- and experiment-agnostic.
-- Keep hardware decoding in `evio_parser/module_parsers/<module>/`.
+- Keep reusable hardware decoding in
+  `evio_common_modules/module_parsers/<module>/`.
 - Keep shared JANA resources in `evio_parser/services/`.
 - Keep physicist-editable runtime data under the repository-level `config/`
   directory; keep the C++ implementation under `src/`.
@@ -47,8 +48,9 @@
   `JEventProcessor_<Role>`, `JEventSource_<Role>`, and
   `JEventUnfolder_<Role>`. Keep non-component data and utility types, such as
   `TranslationTable`, free of JANA component prefixes.
-- Organize detector translation routes under
-  `detector_translators/<Detector>/<RawHitFamily>/`. Name conversion files
+- Organize HMS detector translation routes under
+  `detector_translation/examples/hms_detector_translation/detector_translators/<Detector>/<RawHitFamily>/`.
+  Name conversion files
   `<RawHitFamily>Translator.h/.cc`, keep published DigiHit headers in the
   route's `data_objects/` subdirectory, and name them
   `<RawHitFamily>DigiHit.h`. Keep exported C++ DigiHit type names globally
