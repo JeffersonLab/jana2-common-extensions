@@ -23,6 +23,13 @@ modifying `evio_parser`.
 
 - `evio_parser` does not include or link common raw-hit or detector DigiHit
   types.
+- Module parsers are selected by mapped module ID. Each invocation receives a
+  `BankContext` containing the source EVIO bank metadata; the parser abstraction
+  remains `ModuleParser` because a parser represents a module data format, not
+  a one-to-one EVIO bank type.
+- Existing module parsers implementing the ROC-ID-only overload remain valid.
+  New parsers may implement the context-rich overload when they need the bank
+  description, status, number, data type, or logger.
 - Registering a translator for `RawHitT` makes the generic processor scan
   `RawHitT`; the processor has no central raw-type list.
 - Plugins can link the installed `evio_parser_api` or `detector_mapping_api`
@@ -50,6 +57,7 @@ modifying `evio_parser`.
 - `src/plugins/detector_translation/`
 - `src/plugins/detector_translation/examples/hms_detector_translation/`
 - `src/plugins/evio_parser/services/JEventService_DetectorTranslatorsMap.h`
+- `src/plugins/evio_parser/core/ModuleParser.h`
 
 ## Verification
 
