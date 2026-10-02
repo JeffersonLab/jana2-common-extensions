@@ -21,6 +21,7 @@ install(TARGETS services
 target_link_libraries(services
     PUBLIC
         ${JANA_LIBRARY}                # JANA2 framework library
+        evio::eviocc                   # ModuleParser.h includes eviocc.h
         jce_config                     # Provides jce_config_paths.h to services and their consumers
 )
 
