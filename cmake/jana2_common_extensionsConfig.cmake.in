@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(JANA REQUIRED)
+find_dependency(evio REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/jana2_common_extensionsTargets.cmake")
+check_required_components(jana2_common_extensions)

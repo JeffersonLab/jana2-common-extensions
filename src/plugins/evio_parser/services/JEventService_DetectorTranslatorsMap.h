@@ -1,12 +1,17 @@
 #pragma once
 
 #include <JANA/JException.h>
+#include <JANA/JEvent.h>
 #include <JANA/JService.h>
 
+#include <DAQAddressable.h>
 #include <DetectorAddress.h>
+#include <TranslationTable.h>
 
+#include <atomic>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
@@ -26,7 +31,11 @@ public:
     void addTranslator(
         std::string detector,
         Translator<RawHitT> translator) {
-        if (m_frozen) {
+        static_assert(DAQAddressable<RawHitT>,
+            "Raw hit types must provide getDAQAddress(hit)");
+
+        std::scoped_lock lock(m_mutex);
+        if (m_frozen.load()) {
             throw JException("Detector translators map is already frozen");
         }
 
@@ -42,7 +51,22 @@ public:
         }
     }
 
-    void freeze() { m_frozen = true; }
+    void freeze() {
+        std::scoped_lock lock(m_mutex);
+        m_frozen.store(true);
+    }
+
+    void translateEvent(
+        const TranslationTable& table,
+        const JEvent& event) const {
+        {
+            std::scoped_lock lock(m_mutex);
+            m_frozen.store(true);
+        }
+        for (const auto& entry : m_translators) {
+            entry.second->translate(table, event);
+        }
+    }
 
     template <typename RawHitT>
     const std::unordered_map<std::string, Translator<RawHitT>>&
@@ -61,11 +85,29 @@ public:
 private:
     struct TranslatorMapBase {
         virtual ~TranslatorMapBase() = default;
+        virtual void translate(
+            const TranslationTable& table,
+            const JEvent& event) const = 0;
     };
 
     template <typename RawHitT>
     struct TranslatorMap final : TranslatorMapBase {
         std::unordered_map<std::string, Translator<RawHitT>> translators;
+
+        void translate(
+            const TranslationTable& table,
+            const JEvent& event) const override {
+            for (const auto* hit : event.Get<RawHitT>("", false)) {
+                const auto* address = table.Lookup(getDAQAddress(*hit));
+                if (address == nullptr) {
+                    continue;
+                }
+                const auto translator = translators.find(address->detector);
+                if (translator != translators.end()) {
+                    translator->second(*hit, *address, event);
+                }
+            }
+        }
     };
 
     template <typename RawHitT>
@@ -86,5 +128,6 @@ private:
 
     std::unordered_map<std::type_index, std::unique_ptr<TranslatorMapBase>>
         m_translators;
-    bool m_frozen = false;
+    mutable std::atomic_bool m_frozen = false;
+    mutable std::mutex m_mutex;
 };

@@ -9,6 +9,9 @@ namespace {
 struct RawHit {};
 struct OtherRawHit {};
 
+DAQAddress getDAQAddress(const RawHit&) { return {1, 2, 3}; }
+DAQAddress getDAQAddress(const OtherRawHit&) { return {1, 2, 4}; }
+
 } // namespace
 
 int main() {
