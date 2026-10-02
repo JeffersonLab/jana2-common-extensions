@@ -3,7 +3,7 @@
 Detector translation converts hardware-oriented raw hits into typed,
 uncalibrated detector DigiHits. This guide covers the C++ work. For mapping
 DAQ addresses and run ranges, see the
-[detector mapping guide](../../../../config/evio_parser/detector_mappings/README.md).
+[detector mapping guide](../../../DETECTOR_MAPPINGS.md).
 
 ## Before You Start
 
@@ -372,7 +372,7 @@ the CSV check in Step 11.
 Add the detector to the root catalog, create its run-range manifest, and add
 at least one mapping file. The mapping field names must match the fields
 required by the detector identity helper. Follow the
-[mapping authoring guide](../../../../config/evio_parser/detector_mappings/README.md)
+[mapping authoring guide](../../../DETECTOR_MAPPINGS.md)
 for exact formats and validation rules.
 
 ## Step 10: Add Focused Tests

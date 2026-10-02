@@ -3,7 +3,7 @@
 This directory contains physicist-editable configuration that maps DAQ
 addresses to detector identities for specific run ranges. Use this guide when
 the required raw-hit and DigiHit types already exist. For C++ translator work,
-see the [detector translator guide](../../../src/plugins/detector_translation/examples/hms_detector_translation/detector_translators/README.md).
+see the [detector translator guide](examples/hms_detector_translation/detector_translators/README.md).
 
 ## Current HMS Status
 
@@ -25,7 +25,6 @@ identity model are wrong, the C++ translator must be changed first.
 
 ```text
 detector_mappings/
-├── README.md
 ├── manifest.map                 # root detector catalog
 └── hms_hodoscope/
     ├── manifest.map             # this detector's run ranges
@@ -34,6 +33,9 @@ detector_mappings/
 
 Use one subdirectory per detector. A detector may have multiple mapping files
 when its channel assignment changes between runs.
+
+Each setup plugin owns and installs a complete `detector_mappings/` directory,
+then registers that directory with `JEventService_DetectorMappingCatalogs`.
 
 All files support blank lines and `#` comments. Tokens are separated by
 whitespace; quoting is not supported.

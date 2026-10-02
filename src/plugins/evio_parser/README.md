@@ -154,7 +154,7 @@ Detector translation is split deliberately across three responsibilities:
 |---|---|---|
 | Decode hardware words into typed raw hits | `../evio_common_modules/module_parsers/` | [Adding a New Module Parser](#adding-a-new-module-parser) |
 | Convert a mapped raw hit into a typed detector DigiHit | `../detector_translation/examples/hms_detector_translation/detector_translators/` | [Adding Detector Translation](../detector_translation/examples/hms_detector_translation/detector_translators/README.md) |
-| Assign DAQ addresses and run ranges | `config/evio_parser/detector_mappings/` | [Detector Mapping Configuration](../../../config/evio_parser/detector_mappings/README.md) |
+| Assign DAQ addresses and run ranges | Setup-plugin configuration | [Detector Mapping Configuration](../detector_translation/DETECTOR_MAPPINGS.md) |
 
 The module parser and typed raw hit must work before translator development
 starts. A mapping-only change is sufficient only when the existing raw-hit
@@ -204,8 +204,8 @@ All parameters can be set on the JANA2 command line with `-P<NAME>=<value>`.
 
 ### Detector mappings
 
-Physicist-editable detector mappings live under
-`config/evio_parser/detector_mappings/`. The root `manifest.map` lists each
+Physicist-editable detector mappings are owned by setup plugins. The root
+`manifest.map` in each registered catalog lists each
 detector and its manifest. Each detector manifest maps inclusive run ranges to
 mapping files in that detector's directory; `max` is an open-ended upper bound.
 Every referenced mapping file must declare the detector named by its root
@@ -215,7 +215,7 @@ catalog entry.
 fields. Translation remains separate from hardware decoding, calibration, and
 geometry.
 
-See [Detector Mapping Configuration](../../../config/evio_parser/detector_mappings/README.md)
+See [Detector Mapping Configuration](../detector_translation/DETECTOR_MAPPINGS.md)
 for the complete catalog, run-range, mapping-row, `max`, `none`, gap, path,
 validation, and deployment rules.
 

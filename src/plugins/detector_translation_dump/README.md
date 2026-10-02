@@ -11,7 +11,7 @@ processor:
 ```bash
 jana \
   -Pplugins=evio_parser,detector_translation_dump \
-  -PTRANSLATION:DIRECTORY=/path/to/config/evio_parser/detector_mappings \
+  -PTRANSLATION:DIRECTORY=/path/to/detector_mappings \
   -Pdetector_translation_dump:OUTPUT_DIRECTORY=detector_translation_dump \
   /path/to/input.evio
 ```
@@ -35,7 +35,7 @@ A file containing only its header means the input produced no matching
 translated hits of that type.
 
 For candidate configuration, boundary checks, and common failure causes, see
-the [detector mapping guide](../../../config/evio_parser/detector_mappings/README.md).
+the [detector mapping guide](../detector_translation/DETECTOR_MAPPINGS.md).
 Developers adding a new DigiHit type must also add a matching optional input
 and CSV writer here; follow the
 [detector translator guide](../detector_translation/examples/hms_detector_translation/detector_translators/README.md).
