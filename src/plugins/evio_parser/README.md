@@ -65,7 +65,7 @@ Downstream JEventProcessors  (e.g. detector_translation_dump)
 | `JEventSource_EVIO` | `JEventSource_EVIO.cc/.h` | Opens the EVIO file; emits one block-level `JEvent` per EVIO event; invokes `EvioEventParser` in `ProcessParallel` |
 | `EvioEventParser` | `core/EvioEventParser.cc/.h` | Parses the trigger bank and ROC banks; parses each bank using its `ModuleParser` and insert parsed hits into a `PhysicsEvent` object; later inserts the `PhysicsEvent` objects into the block-level `JEvent` |
 | `JEventUnfolder_EVIO` | `JEventUnfolder_EVIO.h` | Receives a block-level `JEvent` containing `PhysicsEvent` objects; splits each one into an individual physics-level child `JEvent` and calls `insertHitsIntoEvent` on each |
-| `ModuleParser` (base) | `core/ModuleParser.h` | Abstract base class all hardware parsers implement |
+| `ModuleParser` (base) | `core/ModuleParser.h` | Base class for hardware parsers; receives the source bank metadata in `BankContext` |
 | `evio_common_modules` | `../evio_common_modules/` | Registers JCE's reusable concrete module parsers |
 | `ModuleParser_FADC` etc. | `../evio_common_modules/module_parsers/*/ModuleParser_*.cc/.h` | Concrete reusable decoder implementations |
 | `JEventService_BankToModuleMap` | `services/JEventService_BankToModuleMap.h` | Loads `mapping.db`; resolves EVIO bank tag → module ID |
@@ -325,7 +325,33 @@ See `../evio_common_modules/module_parsers/FADC/data_objects/` for a concrete re
 
 ### Step 4 — Implement `ModuleParser_MyHW`
  
-Your parser class inherits from `ModuleParser` and overrides `parse()` (signature described in the [Module Parser System](#module-parser-system) section above). In the `::parse()` implementation:
+Your parser class inherits from `ModuleParser`. Existing parsers may override
+the ROC-ID-only entry point:
+
+```cpp
+void parse(
+    std::shared_ptr<evio::BaseStructure> data_block,
+    std::uint32_t rocid,
+    std::vector<PhysicsEvent*>& physics_events,
+    TriggerData& trigger_data) override;
+```
+
+New parsers which need metadata from the source EVIO bank may instead override:
+
+```cpp
+void parse(
+    std::shared_ptr<evio::BaseStructure> data_block,
+    const BankContext& context,
+    std::vector<PhysicsEvent*>& physics_events,
+    TriggerData& trigger_data) override;
+```
+
+`BankContext` provides the containing ROC ID, the low 12-bit bank description,
+the high 4-bit status, the EVIO bank number, the EVIO data-type code, and the
+parser logger. The parser remains selected by the configured module ID; the
+context describes this particular bank invocation.
+
+In the `::parse()` implementation:
  
 - Retrieve raw words with `data_block->getUIntData()`.
 - Walk the word array following your hardware's block/event/data/trailer structure.
