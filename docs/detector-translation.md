@@ -110,7 +110,7 @@ throws when no configured detector mapping applies to that run.
 - `src/plugins/detector_translation/services/JEventService_TranslationTable.*`
 - `src/plugins/detector_translation/services/JEventService_DetectorTranslatorsMap.h`
 - `src/plugins/detector_translation/examples/hms_detector_translation/detector_translators/`
-- `src/plugins/detector_translation/processors/detector_digi_hits/`
+- `src/plugins/detector_translation/JEventProcessor_DetectorDigiHits.*`
 
 ## Verification
 
