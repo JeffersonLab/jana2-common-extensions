@@ -77,6 +77,13 @@ int main(int argc, char* argv[]) {
     JEventService_TranslationTable service((testdata / "detector_mappings").string());
     service.Init();
 
+    JEventService_TranslationTable provider_service(
+        std::vector<DetectorMappingCatalogProvider> {
+            {"hms", (testdata / "provider_catalogs/hms").string()},
+            {"bcal", (testdata / "provider_catalogs/bcal").string()}
+        });
+    provider_service.Init();
+
     const auto& first_run = service.getTable(100);
     const auto& same_mapping_run = service.getTable(175);
     const auto& second_run = service.getTable(250);
@@ -112,6 +119,16 @@ int main(int argc, char* argv[]) {
     const auto* current_bcal_address = second_run.Lookup({2, 4, 1});
     assert(current_bcal_address != nullptr);
     assert(*current_bcal_address == expected_bcal);
+
+    const auto* provider_hms = provider_service.getTable(100).Lookup({1, 3, 0});
+    const auto* provider_bcal = provider_service.getTable(100).Lookup({2, 4, 1});
+    const auto* provider_current_hms =
+        provider_service.getTable(250).Lookup({1, 3, 0});
+    assert(provider_hms != nullptr && *provider_hms == expected_hms);
+    assert(provider_bcal != nullptr && *provider_bcal == expected_bcal);
+    assert(
+        provider_current_hms != nullptr &&
+        *provider_current_hms == expected_current_hms);
 
     assert(rejectsMismatchedDetector(testdata / "mismatched_detector_mappings"));
     assert(rejectsPath(

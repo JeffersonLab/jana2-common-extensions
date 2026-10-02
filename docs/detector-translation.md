@@ -29,7 +29,11 @@ calibrate measurements, or provide detector geometry.
 - A mapping file applies one detector name to every channel it contains.
 - Detector mapping files are installed under
   `config/<namespace>/evio_parser/detector_mappings/`.
-- `TRANSLATION:DIRECTORY` overrides the mapping directory.
+- Setup plugins register named mapping-catalog directories before service
+  initialization. Catalogs may contribute different detectors and are merged
+  into the same run-aware translation tables.
+- `TRANSLATION:DIRECTORY` bypasses registered providers and loads only the
+  specified mapping directory.
 - The root `manifest.map` lists authoritative detector names and
   detector-manifest paths. Every mapping file selected through a detector's
   manifest must declare that same detector name.
@@ -108,6 +112,7 @@ throws when no configured detector mapping applies to that run.
 - Address overloads beside participating common raw-hit types under
   `src/plugins/evio_common_modules/module_parsers/`
 - `src/plugins/detector_translation/services/JEventService_TranslationTable.*`
+- `src/plugins/detector_translation/services/JEventService_DetectorMappingCatalogs.h`
 - `src/plugins/detector_translation/services/JEventService_DetectorTranslatorsMap.h`
 - `src/plugins/detector_translation/examples/hms_detector_translation/detector_translators/`
 - `src/plugins/detector_translation/JEventProcessor_DetectorDigiHits.*`

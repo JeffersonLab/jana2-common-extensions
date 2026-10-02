@@ -225,7 +225,7 @@ table construction on the event-processing path.
 
 | Parameter | Default | Description |
 |---|---|---|
-| `TRANSLATION:DIRECTORY` | `<install_prefix>/config/evio_parser/detector_mappings` | Directory of detector mappings loaded for all runs |
+| `TRANSLATION:DIRECTORY` | unset | Explicit single-directory override; otherwise catalogs registered by setup plugins are merged |
 
 `JEventProcessor_DetectorDigiHits` scans each raw-hit collection once in
 `ProcessParallel()` and routes hits directly to typed, uncalibrated detector

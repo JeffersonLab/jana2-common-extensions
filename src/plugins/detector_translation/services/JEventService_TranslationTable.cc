@@ -79,30 +79,58 @@ JEventService_TranslationTable::JEventService_TranslationTable(
         true) {
 }
 
+JEventService_TranslationTable::JEventService_TranslationTable(
+    std::vector<DetectorMappingCatalogProvider> default_catalogs)
+    : JEventService_TranslationTable() {
+    m_default_catalogs = std::move(default_catalogs);
+}
+
 void JEventService_TranslationTable::Init() {
     namespace fs = std::filesystem;
 
-    const fs::path mapping_directory(m_mapping_directory());
-    const auto catalog = loadDetectorMappingCatalog(
-        (mapping_directory / "manifest.map").string());
+    std::vector<DetectorMappingCatalogProvider> providers;
+    if (!m_mapping_directory().empty()) {
+        providers.push_back({"TRANSLATION:DIRECTORY", m_mapping_directory()});
+    } else if (!m_default_catalogs.empty()) {
+        providers = m_default_catalogs;
+    } else {
+        providers = m_catalogs->freeze();
+    }
+    if (providers.empty()) {
+        throw std::runtime_error("No detector mapping catalogs are registered");
+    }
 
     std::vector<DetectorManifest> detector_manifests;
     std::set<std::uint64_t> boundaries;
-    for (const auto& entry : catalog) {
-        const auto manifest_path = resolveOwnedPath(
-            mapping_directory, entry.manifest_file, "Detector manifest");
-        auto ranges = loadDetectorMappingManifest(manifest_path.string());
-        for (const auto& range : ranges) {
-            boundaries.insert(range.run_min);
-            if (range.run_max != std::numeric_limits<std::uint64_t>::max()) {
-                boundaries.insert(range.run_max + 1);
+    std::map<std::string, std::string> detector_providers;
+    for (const auto& provider : providers) {
+        const fs::path mapping_directory(provider.directory);
+        const auto catalog = loadDetectorMappingCatalog(
+            (mapping_directory / "manifest.map").string());
+        for (const auto& entry : catalog) {
+            const auto [existing, inserted] = detector_providers.emplace(
+                entry.detector, provider.name);
+            if (!inserted) {
+                throw std::runtime_error(
+                    "Detector '" + entry.detector +
+                    "' is provided by both mapping catalogs '" +
+                    existing->second + "' and '" + provider.name + "'");
             }
+            const auto manifest_path = resolveOwnedPath(
+                mapping_directory, entry.manifest_file, "Detector manifest");
+            auto ranges = loadDetectorMappingManifest(manifest_path.string());
+            for (const auto& range : ranges) {
+                boundaries.insert(range.run_min);
+                if (range.run_max != std::numeric_limits<std::uint64_t>::max()) {
+                    boundaries.insert(range.run_max + 1);
+                }
+            }
+            detector_manifests.push_back({
+                entry.detector,
+                manifest_path.parent_path(),
+                std::move(ranges)
+            });
         }
-        detector_manifests.push_back({
-            entry.detector,
-            manifest_path.parent_path(),
-            std::move(ranges)
-        });
     }
 
     std::map<
@@ -151,7 +179,7 @@ void JEventService_TranslationTable::Init() {
     }
     if (run_tables.empty()) {
         throw std::runtime_error(
-            "Detector mapping catalog produces no run tables: " + m_mapping_directory());
+            "Registered detector mapping catalogs produce no run tables");
     }
     m_run_tables = std::move(run_tables);
     m_cached_run_table.store(nullptr, std::memory_order_relaxed);
