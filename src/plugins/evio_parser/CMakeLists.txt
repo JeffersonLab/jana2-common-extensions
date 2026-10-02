@@ -47,6 +47,7 @@ target_include_directories(evio_parser_api INTERFACE
 target_link_libraries(evio_parser_api INTERFACE
     ${JANA_LIBRARY}
     evio::eviocc
+    jce_config
 )
 
 add_library(evio_parser_data_types INTERFACE)
