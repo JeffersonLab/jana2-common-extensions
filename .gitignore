@@ -23,6 +23,9 @@ Makefile
 /detector_translation_dump/
 evio_processor_hits.txt
 
+# Plugin configuration installed into an in-tree prefix
+/config/hms_detector_translation/
+
 # misc directories
 data
 rootfiles
