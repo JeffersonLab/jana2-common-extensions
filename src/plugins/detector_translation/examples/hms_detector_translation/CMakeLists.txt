@@ -30,3 +30,9 @@ target_include_directories(hms_detector_translation_data_types INTERFACE
 install(TARGETS hms_detector_translation_data_types
     EXPORT jana2_common_extensionsTargets
 )
+
+install(
+    DIRECTORY config/detector_mappings/
+    DESTINATION config/${INSTALL_NAMESPACE}/hms_detector_translation/detector_mappings
+    FILES_MATCHING PATTERN "*.map"
+)

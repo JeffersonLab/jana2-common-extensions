@@ -110,7 +110,9 @@ After installation (with `-DCMAKE_INSTALL_PREFIX=\`pwd\``), your directory will 
 config/
 ├── mapping.db
 ├── filter.db
-└── default_plugins.db
+├── default_plugins.db
+└── hms_detector_translation/
+    └── detector_mappings/
 include/
 └── jce_config_paths.h
 lib/
@@ -325,6 +327,7 @@ Configuration files are installed under:
 | `mapping.db`         | Maps EVIO banks to module IDs     | `src/plugins/evio_parser` |
 | `filter.db`          | Defines ROC/bank filtering rules  | `src/plugins/evio_parser` |
 | `default_plugins.db` | Specifies default plugins to load | `scripts/jce.csh`, `scripts/jce.sh` |
+| `hms_detector_translation/detector_mappings/` | HMS DAQ-to-detector mappings | `hms_detector_translation` |
 
 At runtime, configuration files are resolved using the following precedence:
 

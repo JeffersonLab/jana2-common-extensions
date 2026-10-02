@@ -27,8 +27,9 @@ calibrate measurements, or provide detector geometry.
 - Detector-specific fields remain generic name/value pairs.
 - Unmapped and deliberately excluded reference channels return `nullptr`.
 - A mapping file applies one detector name to every channel it contains.
-- Detector mapping files are installed under
-  `config/<namespace>/evio_parser/detector_mappings/`.
+- Each setup plugin installs detector mappings under its own configuration
+  namespace. The HMS example uses
+  `config/<namespace>/hms_detector_translation/detector_mappings/`.
 - Setup plugins register named mapping-catalog directories before service
   initialization. Catalogs may contribute different detectors and are merged
   into the same run-aware translation tables.
@@ -107,7 +108,7 @@ throws when no configured detector mapping applies to that run.
 
 ## Key Components
 
-- `config/evio_parser/detector_mappings/`
+- `src/plugins/detector_translation/examples/hms_detector_translation/config/detector_mappings/`
 - `src/plugins/detector_translation/detector_mapping/`
 - Address overloads beside participating common raw-hit types under
   `src/plugins/evio_common_modules/module_parsers/`
