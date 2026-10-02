@@ -8,5 +8,5 @@ target_include_directories(detector_digi_hit_processor
 
 target_link_libraries(detector_digi_hit_processor
     PUBLIC
-        services
+        detector_translation_services
 )

@@ -2,8 +2,7 @@
 # CMake configuration for evio_parser plugin
 #
 
-# Build the setup-neutral EVIO and mapping libraries.
-add_subdirectory(core/detector_mapping_objects)
+# Build the setup-neutral EVIO libraries.
 add_subdirectory(services)
 add_subdirectory(core)
 
@@ -56,20 +55,5 @@ target_link_libraries(evio_parser_data_types INTERFACE evio_parser_api)
 # Register into the project-wide export set; the install(EXPORT ...) call that
 # writes the combined targets file lives in the root CMakeLists.txt.
 install(TARGETS evio_parser_api evio_parser_data_types
-    EXPORT jana2_common_extensionsTargets
-)
-
-add_library(detector_mapping_api INTERFACE)
-target_include_directories(detector_mapping_api INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/detector_mapping_objects>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/services>
-    $<INSTALL_INTERFACE:include/${INSTALL_NAMESPACE}/plugins/evio_parser>
-)
-target_link_libraries(detector_mapping_api INTERFACE
-    detector_mapping
-    services
-    ${JANA_LIBRARY}
-)
-install(TARGETS detector_mapping_api
     EXPORT jana2_common_extensionsTargets
 )
