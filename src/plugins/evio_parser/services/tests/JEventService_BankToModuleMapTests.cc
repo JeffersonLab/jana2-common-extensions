@@ -7,6 +7,8 @@
 int main() {
     JEventService_BankToModuleMap routes;
     routes.addRoute(350, 250);
+    routes.addRoute(9250, 9250);
+    routes.addRoute(9001, 9001);
 
     bool duplicate_rejected = false;
     try {
@@ -18,6 +20,8 @@ int main() {
     assert(duplicate_rejected);
 
     assert(routes.getModuleId(350) == 250);
+    assert(routes.getModuleId(9250) == 9250);
+    assert(routes.getModuleId(9001) == 9001);
     assert(routes.getModuleId(999) == -1);
 
     bool frozen_registry_rejected = false;

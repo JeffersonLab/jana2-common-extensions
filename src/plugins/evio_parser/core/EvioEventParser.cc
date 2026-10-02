@@ -153,12 +153,11 @@ void EvioEventParser::parseROCBanks(const std::vector<std::shared_ptr<evio::Base
         // Parse one or more DMA banks within this ROC bank using the registered ModuleParsers
         auto dma_blocks = db->getChildren();
         for (auto dma : dma_blocks) {
-            const auto full_bank_tag =
+            const auto bank_tag =
                 static_cast<std::uint16_t>(dma->getHeader()->getTag());
-            const auto bank_id = full_bank_tag & 0x0FFF;
 
             // Check if bank is allowed for this ROC
-            if (!filter_db_svc->isBankAllowed(db_rocid, bank_id)) {
+            if (!filter_db_svc->isBankAllowed(db_rocid, bank_tag)) {
                 continue;
             }
 
@@ -168,7 +167,7 @@ void EvioEventParser::parseROCBanks(const std::vector<std::shared_ptr<evio::Base
             if (bank_to_module_svc == nullptr) {
                 throw JException("EvioEventParser::parseROCBanks: Bank-to-module mapping service not found");
             }
-            module_id = bank_to_module_svc->getModuleId(bank_id);
+            module_id = bank_to_module_svc->getModuleId(bank_tag);
             if (module_id == -1) {
                 // ignore any banks that are not mapped to a module
                 continue;
@@ -177,7 +176,7 @@ void EvioEventParser::parseROCBanks(const std::vector<std::shared_ptr<evio::Base
             // Get parser by module ID
             auto module_parser = m_app->GetService<JEventService_ModuleParsersMap>()->getParser(module_id);
             if (module_parser == nullptr) {
-                throw JException("EvioEventParser::parseROCBanks: No parser found for module ID %d (bank tag %d)", module_id, bank_id);
+                throw JException("EvioEventParser::parseROCBanks: No parser found for module ID %d (bank tag %d)", module_id, bank_tag);
             }
 
             // Preserve the legacy logger accessor for existing parsers.
@@ -185,8 +184,7 @@ void EvioEventParser::parseROCBanks(const std::vector<std::shared_ptr<evio::Base
 
             BankContext context {
                 db_rocid,
-                static_cast<std::uint16_t>(bank_id),
-                static_cast<std::uint8_t>((full_bank_tag >> 12) & 0x0F),
+                bank_tag,
                 static_cast<std::uint8_t>(dma->getHeader()->getNumber()),
                 static_cast<std::uint8_t>(
                     dma->getHeader()->getDataType().getValue()),
