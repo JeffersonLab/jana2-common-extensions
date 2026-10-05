@@ -25,7 +25,7 @@ This repository is designed to be **modular and extensible**, and can be adapted
 | C++ Compiler | C++20           | GCC 11+ or Clang 13+ recommended |
 | JANA2        | 2.x             | Core framework                   |
 | EVIO         | v6.1.2          | Data format library              |
-| ROOT         | 6.x             | Analysis and output              |
+| ROOT         | 6.x             | Optional; required only for `evio_processor` |
 
 ### Building JANA2
 
@@ -48,9 +48,10 @@ cmake --build build --target install --parallel
 cd ..
 ```
 
-### Installing ROOT
+### Installing ROOT (optional)
 
-Follow the official installation guide:
+ROOT is needed only when building the optional `evio_processor` plugin. Follow
+the official installation guide:
 [https://root.cern/install/](https://root.cern/install/)
 
 
@@ -59,12 +60,19 @@ Follow the official installation guide:
 ### 1. Configure
 
 ```tcsh
-cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio;/path/to/root" -DCMAKE_INSTALL_PREFIX=`pwd`
+cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio" -DCMAKE_INSTALL_PREFIX=`pwd`
 ```
 > ⚠️ **Important**
 > `CMAKE_INSTALL_PREFIX` must be set during the **initial CMake configuration**.
 > It is embedded into generated headers (e.g., `jce_config_paths.h`) and used at runtime to locate configuration files such as `mapping.db` and `filter.db`.
 > Changing it later without reconfiguring will result in incorrect paths.
+
+To include the ROOT-based `evio_processor` plugin, enable it explicitly and
+make ROOT discoverable:
+
+```tcsh
+cmake -S . -B build -DJCE_BUILD_EVIO_PROCESSOR=ON -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio;/path/to/root" -DCMAKE_INSTALL_PREFIX=`pwd`
+```
 
 ### 2. Build
 
@@ -122,7 +130,7 @@ lib/
     ├── evio_common_modules.so
     ├── detector_translation.so
     ├── hms_detector_translation.so
-    ├── evio_processor.so
+    ├── evio_processor.so  # only with JCE_BUILD_EVIO_PROCESSOR=ON
     └── ...
 scripts/
 ├── jce.csh
