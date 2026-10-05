@@ -13,15 +13,15 @@ std::int32_t requireField(const DetectorAddress& address, const std::string& nam
         }
     }
     throw JException(
-        "HMS_HODOSCOPE detector address is missing required field '%s'",
-        name.c_str());
+        "%s detector address is missing required field '%s'",
+        HMS_HODOSCOPE_DETECTOR_NAME, name.c_str());
 }
 
 } // namespace
 
 HMSHodoscopeIdentity getHMSHodoscopeIdentity(
     const DetectorAddress& address) {
-    if (address.detector != "HMS_HODOSCOPE") {
+    if (address.detector != HMS_HODOSCOPE_DETECTOR_NAME) {
         throw JException(
             "Cannot create HMSHodoscopeIdentity from detector '%s'",
             address.detector.c_str());

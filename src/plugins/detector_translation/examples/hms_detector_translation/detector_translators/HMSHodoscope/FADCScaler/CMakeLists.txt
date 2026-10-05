@@ -15,6 +15,10 @@ target_link_libraries(hms_hodoscope_fadc_scaler_translator
         hms_hodoscope_identity
 )
 
+add_library(hms_hodoscope_fadc_scaler_dump_writers STATIC FADCScalerDumpWriter.cc)
+target_include_directories(hms_hodoscope_fadc_scaler_dump_writers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(hms_hodoscope_fadc_scaler_dump_writers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/data_objects)
+
 set(HMS_HODOSCOPE_FADC_SCALER_TRANSLATOR_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/data_objects
@@ -27,6 +31,17 @@ set(HMS_HODOSCOPE_FADC_SCALER_TRANSLATOR_PUBLIC_HEADERS
 )
 
 if(BUILD_TESTING)
+    add_executable(hms_hodoscope_fadc_scaler_dump_writer_tests
+        tests/FADCScalerDumpWriterTests.cc
+    )
+    target_link_libraries(hms_hodoscope_fadc_scaler_dump_writer_tests
+        PRIVATE hms_hodoscope_fadc_scaler_dump_writers hms_hodoscope_fadc_scaler_translator
+                detector_translation_services
+    )
+    add_test(NAME hms_hodoscope_fadc_scaler_dump_writer_tests
+        COMMAND hms_hodoscope_fadc_scaler_dump_writer_tests
+    )
+
     add_executable(hms_hodoscope_fadc_scaler_translator_tests
         tests/FADCScalerTranslatorTests.cc
     )

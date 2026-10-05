@@ -20,7 +20,8 @@ calibrate measurements, or provide detector geometry.
    performs one immutable lookup per hit using only `getDAQAddress()`.
 5. `JEventService_DetectorTranslatorsMap` selects a translator by raw-hit C++
    type and detector name.
-6. The translator inserts its concrete typed DigiHit into the current event.
+6. The translator returns its concrete typed DigiHit; core inserts it into the
+   current event and records the producing route.
 
 ## Expected Behavior
 
@@ -91,8 +92,30 @@ calibrate measurements, or provide detector geometry.
 - Channel-addressed diagnostic CSVs keep `rocid`, `slot`, and `channel`
   contiguous before module and detector fields so mapping inputs can be
   compared directly with translated outputs.
-- Diagnostic outputs are grouped under a detector-named subdirectory; files
-  inside it are named only for their raw-hit family.
+- Each route registered with `JEventService_DetectorTranslatorsMap` requires
+  exactly one typed CSV row-writing function and a nonempty header. Its conversion returns one
+  DigiHit; core publishes it to the normal untagged event collection.
+- CSV header constants and row-writing functions live beside their
+  detector/raw-family translators. `DetectorTranslationDump` owns dump metadata,
+  generated paths, collision checks, and event-writing callbacks. The translator
+  service owns this helper; there is no separate writer service.
+- Core keeps event-owned non-owning references to each route's DigiHits, so
+  routes sharing an output type do not mix rows. All per-event grouping and
+  provenance state is local to the event; shared routes and formatting callbacks remain immutable.
+- Setup plugins register routes during loading before dump initialization or
+  first event translation freezes the registry. Every translator has one writer.
+- The dump plugin depends only on generic translation and does not load HMS.
+  Load the selected setup plugin before the dump plugin.
+- Registration opens no files. Dump initialization freezes registration and
+  creates one file per route. Missing route outputs are skipped; routes without
+  hits leave header-only files. With no routes, no files are created.
+- Duplicate routes, missing row writers or headers, empty detector names or conversions,
+  generated output path collisions, late registration, and output I/O errors
+  fail. Dumping truncates existing outputs on each run.
+- Output paths are `<detector-key>/<raw-hit-C++-type>.csv`, using reversible
+  percent encoding for bytes other than letters, digits, underscores and hyphens.
+  HMS now uses `HMS_HODOSCOPE/FADC250PulseHit.csv`, etc.; CSV columns and row
+  formatting are preserved.
 
 ## Failure Behavior
 
@@ -161,3 +184,13 @@ address `(rocid=1, slot=3, channel=0)`.
 Production FADC scaler translation additionally requires an HMS mapping row
 for the real board address in the form `rocid slot none ...`; no hardware
 address is guessed by the source configuration.
+
+The `detector_translators_map_tests` verifies required writers, duplicate routes,
+frozen registration, generated naming, missing outputs, and isolation across
+raw types and detectors which publish the same DigiHit type. It also verifies
+that unrelated objects in that DigiHit collection are excluded from dumping
+and processing another event preserves earlier event provenance.
+The route-local `hms_hodoscope_fadc_dump_writer_tests` and
+`hms_hodoscope_fadc_scaler_dump_writer_tests` check the six generated paths
+and existing HMS headers and row formats, including waveform and scaler
+array fields. Their source files live beside the respective translator tests.
