@@ -248,7 +248,7 @@ CMake, diagnostic output, mapping, and test checklist.
 |---|---|---|
 | `BANKMAP:FILE` | `<install_prefix>/config/mapping.db` | Path to the two-column module/bank mapping file |
 
-```bash
+```tcsh
 # Example: use a custom mapping file
 "${JCE_HOME}/scripts/jce.sh" -PBANKMAP:FILE=/path/to/my_mapping.db data.evio
 ```
@@ -260,7 +260,7 @@ CMake, diagnostic output, mapping, and test checklist.
 | `FILTER:ENABLE` | `false` | Set to `1` or `true` to enable ROC/bank allow-list filtering |
 | `FILTER:FILE` | `<install_prefix>/config/filter.db` | Path to the four-column ROC/bank filter file |
 
-```bash
+```tcsh
 # Example: enable filtering with a custom filter file
 "${JCE_HOME}/scripts/jce.sh" -PFILTER:ENABLE=1 -PFILTER:FILE=/path/to/my_filter.db data.evio
 ```
@@ -272,9 +272,9 @@ CMake, diagnostic output, mapping, and test checklist.
 | `JCE_CONFIG_DIR` | If set, overrides the install-prefix config directory for **all** config files (`mapping.db`, `filter.db`, `default_plugins.db`). Takes priority over the installed location. |
 | `JANA_PLUGIN_PATH` | Standard JANA2 variable — colon-separated list of directories searched for plugin `.so` files. |
 
-```bash
+```tcsh
 # Override config directory entirely
-export JCE_CONFIG_DIR=/my/experiment/config
+setenv JCE_CONFIG_DIR /my/experiment/config
 "${JCE_HOME}/scripts/jce.sh" data.evio
 ```
 
@@ -296,7 +296,7 @@ Decide which EVIO bank tag your module produces (e.g. `350`) and assign a unique
 
 ### Step 2 — Create the directory layout
 
-```bash
+```tcsh
 mkdir -p src/plugins/my_experiment/module_parsers/MyHW/data_objects
 ```
 
@@ -484,9 +484,8 @@ Follow the same pattern used in `JEventProcessor_EVIO` for `FADC250WaveformHit`,
 
 ### Step 10 — Rebuild and test
 
-```bash
-cmake -S superbuild -B build-super \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack
+```tcsh
+cmake -S superbuild -B build-super
 cmake --build build-super --parallel
 ```
 

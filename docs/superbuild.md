@@ -57,32 +57,33 @@ that provide their own dependencies.
 
 Configure without building to validate the outer project:
 
-```bash
-cmake -S superbuild -B build-super \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack
+```tcsh
+cmake -S superbuild -B build-super
 ```
+
+The default installation prefix is `` `pwd`/jce-stack `` when configuring from
+the repository root. Pass `-DCMAKE_INSTALL_PREFIX=/another/path` to override it.
 
 Build the complete stack when network access and system dependencies are
 available:
 
-```bash
+```tcsh
 cmake --build build-super --parallel
 ```
 
 Build and run JCE tests in a separate developer build:
 
-```bash
+```tcsh
 cmake -S superbuild -B build-super-tests \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-test-stack \
+  -DCMAKE_INSTALL_PREFIX=`pwd`/jce-test-stack \
   -DJCE_SUPERBUILD_BUILD_TESTING=ON
 cmake --build build-super-tests --target check --parallel
 ```
 
 To avoid downloading JANA2 and EVIO, prepare both source trees in advance:
 
-```bash
+```tcsh
 cmake -S superbuild -B build-super \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack \
   -DJANA_SOURCE_DIR=/path/to/JANA2 \
   -DEVIO_SOURCE_DIR=/path/to/evio
 cmake --build build-super --parallel
@@ -91,9 +92,8 @@ cmake --build build-super --parallel
 ROOT is intentionally not downloaded or built by the superbuild. To build the
 optional `evio_processor`, provide an existing ROOT installation:
 
-```bash
+```tcsh
 cmake -S superbuild -B build-super \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack \
   -DJCE_SUPERBUILD_EVIO_PROCESSOR=ON \
   -DCMAKE_PREFIX_PATH=/path/to/root
 cmake --build build-super --parallel

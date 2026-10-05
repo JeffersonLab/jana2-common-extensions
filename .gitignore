@@ -3,6 +3,7 @@
 
 # Install directory
 /install/*
+/jce-stack/
 
 /bin/
 /include/

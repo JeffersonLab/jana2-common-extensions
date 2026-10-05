@@ -8,7 +8,7 @@ columns together as `rocid,slot,channel` before `module_id` and detector fields.
 Load it after `evio_parser` so detector translation runs before the diagnostic
 processor:
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" \
   -Pplugins=detector_translation_dump \
   -PTRANSLATION:DIRECTORY=/path/to/detector_mappings \

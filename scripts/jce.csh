@@ -111,7 +111,9 @@ setenv JANA_PLUGIN_PATH "$final_plugin_path"
 set final_args = ($passthrough_args "-Pplugins=${merged_plugins}" "-Pjana:plugin_path=${final_plugin_path}")
 
 set jana_cmd = ""
-if ($?JANA_HOME) then
+if (-x "$jce_root/bin/jana") then
+    set jana_cmd = "$jce_root/bin/jana"
+else if ($?JANA_HOME) then
     if (-x "$JANA_HOME/bin/jana") then
         set jana_cmd = "$JANA_HOME/bin/jana"
     endif
@@ -123,11 +125,8 @@ if ("$jana_cmd" == "") then
         set jana_cmd = "jana"
     else
         echo "jce.csh error: jana not found."
-        echo "Please either:"
-        echo "  1) setenv JANA_HOME /path/to/jana/install"
-        echo "     (so JANA_HOME/bin/jana exists), or"
-        echo "  2) add jana to your path:"
-        echo '     setenv PATH "/path/to/jana/bin:${PATH}"'
+        echo "Expected $jce_root/bin/jana from the superbuild."
+        echo "For a split-prefix manual installation, set JANA_HOME or add jana to PATH."
         exit 2
     endif
 endif

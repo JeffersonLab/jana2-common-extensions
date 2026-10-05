@@ -78,7 +78,7 @@ Most new plugins will follow the `evio_processor` pattern exactly: a single `JEv
 
 ### Step 1 — Create the plugin directory
 
-```bash
+```tcsh
 mkdir -p src/plugins/my_plugin
 ```
 
@@ -191,17 +191,16 @@ That is the only change required outside your own plugin directory.
 
 ### Step 6 — Build, install, and run
 
-```bash
+```tcsh
 # Rebuild the shared JANA2, EVIO, and JCE installation
-cmake -S superbuild -B build-super \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack
+cmake -S superbuild -B build-super
 cmake --build build-super --parallel
 ```
 
 Load the plugin using [`jce.sh`](../../scripts/jce.sh) or [`jce.csh`](../../scripts/jce.csh)
 
-```bash
-export JCE_HOME=/path/to/jce-stack
+```tcsh
+setenv JCE_HOME `pwd`/jce-stack
 "${JCE_HOME}/scripts/jce.sh" -Pplugins=my_plugin /path/to/data.evio
 ```
 

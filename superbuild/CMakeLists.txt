@@ -4,9 +4,12 @@ project(jce_superbuild NONE)
 include(ExternalProject)
 find_package(Git REQUIRED)
 
+get_filename_component(JCE_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    message(FATAL_ERROR
-        "Set CMAKE_INSTALL_PREFIX to the directory where the JCE stack should be installed")
+    set(CMAKE_INSTALL_PREFIX "${JCE_SOURCE_DIR}/jce-stack"
+        CACHE PATH "JCE stack installation directory" FORCE)
+    message(STATUS "Installing the JCE stack to ${CMAKE_INSTALL_PREFIX}")
 endif()
 
 set(JCE_JANA_GIT_REPOSITORY
@@ -31,8 +34,6 @@ option(JCE_SUPERBUILD_EVIO_PROCESSOR
 option(JCE_SUPERBUILD_BUILD_TESTING
     "Build JCE tests and provide the check target"
     OFF)
-
-get_filename_component(JCE_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 
 set(_jce_prefix_path "${CMAKE_INSTALL_PREFIX}")
 if(CMAKE_PREFIX_PATH)

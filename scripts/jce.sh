@@ -90,7 +90,9 @@ export JANA_PLUGIN_PATH="$final_plugin_path"
 final_args=("${passthrough_args[@]}" "-Pplugins=${merged_plugins}" "-Pjana:plugin_path=${final_plugin_path}")
 
 jana_cmd=""
-if [[ -n "${JANA_HOME:-}" && -x "${JANA_HOME}/bin/jana" ]]; then
+if [[ -x "${jce_root}/bin/jana" ]]; then
+    jana_cmd="${jce_root}/bin/jana"
+elif [[ -n "${JANA_HOME:-}" && -x "${JANA_HOME}/bin/jana" ]]; then
     jana_cmd="${JANA_HOME}/bin/jana"
 fi
 
@@ -99,11 +101,8 @@ if [[ -z "$jana_cmd" ]]; then
         jana_cmd="jana"
     else
         echo "jce.sh error: jana not found."
-        echo "Please either:"
-        echo "  1) export JANA_HOME=/path/to/jana/install"
-        echo "     (so JANA_HOME/bin/jana exists), or"
-        echo "  2) add jana to your path:"
-        echo '     export PATH="/path/to/jana/bin:${PATH}"'
+        echo "Expected ${jce_root}/bin/jana from the superbuild."
+        echo "For a split-prefix manual installation, set JANA_HOME or add jana to PATH."
         exit 2
     fi
 fi
