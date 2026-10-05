@@ -8,8 +8,8 @@ This repository is designed to be **modular and extensible**, and can be adapted
 ## Table of Contents
 
 * [Dependencies](#dependencies)
-* [Superbuild](#superbuild)
 * [Build Instructions](#build-instructions)
+* [Manual Build](#manual-build-advanced)
 * [Running Tests](#running-tests)
 * [Installation Layout](#installation-layout)
 * [Basic Usage](#basic-usage)
@@ -22,44 +22,20 @@ This repository is designed to be **modular and extensible**, and can be adapted
 
 | Dependency   | Minimum Version | Notes                            |
 | ------------ | --------------- | -------------------------------- |
-| CMake        | 3.16            | Build system                     |
+| CMake        | 3.22            | Build system                     |
 | C++ Compiler | C++20           | GCC 11+ or Clang 13+ recommended |
-| JANA2        | 2.x             | Core framework                   |
-| EVIO         | v6.1.2          | Data format library              |
+| Git          | Any recent version | Downloads pinned dependencies |
+| Boost        | System-provided | Required by EVIO                 |
+| LZ4          | System-provided | Required by EVIO                 |
+| JANA2        | v2026.03.01     | Downloaded by the superbuild     |
+| EVIO         | v6.1.2          | Downloaded by the superbuild     |
 | ROOT         | 6.x             | Optional; required only for `evio_processor` |
 
-### Building JANA2
+## Build Instructions
 
-```tcsh
-git clone https://github.com/JeffersonLab/JANA2.git JANA2
-cd JANA2
-cmake -S . -B build -DCMAKE_INSTALL_PREFIX=`pwd`
-cmake --build build --target install -j`nproc`
-cd ..
-```
-
-### Building EVIO
-
-```tcsh
-git clone https://github.com/JeffersonLab/evio/
-cd evio
-git checkout v6.1.2
-cmake -S . -B build
-cmake --build build --target install --parallel
-cd ..
-```
-
-### Installing ROOT (optional)
-
-ROOT is needed only when building the optional `evio_processor` plugin. Follow
-the official installation guide:
-[https://root.cern/install/](https://root.cern/install/)
-
-
-## Superbuild
-
-For a self-contained JANA2, EVIO, and JCE installation, configure the
-in-repository superbuild and choose one shared installation prefix:
+The recommended build uses the in-repository superbuild. It downloads the
+pinned JANA2 and EVIO releases, builds them in dependency order, and installs
+JANA2, EVIO, and JCE into one prefix:
 
 ```bash
 cmake -S superbuild -B build-super \
@@ -75,42 +51,81 @@ complete installation with:
 cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/jce-stack
 ```
 
-ROOT output remains optional. To include `evio_processor`, make ROOT
-discoverable and add `-DJCE_SUPERBUILD_EVIO_PROCESSOR=ON` when configuring the
-superbuild. See [the superbuild contract](docs/superbuild.md) for version
-overrides, system prerequisites, and failure behavior.
+### Offline build
 
-
-## Build Instructions
-
-### 1. Configure
-
-```tcsh
-cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio" -DCMAKE_INSTALL_PREFIX=`pwd`
-```
-> ⚠️ **Important**
-> `CMAKE_INSTALL_PREFIX` must be set during the **initial CMake configuration**.
-> It is embedded into generated headers (e.g., `jce_config_paths.h`) and used at runtime to locate configuration files such as `mapping.db` and `filter.db`.
-> Changing it later without reconfiguring will result in incorrect paths.
-
-To include the ROOT-based `evio_processor` plugin, enable it explicitly and
-make ROOT discoverable:
-
-```tcsh
-cmake -S . -B build -DJCE_BUILD_EVIO_PROCESSOR=ON -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio;/path/to/root" -DCMAKE_INSTALL_PREFIX=`pwd`
-```
-
-### 2. Build
+Point the superbuild at existing JANA2 and EVIO source trees. Both must be
+supplied to avoid downloading those projects:
 
 ```bash
+cmake -S superbuild -B build-super \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack \
+  -DJANA_SOURCE_DIR=/path/to/JANA2 \
+  -DEVIO_SOURCE_DIR=/path/to/evio
+cmake --build build-super --parallel
+```
+
+The superbuild never modifies either source checkout. It copies EVIO into its
+own build workspace before applying the install-prefix compatibility patch.
+EVIO continues to manage its own Disruptor dependency. Boost and LZ4 must
+already be installed on the system.
+
+### Optional ROOT processor
+
+ROOT is intentionally not downloaded or built by the superbuild. To include
+`evio_processor`, install ROOT separately, make it discoverable through
+`CMAKE_PREFIX_PATH`, and enable the processor:
+
+```bash
+cmake -S superbuild -B build-super \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack \
+  -DJCE_SUPERBUILD_EVIO_PROCESSOR=ON \
+  -DCMAKE_PREFIX_PATH=/path/to/root
+cmake --build build-super --parallel
+```
+
+Follow the [official ROOT installation guide](https://root.cern/install/) when
+an existing ROOT installation is not available.
+
+See [the superbuild contract](docs/superbuild.md) for version overrides,
+system prerequisites, and failure behavior.
+
+
+## Manual Build (advanced)
+
+Use this path when JANA2 and EVIO are already installed or managed separately.
+
+### Build JANA2 separately
+
+```bash
+git clone --branch v2026.03.01 https://github.com/JeffersonLab/JANA2.git JANA2
+cmake -S JANA2 -B JANA2/build -DCMAKE_INSTALL_PREFIX=/path/to/JANA2
+cmake --build JANA2/build --target install --parallel
+```
+
+### Build EVIO separately
+
+```bash
+git clone --branch v6.1.2 https://github.com/JeffersonLab/evio.git evio
+cmake -S evio -B evio/build
+cmake --build evio/build --target install --parallel
+```
+
+### Build JCE against separate installations
+
+Set `CMAKE_INSTALL_PREFIX` during the initial configuration because it is
+embedded into generated runtime configuration paths:
+
+```bash
+cmake -S . -B build \
+  -DBUILD_TESTING=ON \
+  -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio" \
+  -DCMAKE_INSTALL_PREFIX=/path/to/JCE
 cmake --build build --parallel
-```
-
-### 3. Install
-
-```bash
 cmake --install build
 ```
+
+To include `evio_processor`, also pass `-DJCE_BUILD_EVIO_PROCESSOR=ON` and add
+the ROOT installation to `CMAKE_PREFIX_PATH`.
 
 ## Running Tests
 
