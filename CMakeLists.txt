@@ -3,6 +3,11 @@ project(jana2_common_extensions)
 
 include(CTest)
 
+option(JCE_BUILD_EVIO_PROCESSOR
+    "Build the ROOT-based evio_processor plugin"
+    OFF
+)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -15,7 +20,10 @@ set(INSTALL_NAMESPACE "" CACHE STRING
 # Find dependencies
 find_package(JANA REQUIRED)
 find_package(evio REQUIRED)
-find_package(ROOT REQUIRED COMPONENTS Core RIO Tree Hist)
+
+if(JCE_BUILD_EVIO_PROCESSOR)
+    find_package(ROOT REQUIRED COMPONENTS Core RIO Tree Hist)
+endif()
 
 # Add subdirectories
 add_subdirectory(config)
