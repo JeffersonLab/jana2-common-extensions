@@ -16,6 +16,12 @@ add_jana_plugin(evio_parser
         ${SERVICES_PUBLIC_HEADERS}
 )
 
+# add_jana_plugin sets INSTALL_RPATH explicitly, so append EVIO's lib64
+# installation directory after the macro creates the target.
+set_property(TARGET evio_parser APPEND PROPERTY
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64"
+)
+
 target_link_libraries(evio_parser
     PRIVATE
         ${JANA_LIBRARY}
