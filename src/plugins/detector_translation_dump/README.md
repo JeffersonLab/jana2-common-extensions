@@ -9,8 +9,8 @@ Load it after `evio_parser` so detector translation runs before the diagnostic
 processor:
 
 ```bash
-jana \
-  -Pplugins=evio_parser,detector_translation_dump \
+"${JCE_HOME}/scripts/jce.sh" \
+  -Pplugins=detector_translation_dump \
   -PTRANSLATION:DIRECTORY=/path/to/detector_mappings \
   -Pdetector_translation_dump:OUTPUT_DIRECTORY=detector_translation_dump \
   /path/to/input.evio

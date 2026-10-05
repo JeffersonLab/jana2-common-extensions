@@ -210,8 +210,8 @@ untouched:
 Run representative EVIO data with the override:
 
 ```bash
-jana \
-  -Pplugins=evio_parser,detector_translation_dump \
+"${JCE_HOME}/scripts/jce.sh" \
+  -Pplugins=detector_translation_dump \
   -PTRANSLATION:DIRECTORY=/path/to/candidate/detector_mappings \
   -Pdetector_translation_dump:OUTPUT_DIRECTORY=detector_translation_dump \
   /path/to/input.evio
@@ -235,9 +235,10 @@ Inspect the generated detector CSVs and verify:
 For repository changes, also run:
 
 ```bash
-cmake -S . -B build -DBUILD_TESTING=ON
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
+cmake -S superbuild -B build-super-tests \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-test-stack \
+  -DJCE_SUPERBUILD_BUILD_TESTING=ON
+cmake --build build-super-tests --target check --parallel
 ```
 
 Physicists changing only mappings are not expected to add C++ unit tests. CSV

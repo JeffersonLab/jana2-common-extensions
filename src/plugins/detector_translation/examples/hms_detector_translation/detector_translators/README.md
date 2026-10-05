@@ -392,16 +392,17 @@ Also update `daq_address_tests` for a new raw-hit address overload and
 ## Step 11: Build and Verify CSV Output
 
 ```bash
-cmake -S . -B build -DBUILD_TESTING=ON
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
+cmake -S superbuild -B build-super-tests \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-test-stack \
+  -DJCE_SUPERBUILD_BUILD_TESTING=ON
+cmake --build build-super-tests --target check --parallel
 ```
 
 Then run representative data through the diagnostic plugin:
 
 ```bash
-jana \
-  -Pplugins=evio_parser,detector_translation_dump \
+"${JCE_HOME}/scripts/jce.sh" \
+  -Pplugins=detector_translation_dump \
   -PTRANSLATION:DIRECTORY=/path/to/candidate/detector_mappings \
   -Pdetector_translation_dump:OUTPUT_DIRECTORY=detector_translation_dump \
   /path/to/input.evio

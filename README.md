@@ -129,33 +129,33 @@ the ROOT installation to `CMAKE_PREFIX_PATH`.
 
 ## Running Tests
 
-Configure or reconfigure the build with tests enabled, then build the test
-executables. CMake's `CTest` module enables `BUILD_TESTING` by default, but the
-explicit option makes the test configuration unambiguous and overrides a build
-directory previously configured with tests disabled.
+Tests are disabled in the default user superbuild. Developers should use a
+separate build directory and opt in explicitly:
 
 ```bash
-cmake -S . -B build -DBUILD_TESTING=ON
-cmake --build build --parallel
+cmake -S superbuild -B build-super-tests \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-test-stack \
+  -DJCE_SUPERBUILD_BUILD_TESTING=ON
+cmake --build build-super-tests --target check --parallel
 ```
 
-List the tests registered in the build directory:
+The `check` target builds the complete stack, installs it into the test prefix,
+and runs the JCE tests with failure output enabled. To inspect or rerun tests
+directly:
 
 ```bash
-ctest --test-dir build -N
-```
-
-Run all registered tests and display output for any failures:
-
-```bash
-ctest --test-dir build --output-on-failure
+ctest --test-dir build-super-tests/jce-build -N
+ctest --test-dir build-super-tests/jce-build --output-on-failure
 ```
 
 ## Installation Layout
 
-After installation (with `-DCMAKE_INSTALL_PREFIX=\`pwd\``), your directory will look like:
+After the recommended superbuild installs to `/path/to/jce-stack`, the shared
+prefix contains JANA2, EVIO, and JCE:
 
 ```
+bin/
+└── jana
 config/
 ├── mapping.db
 ├── filter.db
@@ -163,6 +163,8 @@ config/
 └── hms_detector_translation/
     └── detector_mappings/
 include/
+├── JANA/
+├── eviocc.h
 └── jce_config_paths.h
 lib/
 ├── cmake/
@@ -184,11 +186,11 @@ templates/
 The recommended entry point is one of the wrapper scripts (equivalent behavior; use whichever matches your shell):
 
 ```tcsh
-scripts/jce.csh
+${JCE_HOME}/scripts/jce.csh /path/to/data.evio
 ```
 
 ```bash
-scripts/jce.sh
+"${JCE_HOME}/scripts/jce.sh" /path/to/data.evio
 ```
 
 These scripts:
@@ -200,16 +202,20 @@ These scripts:
 ### Set Environment
 
 ```tcsh
-setenv JCE_HOME /path/to/jana2-common-extensions
-setenv JANA_HOME /path/to/JANA2
+setenv JCE_HOME /path/to/jce-stack
+setenv JANA_HOME /path/to/jce-stack
+setenv PATH "${JCE_HOME}/bin:${PATH}"
 ```
 
 ```bash
-export JCE_HOME=/path/to/jana2-common-extensions
-export JANA_HOME=/path/to/JANA2
+export JCE_HOME=/path/to/jce-stack
+export JANA_HOME="${JCE_HOME}"
+export PATH="${JCE_HOME}/bin:${PATH}"
 ```
 
-> With the default setup (`-DCMAKE_INSTALL_PREFIX=\`pwd\``), set `JCE_HOME` to the project root.
+Both variables point to the same superbuild installation prefix. Adding its
+`bin` directory to `PATH` also makes the installed `jana` executable available
+for advanced direct use.
 
 ### Run with Default Plugins
 
@@ -265,7 +271,8 @@ ${JCE_HOME}/scripts/jce.csh -Pjana:plugin_path=/my/custom/plugins -Pplugins=my_c
 You can run plugins directly with `jana` if you prefer full manual control and do not want to use `default_plugins.db`.
 
 ```bash
-jana -Pplugins=evio_parser,evio_common_modules,evio_processor -Pjana:plugin_path=/path/to/plugins data.evio
+"${JCE_HOME}/bin/jana" -Pplugins=evio_parser,evio_common_modules \
+  -Pjana:plugin_path="${JCE_HOME}/lib/plugins" data.evio
 ```
 
 **Important:**
@@ -323,7 +330,7 @@ For example, `LOG_DEBUG` only appears when the level is `DEBUG` or `TRACE`.
 Set logging level for all JANA2 components:
 
 ```bash
-"${JCE_HOME}/scripts/jce.sh" -Pjana:global_loglevel=WARN -Pplugins=evio_parser,evio_common_modules,evio_processor data.evio
+"${JCE_HOME}/scripts/jce.sh" -Pjana:global_loglevel=WARN data.evio
 ```
 
 This give logs on the given level for both the internal jana components and plugin components. Default is `INFO`.
@@ -335,7 +342,7 @@ This give logs on the given level for both the internal jana components and plug
 To get only evio_parser logs at a certain level use `-PEVIO_PARSER:loglevel`:
 
 ```bash
-"${JCE_HOME}/scripts/jce.sh" -PEVIO_PARSER:loglevel=DEBUG -Pplugins=evio_parser,evio_common_modules,evio_processor data.evio
+"${JCE_HOME}/scripts/jce.sh" -PEVIO_PARSER:loglevel=DEBUG data.evio
 ```
 
 Use `TRACE` for maximum detail.
@@ -359,7 +366,8 @@ void MyProcessor::Process(const JEvent& event) {
 Then configure it:
 
 ```bash
-jana -PMY_PROCESSOR:loglevel=DEBUG -Pplugins=my_plugin data.evio
+"${JCE_HOME}/scripts/jce.sh" -PMY_PROCESSOR:loglevel=DEBUG \
+  -Pplugins=my_plugin data.evio
 ```
 
 
