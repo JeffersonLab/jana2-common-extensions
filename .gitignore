@@ -1,5 +1,6 @@
 # Build directory
 /build/*
+/build-super*/
 
 # Install directory
 /install/*
