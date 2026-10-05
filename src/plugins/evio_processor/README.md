@@ -140,7 +140,7 @@ All parameters are set on the JANA2 command line with `-P<name>=<value>`.
 
 Using the JCE wrapper ([`jce.sh`](../../../scripts/jce.sh) or [`jce.csh`](../../../scripts/jce.csh); see [Basic usage](../../../README.md#basic-usage)):
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" -Pplugins=evio_processor data.evio
 ```
 
@@ -148,12 +148,12 @@ Produces `evio_processor.root` and `evio_processor_hits.txt` in the current dire
 
 ### Custom ROOT output filename
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" -Pplugins=evio_processor -PROOT_OUT_FILENAME=run_042.root data.evio
 ```
 
 ### With filtering and custom mapping
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" -Pplugins=evio_processor -PFILTER:ENABLE=1 -PFILTER:FILE="${JCE_HOME}/config/filter.db" -PBANKMAP:FILE="${JCE_HOME}/config/mapping.db" -PROOT_OUT_FILENAME=run_042_filtered.root data.evio
 ```

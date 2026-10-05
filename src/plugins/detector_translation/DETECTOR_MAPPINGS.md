@@ -209,7 +209,7 @@ untouched:
 
 Run representative EVIO data with the override:
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" \
   -Pplugins=detector_translation_dump \
   -PTRANSLATION:DIRECTORY=/path/to/candidate/detector_mappings \
@@ -234,9 +234,9 @@ Inspect the generated detector CSVs and verify:
 
 For repository changes, also run:
 
-```bash
+```tcsh
 cmake -S superbuild -B build-super-tests \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-test-stack \
+  -DCMAKE_INSTALL_PREFIX=`pwd`/jce-test-stack \
   -DJCE_SUPERBUILD_BUILD_TESTING=ON
 cmake --build build-super-tests --target check --parallel
 ```

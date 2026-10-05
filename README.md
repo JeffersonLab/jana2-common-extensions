@@ -37,18 +37,20 @@ The recommended build uses the in-repository superbuild. It downloads the
 pinned JANA2 and EVIO releases, builds them in dependency order, and installs
 JANA2, EVIO, and JCE into one prefix:
 
-```bash
-cmake -S superbuild -B build-super \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack
+```tcsh
+cmake -S superbuild -B build-super
 cmake --build build-super --parallel
+setenv JCE_HOME `pwd`/jce-stack
 ```
 
 The superbuild downloads pinned JANA2 `v2026.03.01` and EVIO `v6.1.2`
-releases, then builds this JCE checkout against them. An experiment can use the
-complete installation with:
+releases, then builds this JCE checkout against them. By default it installs to
+`jce-stack/` in the repository root. Override that location with
+`-DCMAKE_INSTALL_PREFIX=/another/path` when configuring. An experiment can use
+the complete installation with:
 
-```bash
-cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/jce-stack
+```tcsh
+cmake -S . -B build -DCMAKE_PREFIX_PATH=${JCE_HOME}
 ```
 
 ### Offline build
@@ -56,9 +58,8 @@ cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/jce-stack
 Point the superbuild at existing JANA2 and EVIO source trees. Both must be
 supplied to avoid downloading those projects:
 
-```bash
+```tcsh
 cmake -S superbuild -B build-super \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack \
   -DJANA_SOURCE_DIR=/path/to/JANA2 \
   -DEVIO_SOURCE_DIR=/path/to/evio
 cmake --build build-super --parallel
@@ -75,9 +76,8 @@ ROOT is intentionally not downloaded or built by the superbuild. To include
 `evio_processor`, install ROOT separately, make it discoverable through
 `CMAKE_PREFIX_PATH`, and enable the processor:
 
-```bash
+```tcsh
 cmake -S superbuild -B build-super \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack \
   -DJCE_SUPERBUILD_EVIO_PROCESSOR=ON \
   -DCMAKE_PREFIX_PATH=/path/to/root
 cmake --build build-super --parallel
@@ -96,7 +96,7 @@ Use this path when JANA2 and EVIO are already installed or managed separately.
 
 ### Build JANA2 separately
 
-```bash
+```tcsh
 git clone --branch v2026.03.01 https://github.com/JeffersonLab/JANA2.git JANA2
 cmake -S JANA2 -B JANA2/build -DCMAKE_INSTALL_PREFIX=/path/to/JANA2
 cmake --build JANA2/build --target install --parallel
@@ -104,7 +104,7 @@ cmake --build JANA2/build --target install --parallel
 
 ### Build EVIO separately
 
-```bash
+```tcsh
 git clone --branch v6.1.2 https://github.com/JeffersonLab/evio.git evio
 cmake -S evio -B evio/build
 cmake --build evio/build --target install --parallel
@@ -115,7 +115,7 @@ cmake --build evio/build --target install --parallel
 Set `CMAKE_INSTALL_PREFIX` during the initial configuration because it is
 embedded into generated runtime configuration paths:
 
-```bash
+```tcsh
 cmake -S . -B build \
   -DBUILD_TESTING=ON \
   -DCMAKE_PREFIX_PATH="/path/to/JANA2;/path/to/evio" \
@@ -127,14 +127,18 @@ cmake --install build
 To include `evio_processor`, also pass `-DJCE_BUILD_EVIO_PROCESSOR=ON` and add
 the ROOT installation to `CMAKE_PREFIX_PATH`.
 
+For this advanced split-prefix layout, set `JCE_HOME` to the JCE installation
+and `JANA_HOME` to the separate JANA2 installation. The installed wrappers use
+`JANA_HOME` only when `${JCE_HOME}/bin/jana` is not present.
+
 ## Running Tests
 
 Tests are disabled in the default user superbuild. Developers should use a
 separate build directory and opt in explicitly:
 
-```bash
+```tcsh
 cmake -S superbuild -B build-super-tests \
-  -DCMAKE_INSTALL_PREFIX=/path/to/jce-test-stack \
+  -DCMAKE_INSTALL_PREFIX=`pwd`/jce-test-stack \
   -DJCE_SUPERBUILD_BUILD_TESTING=ON
 cmake --build build-super-tests --target check --parallel
 ```
@@ -143,15 +147,15 @@ The `check` target builds the complete stack, installs it into the test prefix,
 and runs the JCE tests with failure output enabled. To inspect or rerun tests
 directly:
 
-```bash
+```tcsh
 ctest --test-dir build-super-tests/jce-build -N
 ctest --test-dir build-super-tests/jce-build --output-on-failure
 ```
 
 ## Installation Layout
 
-After the recommended superbuild installs to `/path/to/jce-stack`, the shared
-prefix contains JANA2, EVIO, and JCE:
+After the recommended superbuild installs to `${JCE_HOME}`, the shared prefix
+contains JANA2, EVIO, and JCE:
 
 ```
 bin/
@@ -189,7 +193,7 @@ The recommended entry point is one of the wrapper scripts (equivalent behavior; 
 ${JCE_HOME}/scripts/jce.csh /path/to/data.evio
 ```
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" /path/to/data.evio
 ```
 
@@ -202,20 +206,14 @@ These scripts:
 ### Set Environment
 
 ```tcsh
-setenv JCE_HOME /path/to/jce-stack
-setenv JANA_HOME /path/to/jce-stack
+setenv JCE_HOME `pwd`/jce-stack
 setenv PATH "${JCE_HOME}/bin:${PATH}"
 ```
 
-```bash
-export JCE_HOME=/path/to/jce-stack
-export JANA_HOME="${JCE_HOME}"
-export PATH="${JCE_HOME}/bin:${PATH}"
-```
-
-Both variables point to the same superbuild installation prefix. Adding its
-`bin` directory to `PATH` also makes the installed `jana` executable available
-for advanced direct use.
+Run this from the repository root when using the default prefix. `JANA_HOME` is
+not needed for a superbuild installation because the wrapper finds
+`${JCE_HOME}/bin/jana` directly. Adding `bin` to `PATH` is optional and supports
+advanced direct use.
 
 ### Run with Default Plugins
 
@@ -223,7 +221,7 @@ for advanced direct use.
 ${JCE_HOME}/scripts/jce.csh /path/to/data.evio
 ```
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" /path/to/data.evio
 ```
 
@@ -237,7 +235,7 @@ ${JCE_HOME}/scripts/jce.csh /path/to/data.evio
 ${JCE_HOME}/scripts/jce.csh -Pplugins=evio_processor,my_custom_plugin /path/to/data.evio
 ```
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" -Pplugins=evio_processor,my_custom_plugin /path/to/data.evio
 ```
 
@@ -256,7 +254,7 @@ You can:
 ${JCE_HOME}/scripts/jce.csh -Pjana:plugin_path=/my/custom/plugins -Pplugins=my_custom_plugin /path/to/data.evio
 ```
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" -Pjana:plugin_path=/my/custom/plugins -Pplugins=my_custom_plugin /path/to/data.evio
 ```
 
@@ -270,7 +268,7 @@ ${JCE_HOME}/scripts/jce.csh -Pjana:plugin_path=/my/custom/plugins -Pplugins=my_c
 
 You can run plugins directly with `jana` if you prefer full manual control and do not want to use `default_plugins.db`.
 
-```bash
+```tcsh
 "${JCE_HOME}/bin/jana" -Pplugins=evio_parser,evio_common_modules \
   -Pjana:plugin_path="${JCE_HOME}/lib/plugins" data.evio
 ```
@@ -329,7 +327,7 @@ For example, `LOG_DEBUG` only appears when the level is `DEBUG` or `TRACE`.
 
 Set logging level for all JANA2 components:
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" -Pjana:global_loglevel=WARN data.evio
 ```
 
@@ -341,7 +339,7 @@ This give logs on the given level for both the internal jana components and plug
 
 To get only evio_parser logs at a certain level use `-PEVIO_PARSER:loglevel`:
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" -PEVIO_PARSER:loglevel=DEBUG data.evio
 ```
 
@@ -365,7 +363,7 @@ void MyProcessor::Process(const JEvent& event) {
 
 Then configure it:
 
-```bash
+```tcsh
 "${JCE_HOME}/scripts/jce.sh" -PMY_PROCESSOR:loglevel=DEBUG \
   -Pplugins=my_plugin data.evio
 ```
