@@ -1,9 +1,10 @@
 # Adding Detector Translation
 
 Detector translation converts hardware-oriented raw hits into typed,
-uncalibrated detector DigiHits. This guide covers the C++ work. For mapping
+uncalibrated detector DigiHits. This guide covers the C++ work in experiment-owned plugins. JCE provides
+the generic APIs; experiment repositories own concrete detector implementations. For mapping
 DAQ addresses and run ranges, see the
-[detector mapping guide](../../../DETECTOR_MAPPINGS.md).
+[detector mapping guide](DETECTOR_MAPPINGS.md).
 
 ## Before You Start
 
@@ -16,7 +17,7 @@ You need:
 - representative raw-hit values and DAQ addresses for tests.
 
 If any item is missing, follow
-[Adding a New Module Parser](../../../../evio_parser/README.md#adding-a-new-module-parser) first.
+[Adding a New Module Parser](../evio_parser/README.md#adding-a-new-module-parser) first.
 Translation does not decode EVIO words, calibrate measurements, reconstruct
 physics quantities, or provide geometry.
 
@@ -135,8 +136,8 @@ The implementation must:
 - require every field used by the DigiHits; and
 - throw a clear `JException` naming a missing field.
 
-Do not silently default missing detector fields. Use
-`HMSHodoscope/HMSHodoscopeIdentity.*` as the current concrete example.
+Do not silently default missing detector fields. Share identity validation
+across the raw-hit families belonging to the same detector.
 
 ## Step 4: Define the DigiHit
 
@@ -178,11 +179,7 @@ MyDetectorMyRawHitFamilyDigiHit makeMyDetectorMyRawHitFamilyDigiHit(
 The function obtains the validated identity and copies the detector fields and
 raw payload. Core inserts its result into the normal untagged event collection
 and records which route produced it. Registered conversions must not insert
-objects themselves. Existing HMS `translate...` insertion wrappers remain
-available for direct callers; route registration uses the `make...` functions.
-
-Use the HMS Hodoscope FADC and FADC-scaler routes as working references. Their
-current mappings are demonstration data, not physics-approved configuration.
+objects themselves. Route registration uses the conversion function directly.
 
 ## Step 6: Register the Route
 
@@ -245,7 +242,7 @@ target_include_directories(my_detector_my_raw_hit_family_translator
 )
 target_link_libraries(my_detector_my_raw_hit_family_translator
     PUBLIC
-        detector_mapping
+        jana2_common_extensions::detector_mapping_api
         my_raw_hit_parser
         my_detector_identity
 )
@@ -288,7 +285,7 @@ target_include_directories(my_detector_identity
     PRIVATE ${JANA_INCLUDE_DIRS}
 )
 target_link_libraries(my_detector_identity
-    PUBLIC detector_mapping
+    PUBLIC jana2_common_extensions::detector_mapping_api
     PRIVATE ${JANA_LIBRARY}
 )
 
@@ -347,16 +344,15 @@ the production translator target rather than recompiling its `.cc` file.
 ## Step 8: Add Diagnostic CSV Output
 
 Each translator requires one CSV header constant and typed row-writing function.
-Define both beside the translator in the detector's raw-family directory. The
-HMS example uses `FADC/FADCDumpWriter.*` for five FADC formats and
-`FADCScaler/FADCScalerDumpWriter.*` for its scaler format. Pass the header and
+Define both beside the translator in the detector's raw-family directory,
+for example `<RawHitFamily>DumpWriter.h/.cc`. Pass the header and
 function to `addTranslator<RawHit, DigiHit>()` in the detector initializer.
 No writer subclass, separate registration, or dump processor edit is needed.
 The generic `DetectorTranslationDump` helper handles dump metadata and naming.
 
 Keep `rocid,slot,channel` contiguous for channel-addressed records. Use only
 columns applicable to that DigiHit type. See the
-[dump plugin registration guide](../../../../detector_translation_dump/README.md)
+[dump plugin registration guide](../detector_translation_dump/README.md)
 and run the CSV check in Step 11. Explicitly load your setup plugin before
 `detector_translation_dump`.
 
@@ -365,7 +361,7 @@ and run the CSV check in Step 11. Explicitly load your setup plugin before
 Add the detector to the root catalog, create its run-range manifest, and add
 at least one mapping file. The mapping field names must match the fields
 required by the detector identity helper. Follow the
-[mapping authoring guide](../../../DETECTOR_MAPPINGS.md)
+[mapping authoring guide](DETECTOR_MAPPINGS.md)
 for exact formats and validation rules.
 
 ## Step 10: Add Focused Tests
@@ -395,7 +391,7 @@ Then run representative data through the diagnostic plugin:
 
 ```tcsh
 "${JCE_HOME}/scripts/jce.sh" \
-  -Pplugins=hms_detector_translation,detector_translation_dump \
+  -Pplugins=my_detector_setup,detector_translation_dump \
   -PTRANSLATION:DIRECTORY=/path/to/candidate/detector_mappings \
   -Pdetector_translation_dump:OUTPUT_DIRECTORY=detector_translation_dump \
   /path/to/input.evio

@@ -16,6 +16,7 @@ This repository is designed to be **modular and extensible**, and can be adapted
 * [Logging](#logging)
 * [Configuration Files](#configuration-files)
 * [Default Plugins](#default-plugins)
+* [Experiment Extension Example](https://github.com/RaiqaRasool/hallc_recon_jce) — detector translators, mappings, and CSV writers
 
 
 ## Dependencies
@@ -163,9 +164,7 @@ bin/
 config/
 ├── mapping.db
 ├── filter.db
-├── default_plugins.db
-└── hms_detector_translation/
-    └── detector_mappings/
+└── default_plugins.db
 include/
 ├── JANA/
 ├── eviocc.h
@@ -176,7 +175,6 @@ lib/
     ├── evio_parser.so
     ├── evio_common_modules.so
     ├── detector_translation.so
-    ├── hms_detector_translation.so
     ├── evio_processor.so  # only with JCE_BUILD_EVIO_PROCESSOR=ON
     └── ...
 scripts/
@@ -382,7 +380,6 @@ Configuration files are installed under:
 | `mapping.db`         | Maps EVIO banks to module IDs     | `src/plugins/evio_parser` |
 | `filter.db`          | Defines ROC/bank filtering rules  | `src/plugins/evio_parser` |
 | `default_plugins.db` | Specifies default plugins to load | `scripts/jce.csh`, `scripts/jce.sh` |
-| `hms_detector_translation/detector_mappings/` | HMS DAQ-to-detector mappings | `hms_detector_translation` |
 
 At runtime, configuration files are resolved using the following precedence:
 
@@ -445,3 +442,14 @@ controls which plugins are loaded by default.
 # Default plugins
 evio_parser,evio_common_modules,evio_processor
 ```
+
+Detector mappings, detector-specific DigiHits, translators, and CSV row formats
+are owned by experiment plugins. JCE no longer builds or installs the HMS
+example. The default plugin list loads only `evio_parser,evio_common_modules`;
+experiment setup plugins request generic translation and register their routes.
+Detector-hit consumers link their experiment's data-types target rather than
+obtaining detector-specific headers through JCE's common raw-hit umbrella.
+After upgrading an existing installation, use a clean JCE prefix or remove the
+obsolete HMS plugin, headers, and config tree from that prefix; CMake installation
+does not uninstall files removed from source. Rebuild experiment plugins and their consumers
+against the updated JCE registration API and their DigiHit schemas.

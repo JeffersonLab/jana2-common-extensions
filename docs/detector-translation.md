@@ -29,8 +29,8 @@ calibrate measurements, or provide detector geometry.
 - Unmapped and deliberately excluded reference channels return `nullptr`.
 - A mapping file applies one detector name to every channel it contains.
 - Each setup plugin installs detector mappings under its own configuration
-  namespace. The HMS example uses
-  `config/<namespace>/hms_detector_translation/detector_mappings/`.
+  namespace, for example
+  `config/<namespace>/<setup-plugin>/detector_mappings/` in its own prefix.
 - Setup plugins register named mapping-catalog directories before service
   initialization. Catalogs may contribute different detectors and are merged
   into the same run-aware translation tables.
@@ -76,17 +76,9 @@ calibrate measurements, or provide detector geometry.
   immutable during event processing.
 - A mapped detector without a registered route for that raw-hit type is
   skipped.
-- DigiHits contain copied digitized values; consumers do not need to traverse
-  back to raw hits for normal use. The HMS FADC scaler route copies one
-  complete 16-counter board-level record into one
-  `HMSHodoscopeFADCScalerDigiHit`.
-- `DetectorAddress` is authoritative for HMS detector identity. Every HMS FADC
-  format and the FADC scaler route validate the detector name and require
-  `plane`, `bar`, and `signal`, then copy those values into flat fields on their
-  typed DigiHits. The generic address is not retained by any DigiHit.
-- Waveform, pulse, pulse-integral, pulse-time, and pulse-peak FADC records
-  produce distinct DigiHit types. Translation preserves each hardware payload
-  and does not combine Hall-B pulse fragments into reconstructed pulses.
+- DigiHits contain copied digitized values. Experiment plugins own detector
+  identity validation, required fields, output schemas, and conversion policy.
+  JCE provides no experiment-specific DigiHit types or routes.
 - TI scaler and helicity decoder records do not participate in detector
   translation and intentionally do not satisfy `DAQAddressable`.
 - Channel-addressed diagnostic CSVs keep `rocid`, `slot`, and `channel`
@@ -114,8 +106,7 @@ calibrate measurements, or provide detector geometry.
   fail. Dumping truncates existing outputs on each run.
 - Output paths are `<detector-key>/<raw-hit-C++-type>.csv`, using reversible
   percent encoding for bytes other than letters, digits, underscores and hyphens.
-  HMS now uses `HMS_HODOSCOPE/FADC250PulseHit.csv`, etc.; CSV columns and row
-  formatting are preserved.
+  For example, `MY_DETECTOR/MyRawHit.csv` identifies one route.
 
 ## Failure Behavior
 
@@ -131,14 +122,12 @@ throws when no configured detector mapping applies to that run.
 
 ## Key Components
 
-- `src/plugins/detector_translation/examples/hms_detector_translation/config/detector_mappings/`
 - `src/plugins/detector_translation/detector_mapping/`
 - Address overloads beside participating common raw-hit types under
   `src/plugins/evio_common_modules/module_parsers/`
 - `src/plugins/detector_translation/services/JEventService_TranslationTable.*`
 - `src/plugins/detector_translation/services/JEventService_DetectorMappingCatalogs.h`
 - `src/plugins/detector_translation/services/JEventService_DetectorTranslatorsMap.h`
-- `src/plugins/detector_translation/examples/hms_detector_translation/detector_translators/`
 - `src/plugins/detector_translation/JEventProcessor_DetectorDigiHits.*`
 
 ## Verification
@@ -157,14 +146,6 @@ repeated range switches, cross-detector DAQ-address collision rejection,
 missing referenced files, empty catalogs and manifests, reversed ranges, and
 rejection of `max` as a lower bound.
 
-The `hms_hodoscope_fadc_translator_tests` CTest verifies detector identity and
-hardware measurements for every emitted FADC format, rejection of invalid
-detector metadata, and typed insertion into a `JEvent`.
-
-The `hms_hodoscope_fadc_scaler_translator_tests` CTest verifies that all 16
-FADC scaler counters and the mapped detector identity are copied into a typed
-HMS board-level DigiHit and inserted into the event.
-
 The `detector_translators_map_tests` CTest verifies duplicate-route rejection
 and registry immutability after initialization.
 
@@ -176,21 +157,17 @@ TI scaler and helicity decoder records are not `DAQAddressable`.
 The `translation_table_tests` CTest also verifies that `none` maps to
 `DAQAddress::UnspecifiedChannel`.
 
-For EVIO integration checks, load `detector_translation_dump` after
-`evio_parser`. It writes each published translated DigiHit type to a dedicated
-CSV under its detector subdirectory; the current demo mapping expects DAQ
-address `(rocid=1, slot=3, channel=0)`.
-
-Production FADC scaler translation additionally requires an HMS mapping row
-for the real board address in the form `rocid slot none ...`; no hardware
-address is guessed by the source configuration.
+For EVIO integration checks, load an experiment setup plugin before
+`detector_translation_dump`, for example
+`-Pplugins=my_detector_setup,detector_translation_dump`. The experiment repository
+owns its concrete translators, writer tests, and installed mapping catalog.
+Generic core tests retain synthetic HMS/BCAL fixtures solely as test data;
+these are not installed experiment defaults.
 
 The `detector_translators_map_tests` verifies required writers, duplicate routes,
 frozen registration, generated naming, missing outputs, and isolation across
 raw types and detectors which publish the same DigiHit type. It also verifies
 that unrelated objects in that DigiHit collection are excluded from dumping
 and processing another event preserves earlier event provenance.
-The route-local `hms_hodoscope_fadc_dump_writer_tests` and
-`hms_hodoscope_fadc_scaler_dump_writer_tests` check the six generated paths
-and existing HMS headers and row formats, including waveform and scaler
-array fields. Their source files live beside the respective translator tests.
+Concrete detector translation and CSV regression tests belong beside their
+implementations in the owning experiment repository.

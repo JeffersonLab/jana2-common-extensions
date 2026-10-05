@@ -1,25 +1,18 @@
 # Detector Mapping Configuration
 
-This directory contains physicist-editable configuration that maps DAQ
-addresses to detector identities for specific run ranges. Use this guide when
+Experiment setup plugins own physicist-editable configuration that maps DAQ
+addresses to detector identities for specific run ranges. JCE defines the
+catalog format and loader; it installs no experiment mapping catalogs. Use this guide when
 the required raw-hit and DigiHit types already exist. For C++ translator work,
-see the [detector translator guide](examples/hms_detector_translation/detector_translators/README.md).
+see the [detector translator guide](TRANSLATORS.md).
 
-## Current HMS Status
+## Before Using Production Mappings
 
-The HMS Hodoscope route is a working reference implementation built with
-demonstration mapping data. Its current DAQ addresses and detector-field values
-are not physics-approved production configuration.
-
-Before replacing only the `.map` files, confirm with detector experts that:
-
-- the FADC and FADC-scaler raw-hit families are the records HMS needs;
-- the published DigiHit types contain the required digitized measurements; and
-- `plane`, `bar`, and `signal` are the correct detector identity fields.
-
-If those assumptions are correct, real addresses, values, and run ranges can
-be supplied through configuration. If the raw-hit families, DigiHit fields, or
-identity model are wrong, the C++ translator must be changed first.
+Example addresses and detector fields illustrate the format; they are not
+physics-approved production configuration. Before changing only `.map` files,
+confirm that the experiment's translators support the required raw-hit families,
+DigiHit payloads, and detector identity fields. Change the experiment's C++
+conversion and identity validation first if those assumptions do not hold.
 
 ## Directory Layout
 
