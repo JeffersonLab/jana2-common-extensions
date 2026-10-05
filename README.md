@@ -8,6 +8,7 @@ This repository is designed to be **modular and extensible**, and can be adapted
 ## Table of Contents
 
 * [Dependencies](#dependencies)
+* [Superbuild](#superbuild)
 * [Build Instructions](#build-instructions)
 * [Running Tests](#running-tests)
 * [Installation Layout](#installation-layout)
@@ -53,6 +54,31 @@ cd ..
 ROOT is needed only when building the optional `evio_processor` plugin. Follow
 the official installation guide:
 [https://root.cern/install/](https://root.cern/install/)
+
+
+## Superbuild
+
+For a self-contained JANA2, EVIO, and JCE installation, configure the
+in-repository superbuild and choose one shared installation prefix:
+
+```bash
+cmake -S superbuild -B build-super \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack
+cmake --build build-super --parallel
+```
+
+The superbuild downloads pinned JANA2 `v2026.03.01` and EVIO `v6.1.2`
+releases, then builds this JCE checkout against them. An experiment can use the
+complete installation with:
+
+```bash
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/jce-stack
+```
+
+ROOT output remains optional. To include `evio_processor`, make ROOT
+discoverable and add `-DJCE_SUPERBUILD_EVIO_PROCESSOR=ON` when configuring the
+superbuild. See [the superbuild contract](docs/superbuild.md) for version
+overrides, system prerequisites, and failure behavior.
 
 
 ## Build Instructions

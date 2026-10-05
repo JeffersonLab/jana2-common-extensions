@@ -1,0 +1,22 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7634f636..bca55125 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -52,7 +52,7 @@ elseif (DEFINED ENV{CODA})
+     set(CMAKE_INSTALL_PREFIX $ENV{CODA}/${ARCH})
+     set(CMAKE_INSTALL_INCLUDEDIR $ENV{CODA}/common/include)
+     message(STATUS "CMAKE_INSTALL_PREFIX reset to " ${CMAKE_INSTALL_PREFIX})
+-else()
++elseif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+     # Use default CMAKE_INSTALL_PREFIX
+     set(INSTALL_DIR_DEFINED 1)
+     set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/${ARCH})
+@@ -60,6 +60,8 @@ else()
+     set(CMAKE_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_PREFIX}/include)
+     message(STATUS "Installing to default location: ${CMAKE_INSTALL_PREFIX}")
+     message(STATUS "Installing includes to default location: ${CMAKE_INSTALL_INCLUDEDIR}")
++else()
++    message(STATUS "Installing to requested location: ${CMAKE_INSTALL_PREFIX}")
+ endif()
+ 
+ # Boost libs
