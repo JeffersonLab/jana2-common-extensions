@@ -28,6 +28,9 @@ set(EVIO_SOURCE_DIR ""
 option(JCE_SUPERBUILD_EVIO_PROCESSOR
     "Build the ROOT-based JCE evio_processor plugin"
     OFF)
+option(JCE_SUPERBUILD_BUILD_TESTING
+    "Build JCE tests and provide the check target"
+    OFF)
 
 get_filename_component(JCE_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 
@@ -105,6 +108,7 @@ endif()
 
 ExternalProject_Add(jce
     SOURCE_DIR "${JCE_SOURCE_DIR}"
+    BINARY_DIR "${CMAKE_BINARY_DIR}/jce-build"
     DOWNLOAD_COMMAND ""
     UPDATE_COMMAND ""
     DEPENDS jana evio
@@ -113,7 +117,17 @@ ExternalProject_Add(jce
         -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
         -DCMAKE_PREFIX_PATH:PATH=${_jce_prefix_path_arg}
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DBUILD_TESTING:BOOL=OFF
+        -DBUILD_TESTING:BOOL=${JCE_SUPERBUILD_BUILD_TESTING}
         -DJCE_BUILD_EVIO_PROCESSOR:BOOL=${JCE_SUPERBUILD_EVIO_PROCESSOR}
     BUILD_ALWAYS TRUE
 )
+
+if(JCE_SUPERBUILD_BUILD_TESTING)
+    add_custom_target(check
+        COMMAND "${CMAKE_CTEST_COMMAND}"
+            --test-dir "${CMAKE_BINARY_DIR}/jce-build"
+            --output-on-failure
+        DEPENDS jce
+        USES_TERMINAL
+    )
+endif()

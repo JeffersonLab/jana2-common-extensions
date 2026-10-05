@@ -192,19 +192,17 @@ That is the only change required outside your own plugin directory.
 ### Step 6 — Build, install, and run
 
 ```bash
-# Reconfigure to pick up the new subdirectory
-cmake -S . -B build \
-  -DCMAKE_PREFIX_PATH="<path/to/JANA2>;<path/to/evio>;<path/to/ROOT>" \
-  -DCMAKE_INSTALL_PREFIX=`pwd`
-
-cmake --build build --parallel
-cmake --install build
+# Rebuild the shared JANA2, EVIO, and JCE installation
+cmake -S superbuild -B build-super \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack
+cmake --build build-super --parallel
 ```
 
 Load the plugin using [`jce.sh`](../../scripts/jce.sh) or [`jce.csh`](../../scripts/jce.csh)
 
 ```bash
-scripts/jce.sh -Pplugins=my_plugin /path/to/data.evio
+export JCE_HOME=/path/to/jce-stack
+"${JCE_HOME}/scripts/jce.sh" -Pplugins=my_plugin /path/to/data.evio
 ```
 
 ---

@@ -250,7 +250,7 @@ CMake, diagnostic output, mapping, and test checklist.
 
 ```bash
 # Example: use a custom mapping file
-jana -Pplugins=evio_parser,evio_processor -PBANKMAP:FILE=/path/to/my_mapping.db data.evio
+"${JCE_HOME}/scripts/jce.sh" -PBANKMAP:FILE=/path/to/my_mapping.db data.evio
 ```
 
 ### ROC/bank filtering
@@ -262,11 +262,8 @@ jana -Pplugins=evio_parser,evio_processor -PBANKMAP:FILE=/path/to/my_mapping.db 
 
 ```bash
 # Example: enable filtering with a custom filter file
-jana -Pplugins=evio_parser,evio_processor -PFILTER:ENABLE=1 -PFILTER:FILE=/path/to/my_filter.db data.evio
+"${JCE_HOME}/scripts/jce.sh" -PFILTER:ENABLE=1 -PFILTER:FILE=/path/to/my_filter.db data.evio
 ```
-
-
-> These examples use `jana` directly. If you are using the [jce.sh / jce.csh](../../../README.md#basic-usage) wrapper, the same parameters can be passed through it.
 
 ## Environment Variables
 
@@ -277,8 +274,8 @@ jana -Pplugins=evio_parser,evio_processor -PFILTER:ENABLE=1 -PFILTER:FILE=/path/
 
 ```bash
 # Override config directory entirely
-setenv JCE_CONFIG_DIR /my/experiment/config
-jana -Pplugins=evio_parser,evio_processor data.evio
+export JCE_CONFIG_DIR=/my/experiment/config
+"${JCE_HOME}/scripts/jce.sh" data.evio
 ```
 
 Config file resolution order (implemented in `jce_config_paths.h`):
@@ -488,8 +485,9 @@ Follow the same pattern used in `JEventProcessor_EVIO` for `FADC250WaveformHit`,
 ### Step 10 — Rebuild and test
 
 ```bash
-cmake -S . -B build 
-cmake --build build --parallel
+cmake -S superbuild -B build-super \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack
+cmake --build build-super --parallel
 ```
 
 Run on an EVIO file that contains bank `350` and verify that `PhysicsEvent` objects are populated with `MyHWHit` data using instructions given in [Using the Plugins with JANA2](../../../README.md#basic-usage)

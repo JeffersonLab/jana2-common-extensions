@@ -24,8 +24,10 @@ that provide their own dependencies.
 - Existing dependency checkouts can be selected with `JANA_SOURCE_DIR` and
   `EVIO_SOURCE_DIR`. Supplying both prevents JANA2 and EVIO downloads.
 - EVIO remains responsible for managing its own Disruptor dependency.
-- JANA examples and tests, EVIO examples, and JCE tests are disabled to keep
-  the dependency bootstrap focused on installable runtime components.
+- JANA examples and tests, EVIO examples, and JCE tests are disabled by
+  default to keep the user build focused on installable runtime components.
+- Developers can set `JCE_SUPERBUILD_BUILD_TESTING=ON` to build JCE tests and
+  add the outer `check` target.
 - The ROOT-based `evio_processor` remains disabled by default. Set
   `JCE_SUPERBUILD_EVIO_PROCESSOR=ON` and make ROOT discoverable through the
   outer `CMAKE_PREFIX_PATH` to include it.
@@ -65,6 +67,15 @@ available:
 
 ```bash
 cmake --build build-super --parallel
+```
+
+Build and run JCE tests in a separate developer build:
+
+```bash
+cmake -S superbuild -B build-super-tests \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-test-stack \
+  -DJCE_SUPERBUILD_BUILD_TESTING=ON
+cmake --build build-super-tests --target check --parallel
 ```
 
 To avoid downloading JANA2 and EVIO, prepare both source trees in advance:
