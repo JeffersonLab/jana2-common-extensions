@@ -2,11 +2,6 @@ add_subdirectory(detector_mapping)
 add_subdirectory(services)
 
 add_library(detector_mapping_api INTERFACE)
-target_include_directories(detector_mapping_api INTERFACE
-    $<BUILD_INTERFACE:${DETECTOR_MAPPING_INCLUDE_DIR}>
-    $<BUILD_INTERFACE:${DETECTOR_TRANSLATION_SERVICES_INCLUDE_DIR}>
-    $<INSTALL_INTERFACE:include/${INSTALL_NAMESPACE}/plugins/detector_translation>
-)
 target_link_libraries(detector_mapping_api INTERFACE
     detector_mapping
     detector_translation_services
