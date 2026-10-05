@@ -5,7 +5,7 @@
 extern "C" {
     void InitPlugin(JApplication* app) {
         InitJANAPlugin(app);
-        app->AddPlugin("hms_detector_translation");
+        app->AddPlugin("detector_translation");
         app->Add(new JEventProcessor_DetectorTranslationDump());
     }
 }

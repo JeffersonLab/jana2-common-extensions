@@ -167,28 +167,19 @@ have been validated and copied.
 
 ## Step 5: Implement the Translator
 
-Keep object construction separate from insertion so it can be unit tested
-without running a full JANA pipeline:
+Implement a conversion function returning exactly one typed DigiHit:
 
 ```cpp
 MyDetectorMyRawHitFamilyDigiHit makeMyDetectorMyRawHitFamilyDigiHit(
     const MyRawHit& raw,
     const DetectorAddress& address);
-
-void translateMyDetectorMyRawHitFamilyHit(
-    const MyRawHit& raw,
-    const DetectorAddress& address,
-    const JEvent& event);
 ```
 
-The `make...` function should obtain the validated identity, copy the detector
-fields and raw payload, and return the typed DigiHit. The `translate...`
-function inserts that result with the default empty tag:
-
-```cpp
-event.Insert(new MyDetectorMyRawHitFamilyDigiHit(
-    makeMyDetectorMyRawHitFamilyDigiHit(raw, address)));
-```
+The function obtains the validated identity and copies the detector fields and
+raw payload. Core inserts its result into the normal untagged event collection
+and records which route produced it. Registered conversions must not insert
+objects themselves. Existing HMS `translate...` insertion wrappers remain
+available for direct callers; route registration uses the `make...` functions.
 
 Use the HMS Hodoscope FADC and FADC-scaler routes as working references. Their
 current mappings are demonstration data, not physics-approved configuration.
@@ -201,25 +192,28 @@ each raw-hit type separately:
 ```cpp
 void InitMyDetectorTranslators(
     JEventService_DetectorTranslatorsMap& translators) {
-    translators.addTranslator<MyRawHit>(
+    translators.addTranslator<MyRawHit, MyDetectorMyRawHitFamilyDigiHit>(
         "MY_DETECTOR",
-        translateMyDetectorMyRawHitFamilyHit);
+        makeMyDetectorMyRawHitFamilyDigiHit,
+        MyDetectorMyRawHitFamilyCSVHeader,
+        writeMyDetectorMyRawHitFamilyCSVRow);
 }
 ```
 
-Call that detector initializer from the setup plugin's registration service:
+Call that detector initializer during setup plugin loading, after requesting
+`detector_translation`:
 
 ```cpp
-#include "InitMyDetectorTranslators.h"
-
-void Init() override {
-    InitMyDetectorTranslators(translators());
-}
+app->AddPlugin("detector_translation");
+InitMyDetectorTranslators(
+    *app->GetService<JEventService_DetectorTranslatorsMap>());
 ```
 
-The registry key is `(raw-hit C++ type, detector key)`. Duplicate keys and
-registration after the first event translation fails. A mapped detector
-with no translator for the current raw-hit type is skipped.
+The registry key is `(raw-hit C++ type, detector key)`. Every route requires
+one nonempty CSV header and non-null typed row writer. Duplicate keys and registration after dump
+initialization or first event translation fail. A mapped detector with no
+translator for the current raw-hit type is skipped. Output directories and
+filenames are derived from the same route identity; callers do not name them.
 
 ## Step 7: Wire CMake and Public Headers
 
@@ -352,20 +346,19 @@ the production translator target rather than recompiling its `.cc` file.
 
 ## Step 8: Add Diagnostic CSV Output
 
-Every new DigiHit type must remain observable through
-`detector_translation_dump`. Update:
-
-- `JEventProcessor_DetectorTranslationDump.h`: include the DigiHit header, add
-  an optional `Input<DigiHit>`, and add an output stream;
-- its constructor: call `SetOptional(true)` for the new input;
-- `Init()`: create a detector-named directory and open a type-specific CSV with
-  an explicit header;
-- `ProcessSequential()`: write one row per DigiHit; and
-- `Finish()`: close the stream.
+Each translator requires one CSV header constant and typed row-writing function.
+Define both beside the translator in the detector's raw-family directory. The
+HMS example uses `FADC/FADCDumpWriter.*` for five FADC formats and
+`FADCScaler/FADCScalerDumpWriter.*` for its scaler format. Pass the header and
+function to `addTranslator<RawHit, DigiHit>()` in the detector initializer.
+No writer subclass, separate registration, or dump processor edit is needed.
+The generic `DetectorTranslationDump` helper handles dump metadata and naming.
 
 Keep `rocid,slot,channel` contiguous for channel-addressed records. Use only
-columns applicable to that DigiHit type. Update the dump plugin README and run
-the CSV check in Step 11.
+columns applicable to that DigiHit type. See the
+[dump plugin registration guide](../../../../detector_translation_dump/README.md)
+and run the CSV check in Step 11. Explicitly load your setup plugin before
+`detector_translation_dump`.
 
 ## Step 9: Add Mapping Configuration
 
@@ -402,7 +395,7 @@ Then run representative data through the diagnostic plugin:
 
 ```tcsh
 "${JCE_HOME}/scripts/jce.sh" \
-  -Pplugins=detector_translation_dump \
+  -Pplugins=hms_detector_translation,detector_translation_dump \
   -PTRANSLATION:DIRECTORY=/path/to/candidate/detector_mappings \
   -Pdetector_translation_dump:OUTPUT_DIRECTORY=detector_translation_dump \
   /path/to/input.evio
