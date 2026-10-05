@@ -21,13 +21,18 @@ that provide their own dependencies.
 - All three projects install into the selected `CMAKE_INSTALL_PREFIX`.
 - Git tags are pinned by default and can be overridden with
   `JCE_JANA_GIT_TAG` or `JCE_EVIO_GIT_TAG`.
+- Existing dependency checkouts can be selected with `JANA_SOURCE_DIR` and
+  `EVIO_SOURCE_DIR`. Supplying both prevents JANA2 and EVIO downloads.
+- EVIO remains responsible for managing its own Disruptor dependency.
 - JANA examples and tests, EVIO examples, and JCE tests are disabled to keep
   the dependency bootstrap focused on installable runtime components.
 - The ROOT-based `evio_processor` remains disabled by default. Set
   `JCE_SUPERBUILD_EVIO_PROCESSOR=ON` and make ROOT discoverable through the
   outer `CMAKE_PREFIX_PATH` to include it.
-- EVIO is patched only in the superbuild's downloaded source tree so that its
-  CMake build honors the shared installation prefix.
+- EVIO is patched only in the superbuild's working source tree so that its
+  CMake build honors the shared installation prefix. For offline builds, EVIO
+  is first copied into the superbuild workspace so the original checkout is
+  not modified.
 
 ## Failure Behavior
 
@@ -36,6 +41,9 @@ that provide their own dependencies.
   against a partial dependency installation.
 - System dependencies required by EVIO, including Boost and LZ4, must already
   be discoverable by CMake.
+- A supplied dependency source directory must contain a `CMakeLists.txt` and
+  must be compatible with the superbuild's configure options. The EVIO source
+  must also accept the included `v6.1.2` install-prefix patch.
 
 ## Key Components
 
@@ -56,5 +64,26 @@ Build the complete stack when network access and system dependencies are
 available:
 
 ```bash
+cmake --build build-super --parallel
+```
+
+To avoid downloading JANA2 and EVIO, prepare both source trees in advance:
+
+```bash
+cmake -S superbuild -B build-super \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack \
+  -DJANA_SOURCE_DIR=/path/to/JANA2 \
+  -DEVIO_SOURCE_DIR=/path/to/evio
+cmake --build build-super --parallel
+```
+
+ROOT is intentionally not downloaded or built by the superbuild. To build the
+optional `evio_processor`, provide an existing ROOT installation:
+
+```bash
+cmake -S superbuild -B build-super \
+  -DCMAKE_INSTALL_PREFIX=/path/to/jce-stack \
+  -DJCE_SUPERBUILD_EVIO_PROCESSOR=ON \
+  -DCMAKE_PREFIX_PATH=/path/to/root
 cmake --build build-super --parallel
 ```
