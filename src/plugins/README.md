@@ -36,7 +36,6 @@ After installation every `.so` lands under:
     evio_parser.so
     evio_common_modules.so
     detector_translation.so
-    hms_detector_translation.so
     evio_processor.so
     my_plugin.so
 ```

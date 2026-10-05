@@ -48,21 +48,12 @@
   `JEventProcessor_<Role>`, `JEventSource_<Role>`, and
   `JEventUnfolder_<Role>`. Keep non-component data and utility types, such as
   `TranslationTable`, free of JANA component prefixes.
-- Organize HMS detector translation routes under
-  `detector_translation/examples/hms_detector_translation/detector_translators/<Detector>/<RawHitFamily>/`.
-  Name conversion files
-  `<RawHitFamily>Translator.h/.cc`, keep published DigiHit headers in the
-  route's `data_objects/` subdirectory, and name them
-  `<RawHitFamily>DigiHit.h`. Keep exported C++ DigiHit type names globally
-  detector-qualified while public headers are installed flat. Each route
-  directory owns its focused tests and local `CMakeLists.txt`; parent CMake
-  files only add and aggregate route targets, include directories, and public
-  headers. A detector parent exports `<DETECTOR>_TRANSLATOR_LIBS`,
-  `<DETECTOR>_TRANSLATOR_INCLUDE_DIRS`, and `<DETECTOR>_TRANSLATOR_HEADERS`;
-  the shared `detector_translators/CMakeLists.txt` aggregates only those
-  detector-level variables and never names individual route targets.
-- Export public hit/data headers through the existing
-  `evio_parser_data_types` mechanism when downstream plugins need them.
+- Keep detector-specific translators, DigiHit schemas, CSV formatting, and
+  mapping catalogs in downstream experiment repositories. Core contains only
+  generic translation APIs and diagnostic processing. Each detector/raw-family
+  directory downstream owns its implementation, tests, and CMake targets.
+- Export public hit/data headers through the owning experiment data-types target for detector DigiHits, or
+  the existing `evio_parser_data_types` mechanism for common raw hits when downstream plugins need them.
 - Whenever a detector translator publishes a new DigiHit type, attach a matching
   CSV header and typed row-writing function to its
   `addTranslator<RawHit, DigiHit>()` registration in the same change. Keep

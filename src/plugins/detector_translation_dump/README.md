@@ -11,25 +11,19 @@ but does not load any experiment setup plugin:
 
 ```tcsh
 "${JCE_HOME}/scripts/jce.sh" \
-  -Pplugins=hms_detector_translation,detector_translation_dump \
+  -Pplugins=my_detector_setup,detector_translation_dump \
   -PTRANSLATION:DIRECTORY=/path/to/detector_mappings \
   -Pdetector_translation_dump:OUTPUT_DIRECTORY=detector_translation_dump \
   /path/to/input.evio
 ```
 
-The current HMS mapping is demonstration configuration, not physics-approved
-production data. It expects FADC data at DAQ address `(1, 3, 0)` and translates
-it to `(plane=1, bar=1, signal=0)`. Replace the mapping and run ranges with
-detector-approved values before production use. The output directory contains:
+Install your experiment setup plugin and its mapping catalog separately,
+and add its plugin directory to `JANA_PLUGIN_PATH`. Output follows the route
+identity, for example:
 
 ```text
-HMS_HODOSCOPE/
-├── FADC250PulseHit.csv
-├── FADC250WaveformHit.csv
-├── FADC250HallBPulseIntegralHit.csv
-├── FADC250HallBPulseTimeHit.csv
-├── FADC250HallBPulsePeakHit.csv
-└── FADCScalerHit.csv
+MY_DETECTOR/
+└── MyRawHit.csv
 ```
 
 A file containing only its header means the input produced no matching
@@ -91,15 +85,14 @@ creates no files. Routes without hits produce header-only CSVs.
 
 Files are truncated on each run; output errors fail the job. Only enable one
 dump processor per output directory. CSV headers and row functions remain
-experiment-owned in `HMSHodoscope/FADC/FADCDumpWriter.*` and
-`HMSHodoscope/FADCScaler/FADCScalerDumpWriter.*`. Core needs no HMS headers.
+experiment-owned beside each detector/raw-family translator.
 Keep `rocid,slot,channel` contiguous and escape CSV fields when needed.
 
 Focused verification on a configured test-enabled build:
 
 ```tcsh
-cmake --build build --target detector_translators_map_tests hms_hodoscope_fadc_dump_writer_tests hms_hodoscope_fadc_scaler_dump_writer_tests
-ctest --test-dir build -R '^(detector_translators_map_tests|hms_hodoscope_fadc(_scaler)?_dump_writer_tests)$' --output-on-failure
+cmake --build build --target detector_translators_map_tests
+ctest --test-dir build -R '^detector_translators_map_tests$' --output-on-failure
 ```
 
 For a superbuild, the inner build directory is `build-super/jce-build`.
@@ -107,8 +100,8 @@ Enable `JCE_SUPERBUILD_BUILD_TESTING=ON` and use that directory with the same
 CTest expression, or run the superbuild `check` target for all tests.
 The registry test verifies required writers, duplicate routes, frozen
 registration, generated naming, and isolation when multiple routes produce
-the same DigiHit type. The route-local HMS FADC and FADCScaler regression tests check generated paths,
-headers, distinct field values, and array formatting for all six writers.
+the same DigiHit type. Experiment-owned route tests should check generated paths, headers, distinct
+field values, and array formatting.
 An EVIO run using the command above additionally checks processor ordering
 and file creation. Compare CSV content with the previous version using the
 new filenames.

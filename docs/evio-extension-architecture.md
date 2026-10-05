@@ -14,7 +14,7 @@ modifying `evio_parser`.
    electronics parsers.
 3. `detector_translation` requests `evio_parser` and provides the run-aware
    mapping service plus the generic translation processor.
-4. A setup plugin such as `hms_detector_translation` requests its dependencies
+4. An experiment setup plugin requests its dependencies
    and registers detector routes and its mapping catalog with shared services.
 5. The first event translation freezes the registry. Event processing then
    uses immutable type-erased scanner entries.
@@ -71,13 +71,14 @@ modifying `evio_parser`.
 - `src/plugins/evio_parser/`
 - `src/plugins/evio_common_modules/`
 - `src/plugins/detector_translation/`
-- `src/plugins/detector_translation/examples/hms_detector_translation/`
+- Experiment-owned detector routes and mapping catalogs live outside core.
 - `src/plugins/detector_translation/services/JEventService_DetectorTranslatorsMap.h`
 - `src/plugins/evio_parser/core/ModuleParser.h`
 
 ## Verification
 
-- Build all four plugins independently in the same build.
+- Build the core plugins, then build the downstream experiment setup against
+  the installed JCE API.
 - Run `detector_translators_map_tests`.
 - Run `module_parsers_map_tests`.
 - Run `bank_to_module_map_tests`.

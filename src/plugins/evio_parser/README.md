@@ -10,12 +10,11 @@ The `evio_parser` plugin is the **data-ingestion layer** of the jana2-common-ext
 It is **hardware-agnostic at its core**. Hardware decoding lives in
 `../evio_common_modules/module_parsers/`, generic translation processing lives
 in `../detector_translation/`, and detector-specific DigiHit creation lives in
-`../detector_translation/examples/hms_detector_translation/`; all remain
+experiment setup plugins outside this repository; all remain
 outside the generic parser core.
 JCE's reusable electronics parsers are registered by the optional
 `evio_common_modules` plugin. Generic detector mapping is provided by
-`detector_translation`, while HMS routes are registered by
-`hms_detector_translation`.
+`detector_translation`, while experiment setup plugins register their detector routes.
 
 ---
 
@@ -74,7 +73,6 @@ Downstream JEventProcessors  (e.g. detector_translation_dump)
 | `JEventService_TranslationTable` | `../detector_translation/services/JEventService_TranslationTable.cc/.h` | Publishes the configured DAQ-to-detector table as immutable run-specific data |
 | `JEventService_DetectorTranslatorsMap` | `../detector_translation/services/JEventService_DetectorTranslatorsMap.h` | Publishes immutable detector-name-to-function maps by raw-hit type |
 | `detector_translation` | `../detector_translation/` | Owns the generic type-erased DigiHit translation processor and mapping services |
-| `hms_detector_translation` | `../detector_translation/examples/hms_detector_translation/` | Registers HMS-specific translators and publishes HMS DigiHit types |
 
 ## Directory Structure
 
@@ -108,7 +106,7 @@ src/plugins/evio_parser/
 - `evio_common_modules/module_parsers/` contains reusable JCE implementations.
   Experiment-specific parsers register through `evio_parser_api` from their
   own plugin.
-- `detector_translation/examples/hms_detector_translation/detector_translators/` is organized first by
+- Experiment-owned translator code is organized first by
   detector and then by raw-hit family. It converts decoded hardware records
   into detector-qualified DigiHits without adding calibration or geometry.
 
@@ -153,7 +151,7 @@ Detector translation is split deliberately across three responsibilities:
 | Responsibility | Owner | Guide |
 |---|---|---|
 | Decode hardware words into typed raw hits | `../evio_common_modules/module_parsers/` | [Adding a New Module Parser](#adding-a-new-module-parser) |
-| Convert a mapped raw hit into a typed detector DigiHit | `../detector_translation/examples/hms_detector_translation/detector_translators/` | [Adding Detector Translation](../detector_translation/examples/hms_detector_translation/detector_translators/README.md) |
+| Convert a mapped raw hit into a typed detector DigiHit | Experiment setup plugins | [Adding Detector Translation](../detector_translation/TRANSLATORS.md) |
 | Assign DAQ addresses and run ranges | Setup-plugin configuration | [Detector Mapping Configuration](../detector_translation/DETECTOR_MAPPINGS.md) |
 
 The module parser and typed raw hit must work before translator development
@@ -238,7 +236,7 @@ type-erased raw-hit scan, so the central event loop does not name or call
 detector-specific types directly. Each translator inserts its concrete DigiHit
 type into the current event using the default empty tag.
 
-See [Adding Detector Translation](../detector_translation/examples/hms_detector_translation/detector_translators/README.md) for the exact
+See [Adding Detector Translation](../detector_translation/TRANSLATORS.md) for the exact
 raw-hit prerequisite, address overload, central scan, translator, registration,
 CMake, diagnostic output, mapping, and test checklist.
 
@@ -492,7 +490,7 @@ cmake --build build-super --parallel
 Run on an EVIO file that contains bank `350` and verify that `PhysicsEvent` objects are populated with `MyHWHit` data using instructions given in [Using the Plugins with JANA2](../../../README.md#basic-usage)
 
 If this raw-hit family must produce detector-qualified DigiHits, continue with
-[Adding Detector Translation](../detector_translation/examples/hms_detector_translation/detector_translators/README.md). Before starting
+[Adding Detector Translation](../detector_translation/TRANSLATORS.md). Before starting
 that guide, confirm the parser publishes the typed raw hit into the
 physics-level event and that its ROC, slot, and channel identity are stable.
 

@@ -11,8 +11,6 @@ install(TARGETS detector_mapping_api
     EXPORT jana2_common_extensionsTargets
 )
 
-add_subdirectory(examples/hms_detector_translation)
-
 add_jana_plugin(detector_translation
     SOURCES
         InitPlugin.cc
