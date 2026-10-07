@@ -5,6 +5,7 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -18,8 +19,6 @@ public:
     explicit JEventService_TranslationTable(
         std::vector<DetectorMappingCatalogProvider> default_catalogs);
 
-    void Init() override;
-
     const TranslationTable& getTable(std::uint64_t run_number) const;
 
 private:
@@ -30,9 +29,13 @@ private:
     };
     static_assert(std::atomic<const RunRangeTable*>::is_always_lock_free);
 
-    Parameter<std::string> m_mapping_directory;
-    Service<JEventService_DetectorMappingCatalogs> m_catalogs {this};
+    void loadTables() const;
+
+    mutable Parameter<std::string> m_mapping_directory;
+    mutable Service<JEventService_DetectorMappingCatalogs> m_catalogs {this};
     std::vector<DetectorMappingCatalogProvider> m_default_catalogs;
-    std::vector<RunRangeTable> m_run_tables;
+    mutable std::vector<RunRangeTable> m_run_tables;
+    mutable std::once_flag m_load_once;
+    mutable std::atomic_bool m_loaded {false};
     mutable std::atomic<const RunRangeTable*> m_cached_run_table {nullptr};
 };

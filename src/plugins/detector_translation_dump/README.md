@@ -76,10 +76,11 @@ so different raw types or detectors producing the same DigiHit type remain
 separate in their CSVs. These references add one pointer per translated hit and
 one collection per active route; they own no DigiHits and perform no file I/O.
 
-Register during plugin loading after requesting generic translation.
+Register in a setup service's `Init()` after requesting generic translation.
 Registration opens no files and does not enable dumping. The dump processor
-freezes the translator registry in `Init()`, opens each route's file, writes its
-header, and invokes writers in its sequential event callback. Missing route
+freezes the translator registry on its first sequential event callback, opens
+each route's file, writes its header, and invokes writers. All JANA registration
+services have initialized by then. A job with no events creates no dump files. Missing route
 outputs are skipped without requesting factory creation. With no routes, it
 creates no files. Routes without hits produce header-only CSVs.
 

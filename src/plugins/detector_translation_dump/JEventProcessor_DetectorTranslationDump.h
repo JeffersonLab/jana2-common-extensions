@@ -10,11 +10,12 @@
 class JEventProcessor_DetectorTranslationDump : public JEventProcessor {
 public:
     JEventProcessor_DetectorTranslationDump();
-    void Init() override;
     void ProcessSequential(const JEvent& event) override;
     void Finish() override;
 
 private:
+    void openOutputs();
+    bool m_outputs_opened = false;
     Service<JEventService_DetectorTranslatorsMap> m_registry {this};
     Parameter<std::string> m_outputDirectory {
         this, "OUTPUT_DIRECTORY", "detector_translation_dump",
