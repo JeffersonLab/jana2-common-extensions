@@ -1,0 +1,15 @@
+services:
+  dev:
+    build: .
+    init: true
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace
+    command:
+      - bash
+      - -ec
+      - |
+        cmake -S superbuild -B build-super \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DJCE_SUPERBUILD_BUILD_TESTING=ON
+        cmake --build build-super --target check --parallel 2
