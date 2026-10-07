@@ -55,6 +55,9 @@ modifying `evio_parser`.
 - Duplicate translator routes and registration after the registry freezes
   fail with `JException`.
 
+- Hall A owns the faV3 Compton decoder, its hit types, and bank routes in
+  `HallA-compton-jana2`; core does not register parser ID 253.
+
 ## Failure Behavior
 
 - A mapped bank without a registered parser fails through the existing parser
