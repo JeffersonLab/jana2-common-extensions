@@ -10,7 +10,6 @@
 #include "ModuleParser_CAEN1190.h"
 #include "ModuleParser_FADC.h"
 #include "ModuleParser_FADCScaler.h"
-#include "ModuleParser_faV3compton.h"
 #include "ModuleParser_TIScaler.h"
 #include "ModuleParser_HelicityDecoder.h"
 #include "ModuleParser_MPD.h"
@@ -23,7 +22,6 @@ public:
     void Init() override {
         add(1190, std::make_shared<ModuleParser_CAEN1190>());
         add(250, std::make_shared<ModuleParser_FADC>());
-        add(253, std::make_shared<ModuleParser_faV3compton>());
         add(9250, std::make_shared<ModuleParser_FADCScaler>());
         add(9001, std::make_shared<ModuleParser_TIScaler>());
         add(0xdec, std::make_shared<ModuleParser_HelicityDecoder>());
