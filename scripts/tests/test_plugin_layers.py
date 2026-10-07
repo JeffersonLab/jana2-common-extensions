@@ -54,12 +54,12 @@ with tempfile.TemporaryDirectory(prefix="jce config ") as directory:
         check("evio_parser,evio_common_modules,core,first",
               updates={"JCE_CONFIG_DIR": f"{root / 'missing'}:{first}"}, warning="skipping")
         check("evio_parser,evio_common_modules,core", updates={"JCE_CONFIG_DIR": str(alternate / '..')})
-        check("evio_parser,evio_common_modules,first,second",
+        check("evio_parser,evio_common_modules,detector_translation,first,second",
               (f"-PDEFAULT_PLUGINS:FILE={root / 'missing'}",), warning="core fallback")
         original = base.read_text()
         base.write_text(" # empty\n , \n")
-        check("evio_parser,evio_common_modules,first,second")
+        check("evio_parser,evio_common_modules,detector_translation,first,second")
         base.unlink()
-        check("evio_parser,evio_common_modules,first,second", warning="core fallback")
+        check("evio_parser,evio_common_modules,detector_translation,first,second", warning="core fallback")
         base.write_text(original)
         print(f"PASS: {wrapper}")

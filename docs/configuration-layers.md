@@ -18,7 +18,7 @@ translation loaders remain unchanged.
 - Files accept comma-separated names, whitespace, and full-line `#` comments.
 - Empty directory-list entries are ignored. Missing files in appended directories
   are optional. Missing directories warn and are skipped.
-- Missing or empty core files use `evio_parser,evio_common_modules`; missing files
+- Missing or empty core files use `evio_parser,evio_common_modules,detector_translation`; missing files
   warn. Unreadable existing files fail before JANA starts.
 - Warnings are yellow on a terminal; redirected diagnostics contain no ANSI codes.
 - `jce.csh` forwards to `jce.sh`, sharing the implementation and preserving arguments.

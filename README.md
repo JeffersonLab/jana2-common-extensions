@@ -224,7 +224,7 @@ ${JCE_HOME}/scripts/jce.csh /path/to/data.evio
 ```
 
 * Uses plugins from [default_plugins.db](#default-plugins)
-* Falls back to [evio_parser](src/plugins/evio_parser/README.md) and `evio_common_modules` if the file is missing or empty
+* Falls back to [evio_parser](src/plugins/evio_parser/README.md) `evio_common_modules`, and `detector_translation` if the file is missing or empty
 
 
 ### Configuration Directories for Default Plugins
@@ -247,7 +247,7 @@ Override only the core directory with `-PJCE:CORE_CONFIG_DIR=/path/to/core/confi
 or only the core plugin file with `-PDEFAULT_PLUGINS:FILE=/path/to/default_plugins.db`.
 The file parameter takes precedence over the directory parameter. Appended
 directories and CLI plugins still apply. Missing or empty core plugin files use
-`evio_parser,evio_common_modules`; missing files warn. There is no core override
+`evio_parser,evio_common_modules,detector_translation`; missing files warn. There is no core override
 environment variable.
 
 This changes `JCE_CONFIG_DIR` from replacement to extension for wrapper plugin
@@ -296,7 +296,7 @@ ${JCE_HOME}/scripts/jce.csh -Pjana:plugin_path=/my/custom/plugins -Pplugins=my_c
 You can run plugins directly with `jana` if you prefer full manual control and do not want to use `default_plugins.db`.
 
 ```tcsh
-"${JCE_HOME}/bin/jana" -Pplugins=evio_parser,evio_common_modules \
+"${JCE_HOME}/bin/jana" -Pplugins=evio_parser,evio_common_modules,detector_translation \
   -Pjana:plugin_path="${JCE_HOME}/lib/plugins" data.evio
 ```
 
@@ -462,19 +462,19 @@ controls which plugins are loaded by default.
 
 * Supports comments using `#`
 * Empty lines are ignored
-* Falls back to `evio_parser,evio_common_modules` if empty or missing
+* Falls back to `evio_parser,evio_common_modules,detector_translation` if empty or missing
 * CLI `-Pplugins=...` values are appended (not replaced)
 
 #### Example
 
 ```text
 # Default plugins
-evio_parser,evio_common_modules,evio_processor
+evio_parser,evio_common_modules,detector_translation,evio_processor
 ```
 
 Detector mappings, detector-specific DigiHits, translators, and CSV row formats
 are owned by experiment plugins. JCE no longer builds or installs the HMS
-example. The default plugin list loads only `evio_parser,evio_common_modules`;
+example. The default plugin list loads only `evio_parser,evio_common_modules,detector_translation`;
 experiment setup plugins request generic translation and register their routes.
 Detector-hit consumers link their experiment's data-types target rather than
 obtaining detector-specific headers through JCE's common raw-hit umbrella.
