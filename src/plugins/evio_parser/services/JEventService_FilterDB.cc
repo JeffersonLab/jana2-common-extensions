@@ -109,17 +109,20 @@ void JEventService_FilterDB::fillDB(const std::string& filename) {
 
     // Process each line in the file
     std::string line;
+    unsigned line_number = 0;
     while (std::getline(file, line)) {
-        // Skip comments (lines starting with '#') and empty lines
-        if (line.empty() || line[0] == '#')
-            continue;
-        
-        // Parse the line as four integers: rocid slot module bank
+        ++line_number;
+        line = line.substr(0, line.find('#'));
         std::istringstream iss(line);
+        iss >> std::ws;
+        if (iss.eof()) continue;
         int rocid, slot, module, bank;
-        if (!(iss >> rocid >> slot >> module >> bank)) {
-            throw JException("Malformed line: " + line);
+        std::string extra;
+        if (!(iss >> rocid >> slot >> module >> bank) || (iss >> extra) ||
+            rocid < 0 || slot < 0 || module < 0 || bank < 0 || bank > 65535) {
+            throw JException("Malformed filter row at %s:%u", filename.c_str(), line_number);
         }
+        if (!m_rows.insert({rocid, slot, module, bank}).second) continue;
 
         // Add the parsed values to the filter database
         auto& entry = data[rocid];
@@ -128,8 +131,7 @@ void JEventService_FilterDB::fillDB(const std::string& filename) {
         entry["modules"].push_back(module);
     }
 
-    // Print summary of loaded filter database
-    printSummaryTable(std::cout);
+    if (file.bad()) throw JException("Failed reading filter file: %s", filename.c_str());
 }
 
 /**
@@ -140,13 +142,12 @@ void JEventService_FilterDB::fillDB(const std::string& filename) {
  * database from the specified file.
  */
 void JEventService_FilterDB::Init() {
-    // Get parameter values
-    bool enable = m_filter_enable();
-    std::string filename = m_filter_file();
-    
-    // Load filter database if filtering is enabled
-    if (enable) {
-        fillDB(filename);
+    if (m_filter_enable()) {
+        for (const auto& file : jce_config_files("filter.db", m_core_config_dir(),
+                                               m_filter_file(), m_logger)) {
+            fillDB(file);
+        }
+        printSummaryTable(std::cout);
     }
 }
 

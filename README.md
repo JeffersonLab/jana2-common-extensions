@@ -250,10 +250,8 @@ directories and CLI plugins still apply. Missing or empty core plugin files use
 `evio_parser,evio_common_modules,detector_translation`; missing files warn. There is no core override
 environment variable.
 
-This changes `JCE_CONFIG_DIR` from replacement to extension for wrapper plugin
-selection only. Mapping, filtering, and translation loaders are unchanged in
-this checkpoint. With a directory list, pass `-PBANKMAP:FILE` and, when filtering
-is enabled, `-PFILTER:FILE` until those loaders support layering.
+`JCE_CONFIG_DIR` now extends core defaults for plugin selection, bank mapping,
+and filtering. Translation catalogs keep their existing setup-plugin registration.
 See [Configuration layers](docs/configuration-layers.md).
 
 ### Add Additional Plugins
@@ -410,11 +408,20 @@ Configuration files are installed under:
 | `filter.db`          | Defines ROC/bank filtering rules  | `src/plugins/evio_parser` |
 | `default_plugins.db` | Specifies default plugins to load | `scripts/jce.csh`, `scripts/jce.sh` |
 
-At runtime, configuration files are resolved using the following precedence:
+At runtime, installed core files load first, followed by files from the
+colon-separated `JCE_CONFIG_DIR` directory list, left to right. Override the
+core directory using `-PJCE:CORE_CONFIG_DIR=/path/to/core/config`.
 
-1. **Explicit CLI overrides (per file)**
-2. **Global override via `JCE_CONFIG_DIR`**
-3. **Installed defaults (`<install_prefix>/config/`)**
+Plugin names append with deduplication. Bank routes are keyed by bank ID: equal
+routes are ignored, while a later conflicting route wins with a warning showing
+both source locations. Conflicting routes inside one mapping file are errors.
+Filter rows form a union, ignoring exact duplicates; appending broadens the
+allow-list. Filtering remains disabled unless `FILTER:ENABLE` is set.
+
+Missing appended directories warn and are skipped; missing individual appended
+files are optional. Required core mapping/filter files and explicit replacement
+files must exist and be readable. Empty mapping additions are valid; malformed
+mapping/filter rows fail with file/line diagnostics.
 
 ### Overriding Individual Config Files
 
@@ -425,21 +432,42 @@ The `evio_parser` plugin loads `mapping.db` and `filter.db` from <install_prefix
 -PFILTER:FILE=/custom/filter.db
 ```
 
-Similarly, the default plugins file path can be overridden with:
+All three file parameters replace **only the core file**. Files in
+`JCE_CONFIG_DIR` still append, even when a file parameter is supplied:
 
-```tcsh
--PDEFAULT_PLUGINS:FILE=/custom/default_plugins.db
+| Parameter | Core file it replaces | What still appends |
+|---|---|---|
+| `DEFAULT_PLUGINS:FILE` | `default_plugins.db` | Directory plugin lists, then `-Pplugins` |
+| `BANKMAP:FILE` | `mapping.db` | Directory mapping files; later routes win |
+| `FILTER:FILE` | `filter.db` | Directory filter files; allowed rows are combined |
+
+```bash
+export JCE_CONFIG_DIR=/my/experiment/config
+"${JCE_HOME}/scripts/jce.sh" -PBANKMAP:FILE=/custom/mapping.db data.evio
+# Mapping input: /custom/mapping.db, then /my/experiment/config/mapping.db
 ```
 
-### Using a Global Config Directory
+To use only an explicit mapping/filter file, clear the directory list for that
+run. This also disables directory additions for default plugins:
 
-Instead of overriding files path individually, you can set a single environment variable:
-
-```tcsh
-setenv JCE_CONFIG_DIR /my/custom/configs
+```bash
+JCE_CONFIG_DIR= "${JCE_HOME}/scripts/jce.sh" \
+  -PFILTER:ENABLE=1 -PFILTER:FILE=/custom/filter.db data.evio
 ```
 
-If set, all configuration files (`mapping.db`, `filter.db`, `default_plugins.db`) will be loaded from this directory.
+For tcsh, run `unsetenv JCE_CONFIG_DIR` before the command. Filtering still
+requires `FILTER:ENABLE`; appending filter files broadens the allow-list.
+
+### Appending Configuration Directories
+
+Attach one or more configuration directories:
+
+```tcsh
+setenv JCE_CONFIG_DIR /my/hallc/config:/my/compton/config
+```
+
+Each directory contributes its optional `mapping.db`, `filter.db`, and
+`default_plugins.db` files after the core files.
 
 > **Note:** The filenames must remain the same inside the directory.
 

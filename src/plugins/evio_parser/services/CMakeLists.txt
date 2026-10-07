@@ -35,6 +35,10 @@ file(GLOB SERVICES_PUBLIC_HEADERS
 set(SERVICES_PUBLIC_HEADERS ${SERVICES_PUBLIC_HEADERS} PARENT_SCOPE)
 
 if(BUILD_TESTING)
+    add_executable(config_layers_tests tests/ConfigLayersTests.cc)
+    target_link_libraries(config_layers_tests PRIVATE services)
+    add_test(NAME config_layers_tests COMMAND config_layers_tests)
+
     add_executable(bank_to_module_map_tests
         tests/JEventService_BankToModuleMapTests.cc
     )

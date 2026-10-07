@@ -3,6 +3,8 @@
 #include <JANA/JService.h>
 #include <JANA/JException.h>
 
+#include <array>
+#include <set>
 #include <map>
 #include <string>
 #include <vector>
@@ -46,6 +48,10 @@ private:
      */
     std::map<int, std::map<std::string, std::vector<int>>> data;
 
+    std::set<std::array<int, 4>> m_rows;
+    Parameter<std::string> m_core_config_dir {this, "JCE:CORE_CONFIG_DIR",
+        JCE_INSTALL_CONFIG_DIR, "Core configuration directory", true};
+
     void printSummaryTable(std::ostream& os) const;
     void fillDB(const std::string& filename);
 
@@ -67,8 +73,8 @@ public:
     Parameter<bool> m_filter_enable {this, "FILTER:ENABLE", false,
                                      "Enable ROC/bank filtering using FILTER:FILE (true/false, default false)", true};
     Parameter<std::string> m_filter_file {this, "FILTER:FILE",
-                                          jce_config_path("filter.db", "FILTER:FILE"),
-                                          "Filter DB filename with lines: 'rocid slot module bank'", true};
+                                          "",
+                                          "Core filter file override (directory additions still apply), lines: 'rocid slot module bank'", true};
 
     void Init() override;
    

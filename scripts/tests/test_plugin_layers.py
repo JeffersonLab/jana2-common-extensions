@@ -35,7 +35,9 @@ with tempfile.TemporaryDirectory(prefix="jce config ") as directory:
             assert result.returncode == 0, result
             assert f"-Pplugins={expected}" in result.stdout.splitlines(), result.stdout
             assert "data file.evio" in result.stdout.splitlines(), result.stdout
-            assert "-PJCE:CORE_CONFIG_DIR" not in result.stdout, result.stdout
+            for arg in args:
+                if arg.startswith("-PJCE:CORE_CONFIG_DIR="):
+                    assert arg in result.stdout.splitlines(), result.stdout
             assert "-PDEFAULT_PLUGINS:FILE" not in result.stdout, result.stdout
             assert "\033" not in result.stderr, result.stderr
             if warning:
