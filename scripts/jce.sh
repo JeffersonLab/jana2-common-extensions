@@ -21,6 +21,7 @@ for arg in "$@"; do
             ;;
         -PJCE:CORE_CONFIG_DIR=*)
             core_config_dir="${arg#-PJCE:CORE_CONFIG_DIR=}"
+            passthrough_args+=("$arg")
             ;;
         -PDEFAULT_PLUGINS:FILE=*)
             cli_default_plugins_file="$arg"

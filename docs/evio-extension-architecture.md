@@ -36,8 +36,9 @@ modifying `evio_parser`.
   initialization. Null parsers, duplicate module IDs, and registration after
   the first lookup fail with `JException`.
 - Module parser plugins register their bank-to-module routes during service
-  initialization. `mapping.db` remains a compatibility source; duplicate bank
-  IDs and registration after the first lookup fail with `JException`.
+  initialization. `mapping.db` remains a compatibility source with ordered file overlays. Equal
+  routes deduplicate and later files override conflicting routes with a warning.
+  Programmatic duplicates and registration after first lookup still fail.
 - Setup plugins register named detector-mapping catalog directories during
   plugin loading. The translation-table service freezes and merges those
   catalogs during initialization; `TRANSLATION:DIRECTORY` remains an explicit
@@ -59,7 +60,8 @@ modifying `evio_parser`.
 - A mapped bank without a registered parser fails through the existing parser
   lookup error.
 - Invalid, duplicate, or late module-parser registration fails immediately.
-- Duplicate or late bank-to-module route registration fails immediately.
+- Duplicate or late programmatic bank-to-module route registration fails immediately.
+- Conflicting routes within one mapping file and malformed configuration rows fail.
 - Duplicate mapping-provider names, late provider registration, and detectors
   declared by multiple providers fail immediately.
 - A mapped detector without a route for the raw-hit type is skipped.

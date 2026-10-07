@@ -244,7 +244,7 @@ CMake, diagnostic output, mapping, and test checklist.
 
 | Parameter | Default | Description |
 |---|---|---|
-| `BANKMAP:FILE` | `<install_prefix>/config/mapping.db` | Path to the two-column module/bank mapping file |
+| `BANKMAP:FILE` | core + appended directories | Core two-column file override; directory additions still apply |
 
 ```tcsh
 # Example: use a custom mapping file
@@ -256,7 +256,7 @@ CMake, diagnostic output, mapping, and test checklist.
 | Parameter | Default | Description |
 |---|---|---|
 | `FILTER:ENABLE` | `false` | Set to `1` or `true` to enable ROC/bank allow-list filtering |
-| `FILTER:FILE` | `<install_prefix>/config/filter.db` | Path to the four-column ROC/bank filter file |
+| `FILTER:FILE` | core + appended directories | Core four-column file override; directory additions still apply |
 
 ```tcsh
 # Example: enable filtering with a custom filter file
@@ -267,19 +267,34 @@ CMake, diagnostic output, mapping, and test checklist.
 
 | Variable | Description |
 |---|---|
-| `JCE_CONFIG_DIR` | If set, overrides the install-prefix config directory for **all** config files (`mapping.db`, `filter.db`, `default_plugins.db`). Takes priority over the installed location. |
+| `JCE_CONFIG_DIR` | Colon-separated directories whose optional config files append after core, left to right. Missing directories warn and are skipped. |
 | `JANA_PLUGIN_PATH` | Standard JANA2 variable — colon-separated list of directories searched for plugin `.so` files. |
 
 ```tcsh
-# Override config directory entirely
+# Append experiment configuration
 setenv JCE_CONFIG_DIR /my/experiment/config
 "${JCE_HOME}/scripts/jce.sh" data.evio
 ```
 
-Config file resolution order (implemented in `jce_config_paths.h`):
-1. `$JCE_CONFIG_DIR/<filename>` — user override, always wins.
-2. `<install_prefix>/config/<filename>` — installed location (checked for existence).
-3. Exception is thrown if the file is not found at either location.
+Core mapping/filter files load from the compiled installation config directory,
+overridden by `-PJCE:CORE_CONFIG_DIR`. Files in `JCE_CONFIG_DIR` append in order.
+Missing appended files are optional. `BANKMAP:FILE` and `FILTER:FILE` replace
+only the core file, just like `DEFAULT_PLUGINS:FILE`. Directory files still append;
+missing explicit files fail.
+
+Mapping files use bank ID as the key. Identical routes deduplicate; a different
+route in a later file wins with a warning identifying both source locations.
+Conflicting routes within one file fail. Programmatic duplicate registrations
+and registration after the first lookup still fail.
+
+Filter files combine exact rows, ignoring duplicates. Appending broadens the
+allow-list even with `FILTER:FILE` set. To use only an explicit mapping/filter
+file, clear or unset `JCE_CONFIG_DIR` for that run; directory plugin additions
+are then also disabled.
+Enforcement remains ROC/bank based, with slot/module columns informational.
+Filtering disabled means no filter files are loaded. Empty filters retain the
+existing allow-all behavior. Malformed mapping/filter rows fail with file/line
+diagnostics. See [the configuration contract](../../../docs/configuration-layers.md).
 
 ---
 
