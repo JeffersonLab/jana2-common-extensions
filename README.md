@@ -227,6 +227,35 @@ ${JCE_HOME}/scripts/jce.csh /path/to/data.evio
 * Falls back to [evio_parser](src/plugins/evio_parser/README.md) and `evio_common_modules` if the file is missing or empty
 
 
+### Configuration Directories for Default Plugins
+
+Core defaults come from `${JCE_HOME}/config/default_plugins.db`. Append config
+roots using a colon-separated list (left to right):
+
+```bash
+export JCE_CONFIG_DIR=/path/to/hallc/config:/path/to/compton/config
+"${JCE_HOME}/scripts/jce.sh" /path/to/data.evio
+```
+
+In tcsh, use `setenv JCE_CONFIG_DIR /path/to/hallc/config:/path/to/compton/config`.
+Each directory's optional `default_plugins.db` appends to core defaults, followed
+by `-Pplugins`. Names are deduplicated in first-occurrence order; `evio_parser`
+is always first. Empty path entries are ignored. Missing directories produce
+warnings (yellow on a terminal) and are skipped.
+
+Override only the core directory with `-PJCE:CORE_CONFIG_DIR=/path/to/core/config`,
+or only the core plugin file with `-PDEFAULT_PLUGINS:FILE=/path/to/default_plugins.db`.
+The file parameter takes precedence over the directory parameter. Appended
+directories and CLI plugins still apply. Missing or empty core plugin files use
+`evio_parser,evio_common_modules`; missing files warn. There is no core override
+environment variable.
+
+This changes `JCE_CONFIG_DIR` from replacement to extension for wrapper plugin
+selection only. Mapping, filtering, and translation loaders are unchanged in
+this checkpoint. With a directory list, pass `-PBANKMAP:FILE` and, when filtering
+is enabled, `-PFILTER:FILE` until those loaders support layering.
+See [Configuration layers](docs/configuration-layers.md).
+
 ### Add Additional Plugins
 
 ```tcsh
