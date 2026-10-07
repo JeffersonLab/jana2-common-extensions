@@ -21,6 +21,10 @@ The first `getTable()` request freezes catalogs and loads all run tables once,
 after JANA has initialized all registration services. Concurrent first requests
 share synchronized initialization; subsequent lookups read immutable tables.
 Mapping errors therefore surface on the first translation event.
+If no catalogs or explicit mapping directory are supplied, the service warns
+once and supplies an empty table for every run, allowing raw-hit processing to
+continue without translated DigiHits. Terminal warnings are yellow; redirected
+logs stay plain text. Invalid configured mappings remain errors.
 
 Each directory contains its own root `manifest.map`. The translation-table
 service merges detectors from all providers and rejects duplicate provider or

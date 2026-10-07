@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <unistd.h>
 
 #include "translation_table/DetectorMappingManifest.h"
 
@@ -97,7 +98,18 @@ void JEventService_TranslationTable::loadTables() const {
         providers = m_catalogs->freeze();
     }
     if (providers.empty()) {
-        throw std::runtime_error("No detector mapping catalogs are registered");
+        const bool color =
+            (m_logger.destination == &std::cout && isatty(STDOUT_FILENO)) ||
+            (m_logger.destination == &std::cerr && isatty(STDERR_FILENO));
+        LOG_WARN(m_logger) << (color ? "\033[33m" : "")
+            << "No detector mapping catalogs are registered; detector translation "
+               "is disabled. Raw-hit processing will continue."
+            << (color ? "\033[0m" : "") << LOG_END;
+        m_run_tables = {{
+            0, std::numeric_limits<std::uint64_t>::max(),
+            std::make_shared<const TranslationTable>()
+        }};
+        return;
     }
 
     std::vector<DetectorManifest> detector_manifests;
