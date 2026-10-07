@@ -11,6 +11,7 @@ This repository is designed to be **modular and extensible**, and can be adapted
 * [Build Instructions](#build-instructions)
 * [Manual Build](#manual-build-advanced)
 * [Running Tests](#running-tests)
+* [Docker Environment](#docker-environment)
 * [Installation Layout](#installation-layout)
 * [Basic Usage](#basic-usage)
 * [Logging](#logging)
@@ -152,6 +153,12 @@ directly:
 ctest --test-dir build-super-tests/jce-build -N
 ctest --test-dir build-super-tests/jce-build --output-on-failure
 ```
+
+## Docker Environment
+
+The [Docker environment](docker/README.md) provides a shared Linux setup for
+building, running tests, and single-worker profiling. It reuses the pinned
+superbuild using the usual `build-super/` and `jce-stack/` paths in the checkout.
 
 ## Installation Layout
 
