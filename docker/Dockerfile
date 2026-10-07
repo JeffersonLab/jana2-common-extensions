@@ -5,12 +5,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gdb time valgrind \
     && rm -rf /var/lib/apt/lists/*
 
-ENV JCE_HOME=/workspace/jce-stack \
-    JANA_HOME=/workspace/jce-stack \
-    CMAKE_PREFIX_PATH=/workspace/jce-stack \
-    JANA_PLUGIN_PATH=/workspace/jce-stack/lib/plugins \
-    LD_LIBRARY_PATH=/workspace/jce-stack/lib \
-    PATH=/workspace/jce-stack/bin:${PATH}
+ENV JCE_HOME=/workspace/jana2-common-extensions/jce-stack \
+    JANA_HOME=/workspace/jana2-common-extensions/jce-stack \
+    CMAKE_PREFIX_PATH=/workspace/jana2-common-extensions/jce-stack \
+    JANA_PLUGIN_PATH=/workspace/jana2-common-extensions/jce-stack/lib/plugins \
+    LD_LIBRARY_PATH=/workspace/jana2-common-extensions/jce-stack/lib \
+    PATH=/workspace/jana2-common-extensions/jce-stack/bin:${PATH}
 
-WORKDIR /workspace
+WORKDIR /workspace/jana2-common-extensions
 CMD ["bash"]

@@ -2,14 +2,19 @@ services:
   dev:
     build: .
     init: true
-    working_dir: /workspace
+    working_dir: /workspace/jana2-common-extensions
     volumes:
-      - ..:/workspace
+      - type: bind
+        source: ${WORKSPACE_DIR:-../..}
+        target: /workspace
+        bind:
+          create_host_path: false
     command:
       - bash
       - -ec
       - |
         cmake -S superbuild -B build-super \
           -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DCMAKE_INSTALL_PREFIX=/workspace/jana2-common-extensions/jce-stack \
           -DJCE_SUPERBUILD_BUILD_TESTING=ON
         cmake --build build-super --target check --parallel 2
