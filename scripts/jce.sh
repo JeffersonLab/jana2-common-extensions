@@ -9,6 +9,7 @@ passthrough_args=()
 input_plugins=""
 cli_plugin_path=""
 cli_default_plugins_file=""
+core_config_dir=""
 
 for arg in "$@"; do
     case "$arg" in
@@ -17,6 +18,9 @@ for arg in "$@"; do
             ;;
         -Pjana:plugin_path=*)
             cli_plugin_path="$arg"
+            ;;
+        -PJCE:CORE_CONFIG_DIR=*)
+            core_config_dir="${arg#-PJCE:CORE_CONFIG_DIR=}"
             ;;
         -PDEFAULT_PLUGINS:FILE=*)
             cli_default_plugins_file="$arg"
@@ -35,37 +39,53 @@ fi
 
 jce_plugin_dir="${jce_root}/lib/plugins"
 
-plugins_value=""
-if [[ -n "$input_plugins" ]]; then
-    plugins_value="${input_plugins#-Pplugins=}"
-    plugins_value=$(echo "$plugins_value" | tr ',' '\n' | sed 's/[[:space:]]//g' | sed '/^$/d' | tr '\n' ',' | sed 's/,$//')
-fi
+warn() {
+    if [[ -t 2 ]]; then
+        printf '\033[33m%s\033[0m\n' "jce.sh warning: $*" >&2
+    else
+        printf '%s\n' "jce.sh warning: $*" >&2
+    fi
+}
 
+read_plugins() {
+    awk '!/^[[:space:]]*#/ { gsub(/[[:space:]]/, ""); if (length) print }' "$1"
+}
+
+# Explicit file overrides only the core layer; directory additions still apply.
+default_plugins_file="${core_config_dir:-${jce_root}/config}/default_plugins.db"
 if [[ -n "$cli_default_plugins_file" ]]; then
     default_plugins_file="${cli_default_plugins_file#-PDEFAULT_PLUGINS:FILE=}"
-elif [[ -n "${JCE_CONFIG_DIR:-}" ]]; then
-    default_plugins_file="${JCE_CONFIG_DIR}/default_plugins.db"
-else
-    default_plugins_file="${jce_root}/config/default_plugins.db"
 fi
-
-default_plugins=""
+core_plugins=""
 if [[ -f "$default_plugins_file" ]]; then
-    raw_defaults=$(grep -v '^[[:space:]]*#' "$default_plugins_file" | tr ',' '\n' | sed 's/[[:space:]]//g' | sed '/^$/d' | tr '\n' ',' | sed 's/,$//')
-    if [[ -n "$raw_defaults" ]]; then
-        default_plugins="$raw_defaults"
-    fi
-fi
-
-if [[ -z "$default_plugins" ]]; then
-    default_plugins="evio_parser,evio_common_modules"
-fi
-
-if [[ -n "$plugins_value" ]]; then
-    merged_plugins="${default_plugins},${plugins_value}"
+    core_plugins=$(read_plugins "$default_plugins_file") || exit 2
 else
-    merged_plugins="$default_plugins"
+    warn "default plugins file not found: $default_plugins_file; using core fallback"
 fi
+if [[ -z "${core_plugins//,/}" ]]; then
+    core_plugins="evio_parser,evio_common_modules"
+fi
+
+plugin_lists=("evio_parser" "$core_plugins")
+if [[ -n "${JCE_CONFIG_DIR:-}" ]]; then
+    IFS=: read -r -a config_dirs <<< "$JCE_CONFIG_DIR"
+    for config_dir in "${config_dirs[@]}"; do
+        [[ -z "$config_dir" ]] && continue
+        if [[ ! -d "$config_dir" ]]; then
+            warn "configuration directory not found: $config_dir; skipping"
+            continue
+        fi
+        if [[ -f "$config_dir/default_plugins.db" ]]; then
+            plugins=$(read_plugins "$config_dir/default_plugins.db") || exit 2
+            plugin_lists+=("$plugins")
+        fi
+    done
+fi
+plugin_lists+=("${input_plugins#-Pplugins=}")
+merged_plugins=$(printf '%s\n' "${plugin_lists[@]}" | tr ',' '\n' |
+    awk '{ gsub(/[[:space:]]/, ""); if (length && !seen[$0]++) {
+        printf "%s%s", separator, $0; separator=","
+    }} END { print "" }') || exit 2
 
 user_plugin_path=""
 if [[ -z "$cli_plugin_path" ]]; then
