@@ -8,9 +8,9 @@ calibrate measurements, or provide detector geometry.
 
 ## Main Flow
 
-1. `JEventService_TranslationTable` loads the root detector catalog, each
+1. On the first table request, `JEventService_TranslationTable` loads the root detector catalog, each
    detector's run-range manifest, and the referenced mapping files.
-2. During initialization, the service builds immutable combined tables for
+2. During that synchronized first request, the service builds immutable combined tables for
    every resulting run interval and publishes the table selected for each run.
 3. A module-parser hit type opts into translation by providing
    `DAQAddress getDAQAddress(const HitType&)`, which normalizes its hardware
@@ -31,8 +31,8 @@ calibrate measurements, or provide detector geometry.
 - Each setup plugin installs detector mappings under its own configuration
   namespace, for example
   `config/<namespace>/<setup-plugin>/detector_mappings/` in its own prefix.
-- Setup plugins register named mapping-catalog directories before service
-  initialization. Catalogs may contribute different detectors and are merged
+- Setup plugins register named mapping-catalog directories in their registration service's
+  `Init()`, before event processing. Catalogs may contribute different detectors and are merged
   into the same run-aware translation tables.
 - `TRANSLATION:DIRECTORY` bypasses registered providers and loads only the
   specified mapping directory.
@@ -47,9 +47,10 @@ calibrate measurements, or provide detector geometry.
   rows; `max` is accepted as an open-ended upper bound.
 - Detector ranges may have gaps. A detector without a range for a run is absent
   from that combined table; a run with no applicable detector mapping fails.
-- All referenced mapping files and combined tables are loaded during service
-  initialization. Event processing performs no configuration file I/O or table
-  construction.
+- All referenced mapping files and combined tables are loaded once on the first
+  table request, after all registration services initialize. Concurrent first
+  requests synchronize loading; subsequent lookups perform no configuration
+  file I/O or table construction.
 - Combined tables with the same selected mapping-file set share one immutable
   table instance.
 - Mapping changes are expected only between runs.
@@ -94,12 +95,12 @@ calibrate measurements, or provide detector geometry.
 - Core keeps event-owned non-owning references to each route's DigiHits, so
   routes sharing an output type do not mix rows. All per-event grouping and
   provenance state is local to the event; shared routes and formatting callbacks remain immutable.
-- Setup plugins register routes during loading before dump initialization or
-  first event translation freezes the registry. Every translator has one writer.
+- Setup plugins register routes in their service initialization before the
+  first event freezes the registry. Every translator has one writer.
 - The dump plugin depends only on generic translation and does not load HMS.
   Load the selected setup plugin before the dump plugin.
-- Registration opens no files. Dump initialization freezes registration and
-  creates one file per route. Missing route outputs are skipped; routes without
+- Registration opens no files. The first dump event freezes registration and
+  creates one file per route. Jobs with no events create no files. Missing route outputs are skipped; routes without
   hits leave header-only files. With no routes, no files are created.
 - Duplicate routes, missing row writers or headers, empty detector names or conversions,
   generated output path collisions, late registration, and output I/O errors
@@ -136,7 +137,10 @@ The `translation_table_tests` CTest loads the dependency-free demo HMS mapping
 and verifies its known lookup, duplicate insertion rejection, and an
 unknown-address lookup.
 
-The `translation_table_service_tests` CTest verifies that the service combines
+The `translation_table_service_tests` CTest forces table-service initialization
+before catalog registration and verifies that the first table request includes
+the later registration and rejects registration after loading. It also verifies
+that the service combines
 multiple detectors, selects different HMS mappings across a run boundary, and
 preserves the applicable BCAL mapping in both tables. It also rejects a mapping
 file whose declared detector differs from its root-catalog entry, plus absolute

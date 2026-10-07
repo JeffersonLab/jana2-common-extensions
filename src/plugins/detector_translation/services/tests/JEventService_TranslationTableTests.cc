@@ -1,3 +1,4 @@
+#include <JANA/JApplication.h>
 #include <cassert>
 #include <cstdint>
 #include <filesystem>
@@ -8,10 +9,26 @@
 
 namespace {
 
+class TestCatalogRegistration : public JService {
+public:
+    explicit TestCatalogRegistration(std::string directory)
+        : m_directory(std::move(directory)) {}
+
+    Service<JEventService_DetectorMappingCatalogs> catalogs {this};
+
+    void Init() override {
+        catalogs->addCatalog("test", m_directory);
+    }
+
+private:
+    std::string m_directory;
+};
+
 bool rejectsMismatchedDetector(const std::filesystem::path& mapping_directory) {
     try {
         JEventService_TranslationTable service(mapping_directory.string());
         service.Init();
+        service.getTable(100);
     } catch (const std::runtime_error& error) {
         return std::string(error.what()).find(
             "does not match catalog detector 'HMS_HODOSCOPE'") != std::string::npos;
@@ -25,6 +42,7 @@ bool rejectsPath(
     try {
         JEventService_TranslationTable service(mapping_directory.string());
         service.Init();
+        service.getTable(100);
     } catch (const std::runtime_error& error) {
         return std::string(error.what()).find(expected_message) != std::string::npos;
     }
@@ -35,6 +53,7 @@ bool rejectsDuplicateAddress(const std::filesystem::path& mapping_directory) {
     try {
         JEventService_TranslationTable service(mapping_directory.string());
         service.Init();
+        service.getTable(100);
     } catch (const std::runtime_error& error) {
         return std::string(error.what()).find(
             "Duplicate DAQ address while loading detector mapping") != std::string::npos;
@@ -48,6 +67,7 @@ bool rejectsInitialization(
     try {
         JEventService_TranslationTable service(mapping_directory.string());
         service.Init();
+        service.getTable(100);
     } catch (const std::runtime_error& error) {
         return std::string(error.what()).find(expected_message) != std::string::npos;
     }
@@ -73,6 +93,24 @@ int main(int argc, char* argv[]) {
     assert(argc == 2);
 
     const std::filesystem::path testdata(argv[1]);
+
+    // Force table-service initialization before the setup service registers.
+    JApplication app;
+    app.ProvideService(std::make_shared<JEventService_DetectorMappingCatalogs>());
+    app.ProvideService(std::make_shared<JEventService_TranslationTable>());
+    app.ProvideService(std::make_shared<TestCatalogRegistration>(
+        (testdata / "detector_mappings").string()));
+    const auto deferred_service = app.GetService<JEventService_TranslationTable>();
+    app.GetService<TestCatalogRegistration>();
+    assert(deferred_service->getTable(100).Lookup({1, 3, 0}) != nullptr);
+    bool late_catalog_rejected = false;
+    try {
+        app.GetService<JEventService_DetectorMappingCatalogs>()->addCatalog(
+            "late", (testdata / "detector_mappings").string());
+    } catch (const JException&) {
+        late_catalog_rejected = true;
+    }
+    assert(late_catalog_rejected);
 
     JEventService_TranslationTable service((testdata / "detector_mappings").string());
     service.Init();

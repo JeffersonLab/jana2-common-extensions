@@ -9,7 +9,7 @@ JEventProcessor_DetectorTranslationDump::JEventProcessor_DetectorTranslationDump
     SetCallbackStyle(CallbackStyle::ExpertMode);
 }
 
-void JEventProcessor_DetectorTranslationDump::Init() {
+void JEventProcessor_DetectorTranslationDump::openOutputs() {
     m_writers = m_registry->getDumpOutputs();
     for (const auto& writer : m_writers) {
         const auto directory = std::filesystem::path(m_outputDirectory()) / writer.detector;
@@ -34,6 +34,10 @@ void JEventProcessor_DetectorTranslationDump::Init() {
 }
 
 void JEventProcessor_DetectorTranslationDump::ProcessSequential(const JEvent& event) {
+    if (!m_outputs_opened) {
+        openOutputs();
+        m_outputs_opened = true;
+    }
     for (std::size_t index = 0; index < m_writers.size(); ++index) {
         m_writers[index].writeEvent(m_outputs[index], event);
     }

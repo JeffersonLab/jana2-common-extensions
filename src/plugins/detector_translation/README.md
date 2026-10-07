@@ -11,15 +11,16 @@ exports them to setup plugins through `detector_mapping_api`.
 `JEventProcessor_DetectorDigiHits` is the plugin's primary event-processing
 component and therefore lives directly in this directory.
 
-Setup plugins register configuration roots through
-`JEventService_DetectorMappingCatalogs` during plugin loading:
+Setup plugins provide a registration `JService` during plugin loading. In its
+`Init()`, register configuration roots through a
+`Service<JEventService_DetectorMappingCatalogs>` dependency and translators
+through a `Service<JEventService_DetectorTranslatorsMap>` dependency.
+Use `service()` to obtain a reference and `service->` to call methods.
 
-```cpp
-app->AddPlugin("detector_translation");
-app->GetService<JEventService_DetectorMappingCatalogs>()->addCatalog(
-    "my_experiment",
-    "/installed/path/to/detector_mappings");
-```
+The first `getTable()` request freezes catalogs and loads all run tables once,
+after JANA has initialized all registration services. Concurrent first requests
+share synchronized initialization; subsequent lookups read immutable tables.
+Mapping errors therefore surface on the first translation event.
 
 Each directory contains its own root `manifest.map`. The translation-table
 service merges detectors from all providers and rejects duplicate provider or

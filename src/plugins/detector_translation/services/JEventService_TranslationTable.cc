@@ -85,7 +85,7 @@ JEventService_TranslationTable::JEventService_TranslationTable(
     m_default_catalogs = std::move(default_catalogs);
 }
 
-void JEventService_TranslationTable::Init() {
+void JEventService_TranslationTable::loadTables() const {
     namespace fs = std::filesystem;
 
     std::vector<DetectorMappingCatalogProvider> providers;
@@ -187,9 +187,11 @@ void JEventService_TranslationTable::Init() {
 
 const TranslationTable&
 JEventService_TranslationTable::getTable(std::uint64_t run_number) const {
-    if (m_run_tables.empty()) {
-        throw std::logic_error(
-            "JEventService_TranslationTable has not been initialized");
+    if (!m_loaded.load(std::memory_order_acquire)) {
+        std::call_once(m_load_once, [this] {
+            loadTables();
+            m_loaded.store(true, std::memory_order_release);
+        });
     }
 
     const auto* cached = m_cached_run_table.load(std::memory_order_relaxed);
