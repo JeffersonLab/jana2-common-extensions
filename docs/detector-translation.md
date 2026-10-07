@@ -36,6 +36,11 @@ calibrate measurements, or provide detector geometry.
   into the same run-aware translation tables.
 - `TRANSLATION:DIRECTORY` bypasses registered providers and loads only the
   specified mapping directory.
+- With no registered catalogs and no explicit mapping directory, the first
+  table request warns once and uses an empty table for every run. Raw-hit
+  processing continues without producing translated DigiHits. The warning is
+  yellow on a terminal; redirected logs contain plain text. Invalid configured
+  catalogs and missing run coverage still fail.
 - The root `manifest.map` lists authoritative detector names and
   detector-manifest paths. Every mapping file selected through a detector's
   manifest must declare that same detector name.

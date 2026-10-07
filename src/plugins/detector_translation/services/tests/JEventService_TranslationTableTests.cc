@@ -2,6 +2,8 @@
 #include <cassert>
 #include <cstdint>
 #include <filesystem>
+#include <limits>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -93,6 +95,23 @@ int main(int argc, char* argv[]) {
     assert(argc == 2);
 
     const std::filesystem::path testdata(argv[1]);
+
+    JApplication raw_app;
+    raw_app.ProvideService(std::make_shared<JEventService_DetectorMappingCatalogs>());
+    raw_app.ProvideService(std::make_shared<JEventService_TranslationTable>());
+    const auto raw_service = raw_app.GetService<JEventService_TranslationTable>();
+    std::ostringstream warnings;
+    raw_service->SetLogger(JLogger(JLogger::Level::WARN, &warnings));
+    const auto& empty_table = raw_service->getTable(0);
+    assert(empty_table.Lookup({1, 3, 0}) == nullptr);
+    assert(&empty_table == &raw_service->getTable(100));
+    assert(&empty_table == &raw_service->getTable(
+        std::numeric_limits<std::uint64_t>::max()));
+    const std::string warning = "No detector mapping catalogs are registered";
+    assert(warnings.str().find(warning) != std::string::npos);
+    assert(warnings.str().find(warning, warnings.str().find(warning) + 1) ==
+        std::string::npos);
+    assert(warnings.str().find('\033') == std::string::npos);
 
     // Force table-service initialization before the setup service registers.
     JApplication app;
