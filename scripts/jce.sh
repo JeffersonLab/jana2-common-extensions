@@ -63,7 +63,7 @@ else
     warn "default plugins file not found: $default_plugins_file; using core fallback"
 fi
 if [[ -z "${core_plugins//,/}" ]]; then
-    core_plugins="evio_parser,evio_common_modules"
+    core_plugins="evio_parser,evio_common_modules,detector_translation"
 fi
 
 plugin_lists=("evio_parser" "$core_plugins")
