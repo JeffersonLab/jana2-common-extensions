@@ -14,7 +14,6 @@ services:
       - -ec
       - |
         cmake -S superbuild -B build-super \
-          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           -DCMAKE_INSTALL_PREFIX=/workspace/jana2-common-extensions/jce-stack \
           -DJCE_SUPERBUILD_BUILD_TESTING=ON
         cmake --build build-super --target check --parallel 2

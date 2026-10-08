@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
 project(jce_superbuild NONE)
 
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+        "Build type for JANA2, EVIO, and JCE" FORCE)
+endif()
+
 include(ExternalProject)
 find_package(Git REQUIRED)
 

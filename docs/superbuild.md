@@ -18,6 +18,9 @@ that provide their own dependencies.
 
 ## Expected Behavior
 
+- For single-configuration generators, an unset or empty `CMAKE_BUILD_TYPE`
+  defaults to `RelWithDebInfo`. Explicit types such as `Release` and `Debug`
+  are preserved. The selected type is forwarded to JANA2, EVIO, and JCE.
 - All three projects install into the selected `CMAKE_INSTALL_PREFIX`.
 - Git tags are pinned by default and can be overridden with
   `JCE_JANA_GIT_TAG` or `JCE_EVIO_GIT_TAG`.

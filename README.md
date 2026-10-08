@@ -35,6 +35,11 @@ This repository is designed to be **modular and extensible**, and can be adapted
 
 ## Build Instructions
 
+Use `RelWithDebInfo` for optimized processing with debug symbols for profiling.
+`Release` is also suitable for optimized runs. An empty CMake build type is not
+equivalent to an optimized build. The JCE superbuild defaults to `RelWithDebInfo` when no type is selected and
+forwards the selected type to JANA2, EVIO, and JCE; rebuild and install after changing it.
+
 The recommended build uses the in-repository superbuild. It downloads the
 pinned JANA2 and EVIO releases, builds them in dependency order, and installs
 JANA2, EVIO, and JCE into one prefix:
