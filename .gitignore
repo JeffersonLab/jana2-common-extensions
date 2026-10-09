@@ -1,10 +1,12 @@
 # Build directory
 /build/*
 /build-super*/
+/build-root-super/
 
 # Install directory
 /install/*
 /jce-stack/
+/jce-root-stack/
 
 /bin/
 /include/

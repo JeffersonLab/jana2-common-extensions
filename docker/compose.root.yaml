@@ -1,0 +1,25 @@
+name: jce-root
+services:
+  dev-root:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.root-dev
+    init: true
+    working_dir: /workspace/jana2-common-extensions
+    volumes:
+      - type: bind
+        source: ${WORKSPACE_DIR:-../..}
+        target: /workspace
+        bind:
+          create_host_path: false
+    command:
+      - bash
+      - -ec
+      - |
+        cmake -S superbuild -B build-root-super \
+          -DCMAKE_INSTALL_PREFIX=/workspace/jana2-common-extensions/jce-root-stack \
+          -DJCE_SUPERBUILD_BUILD_TESTING=ON \
+          -DJCE_SUPERBUILD_EVIO_PROCESSOR=ON \
+          -DCMAKE_PREFIX_PATH=/opt/root
+        cmake --build build-root-super --target check --parallel 2
