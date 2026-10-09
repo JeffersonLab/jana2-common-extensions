@@ -6,6 +6,10 @@ This plugin is optional because it introduces the project's ROOT dependency.
 Enable it at configure time with `-DJCE_BUILD_EVIO_PROCESSOR=ON`; the default
 JCE build does not require ROOT or install this plugin.
 
+The processor consumes common hardware hit types only. Compton-specific
+inputs and `compton_tree` output are excluded; those belong in a downstream
+experiment plugin.
+
 The plugin operates at the **physics event level** — it receives individual `JEvent`s that have already been unfolded by `JEventUnfolder_EVIO` and contain fully decoded detector hits.
 
 ---

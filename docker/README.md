@@ -99,7 +99,3 @@ for downstream repositories built against this ROOT stack too. Emulation
 can slow builds and is unsuitable for final throughput measurements.
 
 See the [ROOT environment contract](../docs/docker-root-environment.md).
-
-Current limitation: the full ROOT stack build stops because `evio_processor`
-includes Compton hit headers absent from this checkout. See the contract above
-for details; the Docker image itself builds successfully.
