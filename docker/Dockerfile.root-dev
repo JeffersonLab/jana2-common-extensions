@@ -1,0 +1,16 @@
+FROM rootproject/root:6.34.00-ubuntu24.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential ca-certificates cmake git libboost-all-dev liblz4-dev libpugixml-dev \
+    gdb time valgrind \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV JCE_HOME=/workspace/jana2-common-extensions/jce-root-stack \
+    JANA_HOME=/workspace/jana2-common-extensions/jce-root-stack \
+    CMAKE_PREFIX_PATH=/workspace/jana2-common-extensions/jce-root-stack:/opt/root \
+    JANA_PLUGIN_PATH=/workspace/jana2-common-extensions/jce-root-stack/lib/plugins \
+    LD_LIBRARY_PATH=/workspace/jana2-common-extensions/jce-root-stack/lib:/opt/root/lib \
+    PATH=/workspace/jana2-common-extensions/jce-root-stack/bin:${PATH}
+
+WORKDIR /workspace/jana2-common-extensions
+CMD ["bash"]

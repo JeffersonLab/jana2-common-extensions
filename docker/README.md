@@ -62,3 +62,44 @@ absolute paths. Preserve or remove those build/install directories and start
 fresh before using the new layout.
 
 See the [environment contract](../docs/docker-environment.md).
+
+## Separate ROOT environment (amd64)
+
+Use the standalone Compose file; do not combine it with `compose.yaml`:
+
+```sh
+docker compose -f docker/compose.root.yaml run --build --rm dev-root
+```
+
+`Dockerfile.root-dev` uses the official `rootproject/root:6.34.00-ubuntu24.04`
+image. The service explicitly selects `linux/amd64`; Docker Desktop on ARM
+uses emulation. Its separate Compose project is `jce-root`.
+The default command enables `evio_processor`, builds and installs the pinned
+JANA2/EVIO/JCE dependencies, and runs JCE tests. It uses only
+`build-root-super/` and `jce-root-stack/` for build and install output.
+The original Dockerfile, Compose service, `build-super/`, and `jce-stack/`
+are unchanged. Both environments share the same source checkout.
+ROOT stays in the image at `/opt/root`; it is passed explicitly to CMake.
+JANA2 keeps the existing superbuild's `USE_ROOT=OFF`; JCE links ROOT directly
+for `evio_processor`. This environment does not change the processor's
+current sequential writing behavior.
+
+Open a shell after building:
+
+```sh
+docker compose -f docker/compose.root.yaml run --rm dev-root bash
+root-config --version
+jana -Pplugins=evio_parser,evio_common_modules,evio_processor \
+  -Pnthreads=4 /workspace/data/run.evio
+```
+
+The same `WORKSPACE_DIR` override works here. Environment paths select
+`jce-root-stack/` and `/opt/root`. Use separate build/install directories
+for downstream repositories built against this ROOT stack too. Emulation
+can slow builds and is unsuitable for final throughput measurements.
+
+See the [ROOT environment contract](../docs/docker-root-environment.md).
+
+Current limitation: the full ROOT stack build stops because `evio_processor`
+includes Compton hit headers absent from this checkout. See the contract above
+for details; the Docker image itself builds successfully.
