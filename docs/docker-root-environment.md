@@ -40,11 +40,5 @@ docker compose -f docker/compose.root.yaml run --rm dev-root root-config --featu
 
 ## Current build limitation
 
-The existing `evio_processor` includes `faV3comptonAccumulatorHit.h` and
-`faV3comptonHit.h`, which are absent from this repository and its exported
-common hit types. The default build currently fails at the first missing
-header. Those inputs need an explicit downstream dependency or a separate
-processor change before the complete stack and tests can succeed.
-
 The prebuilt ROOT image uses C++17 while JCE uses C++20; ROOT emits a standard
 mismatch warning. A matching C++20 ROOT build would remove this warning.
