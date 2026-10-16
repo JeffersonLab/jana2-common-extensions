@@ -35,7 +35,10 @@ that provide their own dependencies.
   `JCE_SUPERBUILD_EVIO_PROCESSOR=ON` and make ROOT discoverable through the
   outer `CMAKE_PREFIX_PATH` to include it.
 - EVIO is patched only in the superbuild's working source tree so that its
-  CMake build honors the shared installation prefix. For offline builds, EVIO
+  CMake build honors the shared installation prefix, exports only discovered
+  dependency include paths instead of hard-coded `/usr/local/include`, and uses
+  the discovered LZ4 header directory. The patch also installs EVIO’s bundled
+  `.hpp` headers required by its public C++ headers. For offline builds, EVIO
   is first copied into the superbuild workspace so the original checkout is
   not modified.
 
