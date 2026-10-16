@@ -20,3 +20,19 @@ index 7634f636..bca55125 100644
  endif()
  
  # Boost libs
+@@ -107,3 +109,3 @@
+ file(GLOB CPP_LIB_FILES "src/libsrc++/*.cpp")
+-file(GLOB CPP_HEADER_FILES "src/libsrc++/*.h")
++file(GLOB CPP_HEADER_FILES "src/libsrc++/*.h" "src/libsrc++/*.hpp")
+ # C++ utility files
+@@ -147,5 +149,4 @@
+             $<INSTALL_INTERFACE:include>
+-            /usr/local/include
+             ${Boost_INCLUDE_DIRS}
+-            ${LZ4_INCLUDE_DIRS}
++            ${LZ4_INCLUDE_DIR}
+             $<BUILD_INTERFACE:${DISRUPTOR_INCLUDE_DIR}>
+@@ -205,3 +206,2 @@
+         $<INSTALL_INTERFACE:include>
+-        /usr/local/include
+ )
