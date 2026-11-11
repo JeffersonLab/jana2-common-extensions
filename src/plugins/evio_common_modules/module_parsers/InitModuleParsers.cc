@@ -12,6 +12,7 @@
 #include "ModuleParser_FADCScaler.h"
 #include "ModuleParser_TIScaler.h"
 #include "ModuleParser_HelicityDecoder.h"
+#include "ModuleParser_HelicityScaler.h"
 #include "ModuleParser_MPD.h"
 #include "ModuleParser_VFTDC.h"
 
@@ -25,6 +26,7 @@ public:
         add(9250, std::make_shared<ModuleParser_FADCScaler>());
         add(9001, std::make_shared<ModuleParser_TIScaler>());
         add(0xdec, std::make_shared<ModuleParser_HelicityDecoder>());
+        add(3820, std::make_shared<ModuleParser_HelicityScaler>());
         add(3561, std::make_shared<ModuleParser_MPD>());
         add(9, std::make_shared<ModuleParser_VFTDC>());
     }
