@@ -31,29 +31,40 @@ void ModuleParser_TIScaler::parse(std::shared_ptr<evio::BaseStructure> data_bloc
 
     auto* hit = new TIScalerHit();
     hit->rocid = rocid;
-    // Sanity check: need at least 1 header word + 12 scaler words
-    if (data_words.size() < 13) {
+    // Sanity check: need at least 12 scaler words
+    if (data_words.size() < 12) {
         throw JException("ModuleParser_TIScaler::parse: Not enough words (%zu) for TI scaler bank", data_words.size());
     }
 
-    // Parse header word
-    auto header_word = data_words[0];
-    hit->words_idx     = getBitsInRange(header_word, 31, 16);
-    hit->slot          = getBitsInRange(header_word, 15, 8);
-    hit->nscalerwords  = getBitsInRange(header_word, 7, 0);
+    // Parse header word when it's available
+    int scaword_idx=0;
+    if (data_words.size() == 13){
+          auto header_word = data_words[0];
+          hit->words_idx     = getBitsInRange(header_word, 31, 16);
+          hit->slot          = getBitsInRange(header_word, 15, 8);
+          hit->nscalerwords  = getBitsInRange(header_word, 7, 0);
+          scaword_idx = 1;
+    }
+    
+    if (data_words.size() == 12){ // no header word
+          hit->words_idx     = 0;
+          hit->slot          = 0;
+          hit->nscalerwords  = 12;
+          scaword_idx = 0;
+    }
 
     // Parse scaler words (layout fixed by hardware definition)
-    hit->live_time                = data_words[1];
-    hit->busy_time                = data_words[2];
-    hit->ts_input_1               = data_words[3];
-    hit->ts_input_2               = data_words[4];
-    hit->ts_input_3               = data_words[5];
-    hit->ts_input_4               = data_words[6];
-    hit->ts_input_5               = data_words[7];
-    hit->ts_input_6               = data_words[8];
-    hit->all_triggers_before_busy = data_words[9];
-    hit->ts_inputs_before_busy    = data_words[12];
-    hit->ti_event_number          = (static_cast<uint64_t>(data_words[10]) << 16) | static_cast<uint64_t>(data_words[11]);
+    hit->live_time                = data_words[scaword_idx+0];
+    hit->busy_time                = data_words[scaword_idx+1];
+    hit->ts_input_1               = data_words[scaword_idx+2];
+    hit->ts_input_2               = data_words[scaword_idx+3];
+    hit->ts_input_3               = data_words[scaword_idx+4];
+    hit->ts_input_4               = data_words[scaword_idx+5];
+    hit->ts_input_5               = data_words[scaword_idx+6];
+    hit->ts_input_6               = data_words[scaword_idx+7];
+    hit->all_triggers_before_busy = data_words[scaword_idx+8];
+    hit->ts_inputs_before_busy    = data_words[scaword_idx+11];
+    hit->ti_event_number          = (static_cast<uint64_t>(data_words[scaword_idx+9]) << 16) | static_cast<uint64_t>(data_words[scaword_idx+10]);
 
     event_hits->scalers.push_back(hit);
 
