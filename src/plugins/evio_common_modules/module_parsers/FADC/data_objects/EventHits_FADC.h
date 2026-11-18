@@ -6,6 +6,7 @@
 #include "EventHits.h"
 #include "FADC250WaveformHit.h"
 #include "FADC250PulseHit.h"
+#include "FADC250ScalerHit.h"
 #include "FADC250HallBPulseIntegralHit.h"
 #include "FADC250HallBPulseTimeHit.h"
 #include "FADC250HallBPulsePeakHit.h"
@@ -21,6 +22,7 @@ class EventHits_FADC : public EventHits {
 public:
     std::vector<FADC250WaveformHit*> waveforms;
     std::vector<FADC250PulseHit*> pulses;
+    std::vector<FADC250ScalerHit*> scalers;
     std::vector<FADC250HallBPulseIntegralHit*> pulse_integrals;
     std::vector<FADC250HallBPulseTimeHit*> pulse_times;
     std::vector<FADC250HallBPulsePeakHit*> pulse_peaks;
@@ -31,6 +33,9 @@ public:
         }
         for (auto& pulse : pulses) {
             event.Insert(pulse);
+        }
+        for (auto& scaler : scalers) {
+            event.Insert(scaler);
         }
         for (auto& pulse_integral : pulse_integrals) {
             event.Insert(pulse_integral);

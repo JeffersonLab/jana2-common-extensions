@@ -40,7 +40,8 @@ void ModuleParser_FADC::parse(std::shared_ptr<evio::BaseStructure> data_block,
     // multiple blocks within the same data bank into a single PhysicsEvent.
     std::map<uint64_t, std::shared_ptr<EventHits_FADC>> event_hits_map;
 
-    
+    LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - ROCID = " << rocid << LOG_END;
+
     // Process each data word sequentially
     for (size_t j = 0; j < data_words.size(); j++) {
         auto d = data_words[j];
@@ -173,7 +174,35 @@ void ModuleParser_FADC::parse(std::shared_ptr<evio::BaseStructure> data_block,
                 uint32_t Vpeak = getBitsInRange(d, 11, 0);
                 LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 10 CHAN = " << chan << "; Pulse number = " << pulse_number << "; Vmin = "<< Vmin << "; Vpeak = "<< Vpeak << LOG_END;
                 event_hits_map[event_number]->pulse_peaks.push_back(new FADC250HallBPulsePeakHit(trigger_num, timestamp1, timestamp2, rocid, block_slot, module_id, chan, pulse_number, Vmin, Vpeak));
+            } else if (data_type == 12){ // scaler data
+                 uint32_t scalernwords = getBitsInRange(d, 5, 0);
+
+                 LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 12 nwords = " << scalernwords << LOG_END;
+
+                 if ( scalernwords != 18 ){
+                      throw JException(
+                        "ModuleParser_FADC::parse: Scaler words are not 18"
+                    );
+                 }
+
+                 FADC250ScalerHit scahit;
+                 scahit.roc = rocid;
+                 scahit.slot = block_slot;
+
+                 j++;
+                 for ( int isca=0; isca<16; isca++){
+                      scahit.counts[isca] = data_words[j];
+                      LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 12 chan = " << isca << "; counts = " << scahit.counts[isca] << LOG_END;
+                      j++;
+                 }
+                 scahit.timer = data_words[j];
+                 LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 12 trig_time = " << scahit.timer << LOG_END;
+
+                 j++;
+                 scahit.trignum = data_words[j];
+                 LOG_DEBUG(GetLogger()) << "ModuleParser_FADC::DEBUG - data type 12 trig_num = " << scahit.trignum << LOG_END;
             }
+
         }
     }
 
